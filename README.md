@@ -93,3 +93,15 @@ Significa che `index.html` non si trova nella cartella principale (root) del rep
 
 
 Quando deciderai di trasformarla in un'app vera e propria da pubblicare su App Store e Play Store, questi stessi file saranno il punto di partenza per un progetto Capacitor — il lavoro fatto qui non va perso, si riusa quasi interamente.
+
+-------------------------------------------------------------------------
+Testo per creare account
+{
+  apiKey: "AIzaSyDg9u8AmoeAfwkzrtlJV0DCGrt9M7g_Ljc",
+  authDomain: "app-spese-database.firebaseapp.com",
+  projectId: "app-spese-database",
+  storageBucket: "app-spese-database.firebasestorage.app",
+  messagingSenderId: "963457320900",
+  appId: "1:963457320900:web:7526ce5ccabbe6bafd0691",
+  measurementId: "G-11KW62269N"
+}
