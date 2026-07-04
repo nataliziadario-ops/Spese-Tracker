@@ -400,12 +400,17 @@ function parseFirebaseConfigInput(raw){
   var txt=raw.trim();
   var m=txt.match(/\{[\s\S]*\}/);
   if(m)txt=m[0];
-  txt=txt.replace(/(\w+)\s*:/g,'"$1":').replace(/,(\s*[}\]])/g,'$1').replace(/'/g,'"');
   try{
-    var obj=JSON.parse(txt);
-    if(obj&&obj.apiKey&&obj.projectId)return obj;
+    var obj=(new Function('return (' + txt + ')'))();
+    if(obj&&typeof obj==='object'&&obj.apiKey&&obj.projectId)return obj;
     return null;
-  }catch(e){return null;}
+  }catch(e){
+    try{
+      var obj2=JSON.parse(txt);
+      if(obj2&&obj2.apiKey&&obj2.projectId)return obj2;
+    }catch(e2){}
+    return null;
+  }
 }
 
 function loadFirebaseSDK(){
