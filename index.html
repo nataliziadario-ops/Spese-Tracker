@@ -314,7 +314,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[]});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister});
 }
 
 /* ================================================================
@@ -377,6 +377,8 @@ var sync={
   auth:null,
   db:null,
   unsubscribeSnapshot:null,
+  unsubscribeInbox:null,
+  pendingInbox:[],
   lastPushedJSON:null,
   sdkLoadPromise:null
 };
@@ -537,18 +539,154 @@ async function startSync(uid,email){
   sync.uid=uid;sync.email=email;sync.status='connecting';
   renderActiveTab();
   await resolveInitialConflict(uid);
+  if(!state.inboxToken){state.inboxToken=randToken();await saveState();}
   attachSnapshotListener();
+  try{attachInboxListener();}catch(e){console.error('Inbox notifiche non disponibile',e);}
   sync.status='connected';
   renderActiveTab();
 }
 
 function stopSync(keepConfig){
   if(sync.unsubscribeSnapshot){sync.unsubscribeSnapshot();sync.unsubscribeSnapshot=null;}
+  if(sync.unsubscribeInbox){sync.unsubscribeInbox();sync.unsubscribeInbox=null;}
+  sync.pendingInbox=[];
   if(sync.auth){try{sync.auth.signOut();}catch(e){}}
   sync.status=keepConfig?'configured':'unconfigured';
   sync.uid=null;sync.email=null;sync.db=null;sync.auth=null;sync.firebaseApp=null;
   if(!keepConfig)clearSyncConfig();
   renderActiveTab();
+}
+
+/* ================================================================
+   REGISTRAZIONE AUTOMATICA DA NOTIFICHE
+   Un'app di automazione sul telefono (es. MacroDroid su Android)
+   inoltra il testo delle notifiche bancarie a Firestore, in una
+   "casella" identificata da un token segreto. L'app la ascolta in
+   tempo reale, estrae importo/descrizione/categoria e propone il
+   movimento da confermare (o lo registra da sola se l'utente ha
+   attivato la modalità automatica).
+================================================================ */
+function randToken(){
+  var chars='abcdefghijklmnopqrstuvwxyz0123456789';
+  var out='';
+  try{
+    var arr=new Uint8Array(24);crypto.getRandomValues(arr);
+    for(var i=0;i<arr.length;i++)out+=chars[arr[i]%36];
+  }catch(e){for(var j=0;j<24;j++)out+=chars[Math.floor(Math.random()*36)];}
+  return out;
+}
+
+function parseBankNotification(item){
+  var text=((item.title?item.title+' ':'')+(item.text||'')).trim();
+  var m=text.match(/(?:€|eur)\s*:?\s*([0-9][0-9.,]*)/i)||text.match(/([0-9][0-9.,]*)\s*(?:€|eur)/i);
+  var amount=m?Math.abs(parseAmount(m[1])):NaN;
+  var lower=text.toLowerCase();
+  var isIncome=/accredit|bonifico ricevuto|hai ricevuto|incasso|stipendio|rimborso/.test(lower);
+  var desc='';
+  var pm=text.match(/presso\s+([^.,\n]{2,40})/i);
+  if(pm)desc=pm[1].trim();
+  else{
+    var dm=text.match(/(?:a favore di|da)\s+([^.,\n]{2,40})/i);
+    if(dm)desc=dm[1].trim();
+    else desc=(item.title||text).slice(0,60);
+  }
+  var type=isIncome?'income':'expense';
+  return{amount:amount,type:type,desc:desc,categoryId:guessCat(desc+' '+text,type),valid:amount>0,raw:text};
+}
+
+function defaultAccountId(){
+  if(lastUsedAccId&&state.accounts.some(function(a){return a.id===lastUsedAccId;}))return lastUsedAccId;
+  return state.accounts[0].id;
+}
+
+function registerParsedNotification(p){
+  state.transactions.push({id:uid('tx'),type:p.type,amount:p.amount,accountId:defaultAccountId(),categoryId:p.categoryId,note:p.desc,date:todayISO(),tags:[],createdAt:Date.now()});
+}
+
+function attachInboxListener(){
+  if(sync.unsubscribeInbox){sync.unsubscribeInbox();sync.unsubscribeInbox=null;}
+  if(!state.inboxToken||!sync.db)return;
+  sync.unsubscribeInbox=sync.db.collection('inbox').doc(state.inboxToken).collection('items').onSnapshot(function(qs){
+    var items=[];
+    qs.docs.forEach(function(d){var data=d.data()||{};items.push({id:d.id,title:data.title||'',text:data.text||''});});
+    handleInboxItems(items);
+  },function(err){console.error('Errore inbox notifiche',err);});
+}
+function deleteInboxItem(id){
+  if(!sync.db||!state.inboxToken)return;
+  try{sync.db.collection('inbox').doc(state.inboxToken).collection('items').doc(id).delete();}catch(e){}
+}
+function handleInboxItems(items){
+  var natives=sync.pendingInbox.filter(function(x){return x.native;});
+  if(state.autoRegister){
+    var added=0;
+    var leftovers=[];
+    items.forEach(function(it){
+      var p=parseBankNotification(it);
+      if(p.valid){registerParsedNotification(p);deleteInboxItem(it.id);added++;}
+      else leftovers.push(it);
+    });
+    sync.pendingInbox=natives.concat(leftovers);
+    if(added){saveState();showToast(added===1?'Registrato 1 movimento dalla notifica':'Registrati '+added+' movimenti dalle notifiche');}
+  }else{
+    sync.pendingInbox=natives.concat(items);
+  }
+  renderActiveTab();
+}
+function registerInboxItem(itemId){
+  var it=sync.pendingInbox.find(function(x){return x.id===itemId;});
+  if(!it)return;
+  var p=parseBankNotification(it);
+  if(!p.valid){showToast('Importo non riconosciuto in questa notifica');return;}
+  registerParsedNotification(p);
+  saveState();
+  if(!it.native)deleteInboxItem(itemId);
+  sync.pendingInbox=sync.pendingInbox.filter(function(x){return x.id!==itemId;});
+  showToast('Movimento registrato');
+  renderActiveTab();
+}
+function ignoreInboxItem(itemId){
+  var it=sync.pendingInbox.find(function(x){return x.id===itemId;});
+  if(it&&!it.native)deleteInboxItem(itemId);
+  sync.pendingInbox=sync.pendingInbox.filter(function(x){return x.id!==itemId;});
+  renderActiveTab();
+}
+
+/* ---- Ponte nativo (app Android via Capacitor) ----
+   Quando l'app gira dentro il contenitore nativo Android, il plugin
+   SpeseNotifiche legge le notifiche direttamente sul dispositivo e le
+   consegna qui, senza passare da MacroDroid né dal cloud. Le notifiche
+   senza un importo riconoscibile vengono scartate in silenzio (il
+   listener nativo riceve le notifiche di tutte le app, non solo la
+   banca, quindi mostrare quelle non valide creerebbe solo rumore). */
+function handleNativeNotification(data){
+  var item={id:uid('nat'),title:(data&&data.title)||'',text:(data&&data.text)||'',native:true};
+  var p=parseBankNotification(item);
+  if(!p.valid)return;
+  if(state.autoRegister){
+    registerParsedNotification(p);
+    saveState();
+    showToast('Registrato dalla notifica: '+fmt(p.amount));
+  }else{
+    sync.pendingInbox.push(item);
+  }
+  renderActiveTab();
+}
+function initNativeNotificationBridge(){
+  try{
+    if(window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SpeseNotifiche){
+      window.Capacitor.Plugins.SpeseNotifiche.addListener('bancaNotifica',function(data){
+        try{handleNativeNotification(data);}catch(e){console.error('Errore notifica nativa',e);}
+      });
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function inboxEndpointURL(){
+  var cfg=loadSyncConfig();
+  if(!cfg||!cfg.firebaseConfig||!state.inboxToken)return '';
+  return 'https://firestore.googleapis.com/v1/projects/'+cfg.firebaseConfig.projectId+'/databases/(default)/documents/inbox/'+state.inboxToken+'/items';
 }
 
 async function initSyncFromSavedConfig(){
@@ -827,10 +965,32 @@ function accFilterChipsHTML(){
 /* ================================================================
    HOME VIEW
 ================================================================ */
+function pendingInboxHTML(){
+  if(!sync.pendingInbox.length)return '';
+  var rows=sync.pendingInbox.map(function(it){
+    var p=parseBankNotification(it);
+    if(p.valid){
+      var cat=catById(p.categoryId);
+      return '<div class="expense-row"><div class="cat-bubble" style="background:'+colorHex(cat.color)+'22;">'+esc(cat.emoji)+'</div>'+
+        '<div class="expense-info"><div class="expense-title">'+esc(p.desc)+'</div><div class="expense-sub">'+esc(it.title||'Notifica')+' · '+esc(cat.name)+'</div></div>'+
+        '<div class="expense-amt'+(p.type==='income'?' amt-income':'')+'">'+(p.type==='income'?'+':'−')+fmt(p.amount)+'</div>'+
+        '<div style="display:flex;flex-direction:column;gap:4px;margin-left:4px;">'+
+          '<button class="btn-primary-sm" data-inbox-reg="'+esc(it.id)+'">Registra</button>'+
+          '<button class="btn-secondary" style="padding:6px 10px;font-size:12px;" data-inbox-ign="'+esc(it.id)+'">Ignora</button>'+
+        '</div></div>';
+    }
+    return '<div class="expense-row"><div class="cat-bubble" style="background:var(--border);">❓</div>'+
+      '<div class="expense-info"><div class="expense-title">Importo non riconosciuto</div><div class="expense-sub">'+esc((it.text||it.title||'').slice(0,70))+'</div></div>'+
+      '<button class="btn-secondary" style="padding:6px 10px;font-size:12px;margin-left:4px;" data-inbox-ign="'+esc(it.id)+'">Ignora</button></div>';
+  }).join('');
+  return '<section class="card" style="padding:12px 14px;border-color:var(--accent);">'+
+    '<h3 style="margin:0 0 4px;font-size:14.5px;">📥 Dalle notifiche ('+sync.pendingInbox.length+')</h3>'+rows+'</section>';
+}
 function homeHTML(){
   if(!ui.viewMonth)ui.viewMonth=currentMonthKey();
   var isCurrent=ui.viewMonth>=currentMonthKey();
   return '<div class="view">'+
+    pendingInboxHTML()+
     '<div class="segmented" style="margin-bottom:-4px;"><button class="'+(ui.homeView==='monthly'?'active':'')+'" data-home-view="monthly">Mensile</button><button class="'+(ui.homeView==='annual'?'active':'')+'" data-home-view="annual">Annuale</button></div>'+
     (ui.homeView==='annual'?annualViewHTML():monthlyViewHTML(isCurrent))+
   '</div>';
@@ -887,6 +1047,8 @@ function wireHome(){
   document.querySelectorAll('[data-acc-filter]').forEach(function(b){b.onclick=function(){ui.accountFilter=b.dataset.accFilter;renderActiveTab();};});
   document.querySelectorAll('[data-breakdown]').forEach(function(b){b.onclick=function(){ui.breakdownType=b.dataset.breakdown;renderActiveTab();};});
   var gh=document.querySelector('[data-goto="history"]');if(gh)gh.onclick=function(){ui.activeTab='history';renderActiveTab();};
+  document.querySelectorAll('[data-inbox-reg]').forEach(function(b){b.onclick=function(){registerInboxItem(b.dataset.inboxReg);};});
+  document.querySelectorAll('[data-inbox-ign]').forEach(function(b){b.onclick=function(){ignoreInboxItem(b.dataset.inboxIgn);};});
   wireEntryRows(document.getElementById('content'));
 }
 
@@ -974,8 +1136,26 @@ function accountsHTML(){
     (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="Nome conto" autofocus><button class="btn-primary-sm" id="confirmNewAcc">Crea</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">+ Nuovo conto</button>')+
     syncStatusCardHTML()+
     '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Estratto conto</h3><p class="hint">Importa spese e entrate da CSV esportato dalla banca.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa CSV</button></section>'+
+    notifCardHTML()+
     '<div style="text-align:center;"><button class="reset-link" id="resetBtn">Reimposta tutti i dati</button></div>'+
   '</div>';
+}
+function notifCardHTML(){
+  if(sync.status!=='connected'||!state.inboxToken)return '';
+  var url=inboxEndpointURL();
+  var body='{"fields":{"title":{"stringValue":"{not_title}"},"text":{"stringValue":"{notification}"}}}';
+  return '<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">🔔 Registrazione da notifiche</h3>'+
+    '<p class="hint">Su Android, un\'app di automazione (es. MacroDroid) può inoltrare qui le notifiche della tua banca: l\'app le trasforma in movimenti da confermare con un tap. Le istruzioni complete sono in GUIDA-NOTIFICHE.md nel repository. Su iPhone non è possibile leggere le notifiche di altre app.</p>'+
+    '<div class="field-group"><label class="field-label">Indirizzo da usare in MacroDroid (HTTP POST)</label>'+
+      '<input class="text-input" style="font-family:monospace;font-size:10.5px;" readonly value="'+esc(url)+'" id="notifUrlField">'+
+      '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifUrlField">Copia indirizzo</button></div>'+
+    '<div class="field-group"><label class="field-label">Corpo della richiesta (Content type: application/json)</label>'+
+      '<input class="text-input" style="font-family:monospace;font-size:10.5px;" readonly value="'+esc(body)+'" id="notifBodyField">'+
+      '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifBodyField">Copia corpo</button></div>'+
+    '<label class="toggle-row"><span>Registra automaticamente senza conferma</span><input type="checkbox" id="autoRegisterToggle" '+(state.autoRegister?'checked':'')+'></label>'+
+    (state.autoRegister?'<p class="hint">⚠️ Le notifiche riconosciute verranno registrate subito, senza revisione. Il riconoscimento automatico può sbagliare importo o categoria.</p>':'')+
+  '</section>';
 }
 function wireAccounts(){
   document.querySelectorAll('[data-account-id]').forEach(function(inp){inp.onchange=function(){var a=accById(inp.dataset.accountId);a.name=inp.value.trim()||a.name;inp.value=a.name;saveState();};});
@@ -995,6 +1175,21 @@ function wireAccounts(){
   var addB=document.getElementById('addAccBtn');if(addB)addB.onclick=function(){ui.addingAccount=true;renderActiveTab();};
   var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast('Dai un nome al conto');return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast('Conto creato');renderActiveTab();};
   var syncBtn=document.getElementById('openSyncBtn');if(syncBtn)syncBtn.onclick=openSyncModal;
+  document.querySelectorAll('[data-copy-target]').forEach(function(btn){
+    btn.onclick=function(){
+      var field=document.getElementById(btn.dataset.copyTarget);
+      if(!field)return;
+      field.select();field.setSelectionRange(0,99999);
+      var done=false;
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(field.value).then(function(){showToast('Copiato');}).catch(function(){try{document.execCommand('copy');showToast('Copiato');}catch(e){showToast('Copia manualmente il testo selezionato');}});
+        done=true;
+      }
+      if(!done){try{document.execCommand('copy');showToast('Copiato');}catch(e){showToast('Copia manualmente il testo selezionato');}}
+    };
+  });
+  var autoTog=document.getElementById('autoRegisterToggle');
+  if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();renderActiveTab();};
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
     confirmDialog('Disconnettere questo dispositivo? I dati resteranno salvati sul cloud e su questo dispositivo, ma smetteranno di sincronizzarsi finché non accedi di nuovo.',function(){
       stopSync(true);showToast('Disconnesso');
@@ -1352,6 +1547,7 @@ async function init(){
     navigator.serviceWorker.register('service-worker.js').catch(function(){});
   }
   initSyncFromSavedConfig();
+  initNativeNotificationBridge();
 }
 
 init();
