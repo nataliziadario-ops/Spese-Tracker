@@ -305,8 +305,28 @@ function ensureV3Fields(s){
   s.tags=s.tags||[];
   s.transactions=s.transactions||[];
   s.transfers=s.transfers||[];
-  s.transactions.forEach(function(t){t.tags=t.tags||[];t.type=t.type||'expense';});
+  s.transactions.forEach(function(t){t.tags=t.tags||[];t.type=t.type||'expense';if(t.merchant===undefined)t.merchant='';});
   s.transfers.forEach(function(t){t.tags=t.tags||[];});
+  ensurePayPalSetup(s);
+  return s;
+}
+
+/* Crea (una volta sola) il conto "PayPal" e imposta i conti usati per i
+   due casi di pagamento PayPal:
+   - paypalAccountId     -> caso 1: pagato col saldo PayPal
+   - paypalBankAccountId -> caso 2: pagato dalla banca tramite PayPal */
+function ensurePayPalSetup(s){
+  if(!s.accounts)s.accounts=[];
+  var pp=s.paypalAccountId&&s.accounts.filter(function(a){return a.id===s.paypalAccountId;})[0];
+  if(!pp){
+    pp=s.accounts.filter(function(a){return /paypal/i.test(a.name);})[0];
+    if(!pp){pp={id:uid('acc'),name:'PayPal',color:2};s.accounts.push(pp);}
+    s.paypalAccountId=pp.id;
+  }
+  if(!s.paypalBankAccountId||!s.accounts.some(function(a){return a.id===s.paypalBankAccountId;})){
+    var bank=s.accounts.filter(function(a){return a.id!==s.paypalAccountId;})[0];
+    s.paypalBankAccountId=bank?bank.id:s.paypalAccountId;
+  }
   return s;
 }
 
@@ -314,7 +334,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null,paypalBankAccountId:raw.paypalBankAccountId||null});
 }
 
 /* ================================================================
@@ -351,7 +371,7 @@ async function loadState(){
   }
   var data=await tryLoad(STORAGE_KEY)||await tryLoad(STORAGE_KEY_V2);
   if(data){state=migrateFromRaw(data);await saveState();}
-  else{state=defaultState();await saveState();}
+  else{state=ensureV3Fields(defaultState());await saveState();}
 }
 
 async function saveState(){
@@ -591,7 +611,107 @@ function parseBankNotification(item){
     else desc=(item.title||text).slice(0,60);
   }
   var type=isIncome?'income':'expense';
-  return{amount:amount,type:type,desc:desc,categoryId:guessCat(desc+' '+text,type),valid:amount>0,raw:text};
+  return{amount:amount,type:type,merchant:desc,note:'',categoryId:guessCat(desc+' '+text,type),valid:amount>0,raw:text};
+}
+
+/* ================================================================
+   PARSER PAYPAL
+   Riconosce le notifiche/email PayPal e le trasforma in movimenti.
+   - "esercente" = nome della persona a cui hai inviato / da cui hai
+     ricevuto il denaro (dal testo "Hai inviato X € a NOME").
+   - "nota"      = il messaggio scritto al pagamento (presente SOLO
+     nella mail completa, sotto "Il tuo messaggio per NOME").
+   - conto: se la mail dice "Pagato con: Saldo PayPal" -> conto PayPal
+     (caso 1). Qualunque altra fonte (banca/carta) -> conto bancario
+     (caso 2). Se la fonte non e' nel testo (solo anteprima pop-up)
+     si usa il conto PayPal come ripiego.
+   La notifica della BANCA che accompagna il caso 2 (es. "Spesi X €
+   presso PAYPAL *xxx") viene ignorata: e' un doppione della mail
+   PayPal, che e' piu' ricca (nome persona + messaggio).
+================================================================ */
+function escapeForRegExp(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function looksLikePayPalEmail(full){
+  var lower=full.toLowerCase();
+  var core=/hai\s+(?:inviato|ricevuto)\s+[0-9][0-9.,]*\s*€/i.test(full)||/ti\s+ha\s+inviato\s+[0-9][0-9.,]*\s*€/i.test(full);
+  if(!core)return false;
+  // il "core" (Hai inviato/ricevuto X € a/da) unito ad almeno un marcatore
+  // tipico delle ricevute PayPal. Non ci si affida solo alla parola "paypal"
+  // perché l'anteprima pop-up può essere troncata prima di mostrarla.
+  if(lower.indexOf('paypal')>-1)return true;
+  if(/€\s*eur/i.test(full))return true;               // formato "0,01 € EUR"
+  if(lower.indexOf('ecco la tua ricevuta')>-1)return true;
+  if(/codice\s+transazione/i.test(full))return true;
+  if(/dettagli\s+transazione/i.test(full))return true;
+  if(/il tuo messaggio per/i.test(full))return true;
+  return false;
+}
+function looksLikeBankPayPalCharge(full){
+  if(!/paypal/i.test(full))return false;
+  return /presso\s+paypal/i.test(full)||/paypal\s*\*/i.test(full);
+}
+function parsePayPalNotification(item){
+  var full=((item&&item.title?item.title+' ':'')+((item&&item.text)||'')).replace(/\s+/g,' ').trim();
+  if(!full)return null;
+  var isEmail=looksLikePayPalEmail(full);
+  if(!isEmail&&looksLikeBankPayPalCharge(full))return{skip:true,reason:'bank-paypal-duplicate',raw:full};
+  if(!isEmail)return null;
+
+  var sent=/hai\s+inviato\s+[0-9]/i.test(full);
+  var recv=/hai\s+ricevuto\s+[0-9]/i.test(full)||/ti\s+ha\s+inviato\s+[0-9]/i.test(full);
+  var type=(recv&&!sent)?'income':'expense';
+
+  var am=full.match(/hai\s+(?:inviato|ricevuto)\s+([0-9][0-9.,]*)\s*€/i)||
+         full.match(/ti\s+ha\s+inviato\s+([0-9][0-9.,]*)\s*€/i)||
+         full.match(/([0-9][0-9.,]*)\s*€/i);
+  var amount=am?Math.abs(parseAmount(am[1])):NaN;
+
+  var pm=type==='income'
+    ? full.match(/hai\s+ricevuto\s+[0-9][0-9.,]*\s*€(?:\s*eur)?\s+da\s+(.+?)(?:\s+(?:dettagli|codice|data|denaro)\b|[.,]|$)/i)
+    : full.match(/hai\s+inviato\s+[0-9][0-9.,]*\s*€(?:\s*eur)?\s+a\s+(.+?)(?:\s+(?:dettagli|codice|data|denaro|hai\s+pagato)\b|[.,]|$)/i);
+  var merchant=pm?pm[1].replace(/\s+/g,' ').trim():'';
+  if(merchant.length>60)merchant=merchant.slice(0,60).trim();
+
+  var note='';
+  if(merchant){
+    var mre=new RegExp('il tuo messaggio per\\s+'+escapeForRegExp(merchant)+'\\s*:?\\s*(.+?)(?:\\s+(?:termini|consulta|se hai|hai domande|aiuto|segnala|note legali|puoi|ricorda|©|paypal \\(europe\\)|questo importo|per maggiori)\\b|$)','i');
+    var mm=full.match(mre);
+    if(mm)note=mm[1].replace(/\s+/g,' ').trim();
+  }
+  if(!note){
+    var msg=full.match(/il tuo messaggio(?:\s+per\s+[^:]{1,40})?\s*:\s*(.+?)(?:\s+(?:termini|consulta|se hai|aiuto|segnala|note legali|©)\b|$)/i);
+    if(msg)note=msg[1].replace(/\s+/g,' ').trim();
+  }
+  if(note.length>200)note=note.slice(0,200).trim();
+
+  var fund=full.match(/pagato con[:\s]+(.+?)(?:\s+[0-9][0-9.,]*\s*€|\s+hai\s+pagato|\s+il tuo messaggio|$)/i);
+  var fundingText=fund?fund[1].trim():'';
+  var account;
+  if(fundingText){account=/saldo\s+paypal/i.test(fundingText)?'paypal':'bank';}
+  else{account='paypal';}
+
+  var cm=full.match(/codice\s+transazione\s+([A-Z0-9]{8,})/i);
+  var txCode=cm?cm[1]:'';
+
+  if(!merchant)merchant='PayPal';
+  var accId=account==='bank'
+    ? ((state&&state.paypalBankAccountId)||defaultAccountId())
+    : ((state&&state.paypalAccountId)||defaultAccountId());
+
+  return{
+    isPayPal:true,
+    valid:amount>0,
+    type:type,amount:amount,
+    merchant:merchant,note:note,
+    account:account,accountId:accId,fundingText:fundingText,
+    txCode:txCode,source:'paypal',
+    categoryId:guessCat(merchant+' '+note,type),
+    raw:full
+  };
+}
+function parseNotification(item){
+  var pp=parsePayPalNotification(item);
+  if(pp)return pp;
+  return parseBankNotification(item);
 }
 
 function defaultAccountId(){
@@ -600,7 +720,20 @@ function defaultAccountId(){
 }
 
 function registerParsedNotification(p){
-  state.transactions.push({id:uid('tx'),type:p.type,amount:p.amount,accountId:defaultAccountId(),categoryId:p.categoryId,note:p.desc,date:todayISO(),tags:[],createdAt:Date.now()});
+  if(p.source==='paypal'&&p.txCode){
+    if(state.transactions.some(function(t){return t.ppTxCode===p.txCode;}))return false;
+  }
+  state.transactions.push({
+    id:uid('tx'),type:p.type,amount:p.amount,
+    accountId:p.accountId||defaultAccountId(),
+    categoryId:p.categoryId,
+    merchant:p.merchant||'',
+    note:p.note||'',
+    date:todayISO(),tags:[],createdAt:Date.now(),
+    source:p.source||'notif',
+    ppTxCode:p.txCode||null
+  });
+  return true;
 }
 
 function attachInboxListener(){
@@ -618,31 +751,34 @@ function deleteInboxItem(id){
 }
 function handleInboxItems(items){
   var natives=sync.pendingInbox.filter(function(x){return x.native;});
-  if(state.autoRegister){
-    var added=0;
-    var leftovers=[];
-    items.forEach(function(it){
-      var p=parseBankNotification(it);
-      if(p.valid){registerParsedNotification(p);deleteInboxItem(it.id);added++;}
-      else leftovers.push(it);
-    });
-    sync.pendingInbox=natives.concat(leftovers);
-    if(added){saveState();showToast(added===1?'Registrato 1 movimento dalla notifica':'Registrati '+added+' movimenti dalle notifiche');}
-  }else{
-    sync.pendingInbox=natives.concat(items);
-  }
+  var added=0;
+  var leftovers=[];
+  items.forEach(function(it){
+    var p=parseNotification(it);
+    if(p.skip){deleteInboxItem(it.id);return;} // doppione PayPal della banca: ignorato
+    if(state.autoRegister&&p.valid){
+      registerParsedNotification(p);
+      deleteInboxItem(it.id);
+      added++;
+    }else{
+      leftovers.push(it);
+    }
+  });
+  sync.pendingInbox=natives.concat(leftovers);
+  if(added){saveState();showToast(added===1?'Registrato 1 movimento dalla notifica':'Registrati '+added+' movimenti dalle notifiche');}
   renderActiveTab();
 }
 function registerInboxItem(itemId){
   var it=sync.pendingInbox.find(function(x){return x.id===itemId;});
   if(!it)return;
-  var p=parseBankNotification(it);
+  var p=parseNotification(it);
+  if(p.skip){ignoreInboxItem(itemId);return;}
   if(!p.valid){showToast('Importo non riconosciuto in questa notifica');return;}
-  registerParsedNotification(p);
+  var ok=registerParsedNotification(p);
   saveState();
   if(!it.native)deleteInboxItem(itemId);
   sync.pendingInbox=sync.pendingInbox.filter(function(x){return x.id!==itemId;});
-  showToast('Movimento registrato');
+  showToast(ok?'Movimento registrato':'Movimento già registrato');
   renderActiveTab();
 }
 function ignoreInboxItem(itemId){
@@ -661,12 +797,14 @@ function ignoreInboxItem(itemId){
    banca, quindi mostrare quelle non valide creerebbe solo rumore). */
 function handleNativeNotification(data){
   var item={id:uid('nat'),title:(data&&data.title)||'',text:(data&&data.text)||'',native:true};
-  var p=parseBankNotification(item);
+  var p=parseNotification(item);
+  if(p.skip)return; // doppione PayPal della banca: ignorato in silenzio
   if(!p.valid)return;
   if(state.autoRegister){
-    registerParsedNotification(p);
-    saveState();
-    showToast('Registrato dalla notifica: '+fmt(p.amount));
+    if(registerParsedNotification(p)){
+      saveState();
+      showToast('Registrato dalla notifica: '+fmt(p.amount));
+    }
   }else{
     sync.pendingInbox.push(item);
   }
@@ -861,6 +999,7 @@ function searchEntries(query){
     if(entry.kind==='tx'){
       var t=entry.data,cat=catById(t.categoryId),acc=accById(t.accountId);
       if((t.note||'').toLowerCase().indexOf(q)>-1)return true;
+      if((t.merchant||'').toLowerCase().indexOf(q)>-1)return true;
       if(cat.name.toLowerCase().indexOf(q)>-1)return true;
       if(acc.name.toLowerCase().indexOf(q)>-1)return true;
       if(t.amount.toFixed(2).replace('.',',').indexOf(q)>-1)return true;
@@ -945,7 +1084,9 @@ function tagBadgesHTML(tags){
 
 function txRowHTML(t){
   var cat=catById(t.categoryId),acc=accById(t.accountId),isInc=t.type==='income';
-  return '<div class="expense-row" data-tx-id="'+t.id+'"><div class="cat-bubble" style="background:'+colorHex(cat.color)+'22;">'+esc(cat.emoji)+'</div><div class="expense-info"><div class="expense-title">'+esc(t.note||cat.name)+'</div><div class="expense-sub">'+esc(acc.name)+' · '+formatShortDate(t.date)+'</div>'+tagBadgesHTML(t.tags)+'</div><div class="expense-amt'+(isInc?' amt-income':'')+'">'+( isInc?'+':'−')+fmt(t.amount)+'</div></div>';
+  var title=t.merchant||t.note||cat.name;
+  var msgLine=(t.merchant&&t.note)?'<div class="expense-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">💬 '+esc(t.note)+'</div>':'';
+  return '<div class="expense-row" data-tx-id="'+t.id+'"><div class="cat-bubble" style="background:'+colorHex(cat.color)+'22;">'+esc(cat.emoji)+'</div><div class="expense-info"><div class="expense-title">'+esc(title)+'</div><div class="expense-sub">'+esc(acc.name)+' · '+formatShortDate(t.date)+'</div>'+msgLine+tagBadgesHTML(t.tags)+'</div><div class="expense-amt'+(isInc?' amt-income':'')+'">'+( isInc?'+':'−')+fmt(t.amount)+'</div></div>';
 }
 function trRowHTML(tr){
   var fa=accById(tr.fromAccountId),ta=accById(tr.toAccountId);
@@ -967,12 +1108,17 @@ function accFilterChipsHTML(){
 ================================================================ */
 function pendingInboxHTML(){
   if(!sync.pendingInbox.length)return '';
-  var rows=sync.pendingInbox.map(function(it){
-    var p=parseBankNotification(it);
+  var visible=sync.pendingInbox.map(function(it){return{it:it,p:parseNotification(it)};}).filter(function(x){return !x.p.skip;});
+  if(!visible.length)return '';
+  var rows=visible.map(function(x){
+    var it=x.it,p=x.p;
     if(p.valid){
       var cat=catById(p.categoryId);
+      var title=p.merchant||p.note||cat.name;
+      var sub=(p.source==='paypal'?'PayPal':(it.title||'Notifica'))+' · '+cat.name;
+      var msgLine=(p.merchant&&p.note)?'<div class="expense-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">💬 '+esc(p.note)+'</div>':'';
       return '<div class="expense-row"><div class="cat-bubble" style="background:'+colorHex(cat.color)+'22;">'+esc(cat.emoji)+'</div>'+
-        '<div class="expense-info"><div class="expense-title">'+esc(p.desc)+'</div><div class="expense-sub">'+esc(it.title||'Notifica')+' · '+esc(cat.name)+'</div></div>'+
+        '<div class="expense-info"><div class="expense-title">'+esc(title)+'</div><div class="expense-sub">'+esc(sub)+'</div>'+msgLine+'</div>'+
         '<div class="expense-amt'+(p.type==='income'?' amt-income':'')+'">'+(p.type==='income'?'+':'−')+fmt(p.amount)+'</div>'+
         '<div style="display:flex;flex-direction:column;gap:4px;margin-left:4px;">'+
           '<button class="btn-primary-sm" data-inbox-reg="'+esc(it.id)+'">Registra</button>'+
@@ -984,7 +1130,7 @@ function pendingInboxHTML(){
       '<button class="btn-secondary" style="padding:6px 10px;font-size:12px;margin-left:4px;" data-inbox-ign="'+esc(it.id)+'">Ignora</button></div>';
   }).join('');
   return '<section class="card" style="padding:12px 14px;border-color:var(--accent);">'+
-    '<h3 style="margin:0 0 4px;font-size:14.5px;">📥 Dalle notifiche ('+sync.pendingInbox.length+')</h3>'+rows+'</section>';
+    '<h3 style="margin:0 0 4px;font-size:14.5px;">📥 Dalle notifiche ('+visible.length+')</h3>'+rows+'</section>';
 }
 function homeHTML(){
   if(!ui.viewMonth)ui.viewMonth=currentMonthKey();
@@ -1155,7 +1301,22 @@ function notifCardHTML(){
       '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifBodyField">Copia corpo</button></div>'+
     '<label class="toggle-row"><span>Registra automaticamente senza conferma</span><input type="checkbox" id="autoRegisterToggle" '+(state.autoRegister?'checked':'')+'></label>'+
     (state.autoRegister?'<p class="hint">⚠️ Le notifiche riconosciute verranno registrate subito, senza revisione. Il riconoscimento automatico può sbagliare importo o categoria.</p>':'')+
+    paypalConfigHTML()+
   '</section>';
+}
+function accountOptions(selectedId){
+  return state.accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(a.id===selectedId?' selected':'')+'>'+esc(a.name)+'</option>';}).join('');
+}
+function paypalConfigHTML(){
+  return '<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:12px;display:flex;flex-direction:column;gap:10px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">💸 Pagamenti PayPal</h3>'+
+    '<p class="hint">Quando inoltri qui la mail di PayPal, l\'app registra il movimento con il <strong>nome della persona</strong> come esercente e il <strong>messaggio del pagamento</strong> nella nota. Il messaggio e la fonte di pagamento sono presenti solo nella <strong>mail completa</strong>, non nell\'anteprima della notifica.</p>'+
+    '<div class="field-group"><label class="field-label">Conto per i pagamenti col saldo PayPal</label>'+
+      '<select class="text-input" id="ppAccountSelect">'+accountOptions(state.paypalAccountId)+'</select></div>'+
+    '<div class="field-group"><label class="field-label">Conto per i pagamenti dalla banca tramite PayPal</label>'+
+      '<select class="text-input" id="ppBankSelect">'+accountOptions(state.paypalBankAccountId)+'</select></div>'+
+    '<p class="hint">Nel caso «dalla banca» arrivano due notifiche (una PayPal e una della banca): l\'app tiene solo quella PayPal ed elimina il doppione, così il movimento non viene contato due volte.</p>'+
+  '</div>';
 }
 function wireAccounts(){
   document.querySelectorAll('[data-account-id]').forEach(function(inp){inp.onchange=function(){var a=accById(inp.dataset.accountId);a.name=inp.value.trim()||a.name;inp.value=a.name;saveState();};});
@@ -1190,6 +1351,10 @@ function wireAccounts(){
   });
   var autoTog=document.getElementById('autoRegisterToggle');
   if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();renderActiveTab();};
+  var ppAcc=document.getElementById('ppAccountSelect');
+  if(ppAcc)ppAcc.onchange=function(){state.paypalAccountId=ppAcc.value;saveState();};
+  var ppBank=document.getElementById('ppBankSelect');
+  if(ppBank)ppBank.onchange=function(){state.paypalBankAccountId=ppBank.value;saveState();};
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
     confirmDialog('Disconnettere questo dispositivo? I dati resteranno salvati sul cloud e su questo dispositivo, ma smetteranno di sincronizzarsi finché non accedi di nuovo.',function(){
       stopSync(true);showToast('Disconnesso');
@@ -1198,7 +1363,7 @@ function wireAccounts(){
   document.getElementById('openImportBtn').onclick=openImportModal;
   document.getElementById('resetBtn').onclick=function(){
     confirmDialog('Eliminare definitivamente tutti i dati? Questa azione non si può annullare.',function(){
-      state=defaultState();ui={activeTab:'accounts',viewMonth:currentMonthKey(),viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense'};
+      state=ensureV3Fields(defaultState());ui={activeTab:'accounts',viewMonth:currentMonthKey(),viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense'};
       saveState();showToast('Dati reimpostati');renderActiveTab();
     },'Elimina tutto');
   };
@@ -1221,6 +1386,7 @@ function openEntrySheet(opts){
     categoryId:editTx?editTx.categoryId:null,
     fromAccountId:editTr?editTr.fromAccountId:state.accounts[0].id,
     toAccountId:editTr?editTr.toAccountId:(state.accounts[1]?state.accounts[1].id:state.accounts[0].id),
+    merchant:editTx?(editTx.merchant||''):'',
     note:editTx?(editTx.note||''):(editTr?(editTr.note||''):''),
     date:editTx?editTx.date:(editTr?editTr.date:todayISO()),
     tags:editTx?(editTx.tags||[]).slice():(editTr?(editTr.tags||[]).slice():[]),
@@ -1267,6 +1433,7 @@ function openEntrySheet(opts){
     return '<div class="field-group"><label class="field-label">Conto</label><div class="chip-row" id="accountChips">'+accChips(entry.accountId,'sel-account')+'</div></div>'+
       '<div class="field-group"><label class="field-label">Categoria</label><div class="chip-row wrap" id="catChips">'+catChips()+'</div></div>'+
       dateRowHTML()+tagSectionHTML()+
+      '<div class="field-group"><label class="field-label">Esercente (opzionale)</label><input type="text" id="entryMerchant" class="text-input" value="'+esc(entry.merchant)+'" placeholder="Es. Marco Piras / Esselunga"></div>'+
       '<div class="field-group"><label class="field-label">Nota (opzionale)</label><input type="text" id="entryNote" class="text-input" value="'+esc(entry.note)+'" placeholder="Es. Spesa al supermercato"></div>'+
       delBtn+'<button class="btn-primary full-width sticky-save" id="saveEntryBtn" disabled>'+saveLabel()+'</button>';
   }
@@ -1305,6 +1472,7 @@ function openEntrySheet(opts){
   }
 
   function wireBody(){
+    var merchInp=document.getElementById('entryMerchant');if(merchInp)merchInp.oninput=function(){entry.merchant=merchInp.value;};
     var noteInp=document.getElementById('entryNote');if(noteInp)noteInp.oninput=function(){entry.note=noteInp.value;};
     var dateInp=document.getElementById('entryDate');
     if(dateInp){
@@ -1335,8 +1503,8 @@ function openEntrySheet(opts){
         lastUsedMode='transfer';
       }else{
         lastUsedAccId=entry.accountId;lastUsedMode=entry.mode;
-        if(entry.isEditTx){editTx.amount=amount;editTx.accountId=entry.accountId;editTx.categoryId=entry.categoryId;editTx.note=entry.note;editTx.date=date;editTx.type=entry.mode;editTx.tags=entry.tags.slice();}
-        else state.transactions.push({id:uid('tx'),type:entry.mode,amount:amount,accountId:entry.accountId,categoryId:entry.categoryId,note:entry.note,date:date,tags:entry.tags.slice(),createdAt:Date.now()});
+        if(entry.isEditTx){editTx.amount=amount;editTx.accountId=entry.accountId;editTx.categoryId=entry.categoryId;editTx.merchant=(entry.merchant||'').trim();editTx.note=entry.note;editTx.date=date;editTx.type=entry.mode;editTx.tags=entry.tags.slice();}
+        else state.transactions.push({id:uid('tx'),type:entry.mode,amount:amount,accountId:entry.accountId,categoryId:entry.categoryId,merchant:(entry.merchant||'').trim(),note:entry.note,date:date,tags:entry.tags.slice(),createdAt:Date.now()});
       }
       saveState();closeModal();showToast(entry.isEditTx||entry.isEditTr?'Aggiornato':'Salvato');renderActiveTab();
     };
