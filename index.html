@@ -311,10 +311,8 @@ function ensureV3Fields(s){
   return s;
 }
 
-/* Crea (una volta sola) il conto "PayPal" e imposta i conti usati per i
-   due casi di pagamento PayPal:
-   - paypalAccountId     -> caso 1: pagato col saldo PayPal
-   - paypalBankAccountId -> caso 2: pagato dalla banca tramite PayPal */
+/* Crea (una volta sola) il conto "PayPal", così i pagamenti PayPal si
+   possono registrare a mano scegliendolo come conto. */
 function ensurePayPalSetup(s){
   if(!s.accounts)s.accounts=[];
   var pp=s.paypalAccountId&&s.accounts.filter(function(a){return a.id===s.paypalAccountId;})[0];
@@ -323,10 +321,6 @@ function ensurePayPalSetup(s){
     if(!pp){pp={id:uid('acc'),name:'PayPal',color:2};s.accounts.push(pp);}
     s.paypalAccountId=pp.id;
   }
-  if(!s.paypalBankAccountId||!s.accounts.some(function(a){return a.id===s.paypalBankAccountId;})){
-    var bank=s.accounts.filter(function(a){return a.id!==s.paypalAccountId;})[0];
-    s.paypalBankAccountId=bank?bank.id:s.paypalAccountId;
-  }
   return s;
 }
 
@@ -334,7 +328,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null,paypalBankAccountId:raw.paypalBankAccountId||null});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null});
 }
 
 /* ================================================================
@@ -615,102 +609,13 @@ function parseBankNotification(item){
 }
 
 /* ================================================================
-   PARSER PAYPAL
-   Riconosce le notifiche/email PayPal e le trasforma in movimenti.
-   - "esercente" = nome della persona a cui hai inviato / da cui hai
-     ricevuto il denaro (dal testo "Hai inviato X € a NOME").
-   - "nota"      = il messaggio scritto al pagamento (presente SOLO
-     nella mail completa, sotto "Il tuo messaggio per NOME").
-   - conto: se la mail dice "Pagato con: Saldo PayPal" -> conto PayPal
-     (caso 1). Qualunque altra fonte (banca/carta) -> conto bancario
-     (caso 2). Se la fonte non e' nel testo (solo anteprima pop-up)
-     si usa il conto PayPal come ripiego.
-   La notifica della BANCA che accompagna il caso 2 (es. "Spesi X €
-   presso PAYPAL *xxx") viene ignorata: e' un doppione della mail
-   PayPal, che e' piu' ricca (nome persona + messaggio).
+   NOTIFICHE
+   L'app registra i movimenti dalle notifiche che le vengono recapitate
+   nella "casella" (inbox). Su iPhone nessuna app può leggere le notifiche
+   o le email di altre app: i pagamenti PayPal si inseriscono a mano
+   usando il conto "PayPal", il campo Esercente e la Nota.
 ================================================================ */
-function escapeForRegExp(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function looksLikePayPalEmail(full){
-  var lower=full.toLowerCase();
-  var core=/hai\s+(?:inviato|ricevuto)\s+[0-9][0-9.,]*\s*€/i.test(full)||/ti\s+ha\s+inviato\s+[0-9][0-9.,]*\s*€/i.test(full);
-  if(!core)return false;
-  // il "core" (Hai inviato/ricevuto X € a/da) unito ad almeno un marcatore
-  // tipico delle ricevute PayPal. Non ci si affida solo alla parola "paypal"
-  // perché l'anteprima pop-up può essere troncata prima di mostrarla.
-  if(lower.indexOf('paypal')>-1)return true;
-  if(/€\s*eur/i.test(full))return true;               // formato "0,01 € EUR"
-  if(lower.indexOf('ecco la tua ricevuta')>-1)return true;
-  if(/codice\s+transazione/i.test(full))return true;
-  if(/dettagli\s+transazione/i.test(full))return true;
-  if(/il tuo messaggio per/i.test(full))return true;
-  return false;
-}
-function looksLikeBankPayPalCharge(full){
-  if(!/paypal/i.test(full))return false;
-  return /presso\s+paypal/i.test(full)||/paypal\s*\*/i.test(full);
-}
-function parsePayPalNotification(item){
-  var full=((item&&item.title?item.title+' ':'')+((item&&item.text)||'')).replace(/\s+/g,' ').trim();
-  if(!full)return null;
-  var isEmail=looksLikePayPalEmail(full);
-  if(!isEmail&&looksLikeBankPayPalCharge(full))return{skip:true,reason:'bank-paypal-duplicate',raw:full};
-  if(!isEmail)return null;
-
-  var sent=/hai\s+inviato\s+[0-9]/i.test(full);
-  var recv=/hai\s+ricevuto\s+[0-9]/i.test(full)||/ti\s+ha\s+inviato\s+[0-9]/i.test(full);
-  var type=(recv&&!sent)?'income':'expense';
-
-  var am=full.match(/hai\s+(?:inviato|ricevuto)\s+([0-9][0-9.,]*)\s*€/i)||
-         full.match(/ti\s+ha\s+inviato\s+([0-9][0-9.,]*)\s*€/i)||
-         full.match(/([0-9][0-9.,]*)\s*€/i);
-  var amount=am?Math.abs(parseAmount(am[1])):NaN;
-
-  var pm=type==='income'
-    ? full.match(/hai\s+ricevuto\s+[0-9][0-9.,]*\s*€(?:\s*eur)?\s+da\s+(.+?)(?:\s+(?:dettagli|codice|data|denaro)\b|[.,]|$)/i)
-    : full.match(/hai\s+inviato\s+[0-9][0-9.,]*\s*€(?:\s*eur)?\s+a\s+(.+?)(?:\s+(?:dettagli|codice|data|denaro|hai\s+pagato)\b|[.,]|$)/i);
-  var merchant=pm?pm[1].replace(/\s+/g,' ').trim():'';
-  if(merchant.length>60)merchant=merchant.slice(0,60).trim();
-
-  var note='';
-  if(merchant){
-    var mre=new RegExp('il tuo messaggio per\\s+'+escapeForRegExp(merchant)+'\\s*:?\\s*(.+?)(?:\\s+(?:termini|consulta|se hai|hai domande|aiuto|segnala|note legali|puoi|ricorda|©|paypal \\(europe\\)|questo importo|per maggiori)\\b|$)','i');
-    var mm=full.match(mre);
-    if(mm)note=mm[1].replace(/\s+/g,' ').trim();
-  }
-  if(!note){
-    var msg=full.match(/il tuo messaggio(?:\s+per\s+[^:]{1,40})?\s*:\s*(.+?)(?:\s+(?:termini|consulta|se hai|aiuto|segnala|note legali|©)\b|$)/i);
-    if(msg)note=msg[1].replace(/\s+/g,' ').trim();
-  }
-  if(note.length>200)note=note.slice(0,200).trim();
-
-  var fund=full.match(/pagato con[:\s]+(.+?)(?:\s+[0-9][0-9.,]*\s*€|\s+hai\s+pagato|\s+il tuo messaggio|$)/i);
-  var fundingText=fund?fund[1].trim():'';
-  var account;
-  if(fundingText){account=/saldo\s+paypal/i.test(fundingText)?'paypal':'bank';}
-  else{account='paypal';}
-
-  var cm=full.match(/codice\s+transazione\s+([A-Z0-9]{8,})/i);
-  var txCode=cm?cm[1]:'';
-
-  if(!merchant)merchant='PayPal';
-  var accId=account==='bank'
-    ? ((state&&state.paypalBankAccountId)||defaultAccountId())
-    : ((state&&state.paypalAccountId)||defaultAccountId());
-
-  return{
-    isPayPal:true,
-    valid:amount>0,
-    type:type,amount:amount,
-    merchant:merchant,note:note,
-    account:account,accountId:accId,fundingText:fundingText,
-    txCode:txCode,source:'paypal',
-    categoryId:guessCat(merchant+' '+note,type),
-    raw:full
-  };
-}
 function parseNotification(item){
-  var pp=parsePayPalNotification(item);
-  if(pp)return pp;
   return parseBankNotification(item);
 }
 
@@ -755,7 +660,6 @@ function handleInboxItems(items){
   var leftovers=[];
   items.forEach(function(it){
     var p=parseNotification(it);
-    if(p.skip){deleteInboxItem(it.id);return;} // doppione PayPal della banca: ignorato
     if(state.autoRegister&&p.valid){
       registerParsedNotification(p);
       deleteInboxItem(it.id);
@@ -772,7 +676,6 @@ function registerInboxItem(itemId){
   var it=sync.pendingInbox.find(function(x){return x.id===itemId;});
   if(!it)return;
   var p=parseNotification(it);
-  if(p.skip){ignoreInboxItem(itemId);return;}
   if(!p.valid){showToast('Importo non riconosciuto in questa notifica');return;}
   var ok=registerParsedNotification(p);
   saveState();
@@ -798,7 +701,6 @@ function ignoreInboxItem(itemId){
 function handleNativeNotification(data){
   var item={id:uid('nat'),title:(data&&data.title)||'',text:(data&&data.text)||'',native:true};
   var p=parseNotification(item);
-  if(p.skip)return; // doppione PayPal della banca: ignorato in silenzio
   if(!p.valid)return;
   if(state.autoRegister){
     if(registerParsedNotification(p)){
@@ -1108,7 +1010,7 @@ function accFilterChipsHTML(){
 ================================================================ */
 function pendingInboxHTML(){
   if(!sync.pendingInbox.length)return '';
-  var visible=sync.pendingInbox.map(function(it){return{it:it,p:parseNotification(it)};}).filter(function(x){return !x.p.skip;});
+  var visible=sync.pendingInbox.map(function(it){return{it:it,p:parseNotification(it)};});
   if(!visible.length)return '';
   var rows=visible.map(function(x){
     var it=x.it,p=x.p;
@@ -1301,22 +1203,8 @@ function notifCardHTML(){
       '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifBodyField">Copia corpo</button></div>'+
     '<label class="toggle-row"><span>Registra automaticamente senza conferma</span><input type="checkbox" id="autoRegisterToggle" '+(state.autoRegister?'checked':'')+'></label>'+
     (state.autoRegister?'<p class="hint">⚠️ Le notifiche riconosciute verranno registrate subito, senza revisione. Il riconoscimento automatico può sbagliare importo o categoria.</p>':'')+
-    paypalConfigHTML()+
+    '<p class="hint">💸 <strong>Pagamenti PayPal:</strong> su iPhone l\'app non può leggere le email/notifiche di PayPal. Registra il pagamento a mano scegliendo il conto <strong>PayPal</strong> e compilando <strong>Esercente</strong> (la persona) e <strong>Nota</strong> (il messaggio del pagamento).</p>'+
   '</section>';
-}
-function accountOptions(selectedId){
-  return state.accounts.map(function(a){return '<option value="'+esc(a.id)+'"'+(a.id===selectedId?' selected':'')+'>'+esc(a.name)+'</option>';}).join('');
-}
-function paypalConfigHTML(){
-  return '<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:12px;display:flex;flex-direction:column;gap:10px;">'+
-    '<h3 style="margin:0;font-size:14.5px;">💸 Pagamenti PayPal</h3>'+
-    '<p class="hint">Quando inoltri qui la mail di PayPal, l\'app registra il movimento con il <strong>nome della persona</strong> come esercente e il <strong>messaggio del pagamento</strong> nella nota. Il messaggio e la fonte di pagamento sono presenti solo nella <strong>mail completa</strong>, non nell\'anteprima della notifica.</p>'+
-    '<div class="field-group"><label class="field-label">Conto per i pagamenti col saldo PayPal</label>'+
-      '<select class="text-input" id="ppAccountSelect">'+accountOptions(state.paypalAccountId)+'</select></div>'+
-    '<div class="field-group"><label class="field-label">Conto per i pagamenti dalla banca tramite PayPal</label>'+
-      '<select class="text-input" id="ppBankSelect">'+accountOptions(state.paypalBankAccountId)+'</select></div>'+
-    '<p class="hint">Nel caso «dalla banca» arrivano due notifiche (una PayPal e una della banca): l\'app tiene solo quella PayPal ed elimina il doppione, così il movimento non viene contato due volte.</p>'+
-  '</div>';
 }
 function wireAccounts(){
   document.querySelectorAll('[data-account-id]').forEach(function(inp){inp.onchange=function(){var a=accById(inp.dataset.accountId);a.name=inp.value.trim()||a.name;inp.value=a.name;saveState();};});
@@ -1351,10 +1239,6 @@ function wireAccounts(){
   });
   var autoTog=document.getElementById('autoRegisterToggle');
   if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();renderActiveTab();};
-  var ppAcc=document.getElementById('ppAccountSelect');
-  if(ppAcc)ppAcc.onchange=function(){state.paypalAccountId=ppAcc.value;saveState();};
-  var ppBank=document.getElementById('ppBankSelect');
-  if(ppBank)ppBank.onchange=function(){state.paypalBankAccountId=ppBank.value;saveState();};
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
     confirmDialog('Disconnettere questo dispositivo? I dati resteranno salvati sul cloud e su questo dispositivo, ma smetteranno di sincronizzarsi finché non accedi di nuovo.',function(){
       stopSync(true);showToast('Disconnesso');
