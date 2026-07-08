@@ -1,42 +1,36 @@
-# Guida all'aggiornamento — Restyling v10
+# Guida all'aggiornamento — v11 (ricorrenti, home, fix)
 
-## Cosa contiene questo pacchetto
+## File del pacchetto
+index.html · service-worker.js (cache **spese-tracker-v11**) · manifest.json · le 5 icone · questa guida.
 
-| File | Cosa è cambiato |
-|---|---|
-| `index.html` | Tutte le novità: tema scuro, profilo, dashboard, slider, swipe, pull-to-refresh |
-| `service-worker.js` | Cache portata a `spese-tracker-v10` (obbligatorio per vedere l'aggiornamento) |
-| `manifest.json` | Colore di sfondo allineato alla nuova grafica |
-| `favicon.png`, `icon-192.png`, `icon-512.png`, `icon-512-maskable.png`, `apple-touch-icon.png` | La nuova icona |
+## Cosa cambia in questa versione
 
-## Le novità in breve
+### Correzioni
+1. **Fogli chiudibili con lo swipe verso il basso** — quando un menù/foglio è aperto e già in cima, puoi trascinarlo verso il basso col dito per chiuderlo (oltre a toccare fuori). Vale per spesa, budget, profilo, ricorrenti, sincronizzazione e importazione.
+2. **Budget non "sfarfalla" più** — muovendo lo slider o scrivendo l'importo, ora si aggiorna solo la barra della categoria toccata: niente ricaricamento dell'intera pagina né scroll che salta.
 
-1. **Tema scuro** — dal Profilo (cerchio in alto a destra) scegli Chiaro, Scuro o Automatico (segue il telefono).
-2. **Sezione Profilo** — tocca il cerchio in alto a destra: nome, tema, e da lì si aprono Budget e Conti.
-3. **Budget spostato nel Profilo** — non occupa più una scheda: si apre come pannello dal basso, e ora i limiti si impostano anche **trascinando lo slider**.
-4. **Dashboard** — nuova scheda al posto di Budget: patrimonio complessivo, carosello dei conti, entrate/uscite del mese, media giornaliera, previsione di fine mese, grafico degli ultimi 6 mesi (tocca le barre per i valori), ripartizione per categoria e top spese.
-5. **Swipe tra le schede** — scorri col dito a destra/sinistra sul contenuto per cambiare scheda.
-6. **Rotellina di aggiornamento** — nelle schede, trascina verso il basso dalla cima della pagina e rilascia: la rotellina gira e l'app si aggiorna (se la sincronizzazione è attiva, riscarica anche i dati dal cloud).
-7. **Nuova icona** — monogramma € su verde profondo, coerente in tutte le misure.
+### Novità
+3. **Nuova categoria al volo mentre crei una spesa** — nella schermata della spesa, accanto alle categorie c'è il chip **"+ Nuova"**: aggiungi nome, emoji e colore senza uscire (come già facevi per i tag). La stessa cosa è disponibile anche quando crei un pagamento ricorrente.
+4. **Home = Dashboard + Riepilogo (prima pagina)** — la prima scheda ora mostra in un colpo solo: patrimonio complessivo, conti scorrevoli, prossimi pagamenti ricorrenti, media giornaliera e previsione di fine mese, grafico degli ultimi 6 mesi e, sotto, il riepilogo Mensile/Annuale con donut, avvisi budget e movimenti (tutto quello che c'era prima nel "Riepilogo").
+5. **Nuova scheda "Ricorrenti"** — per abbonamenti, rate, tasse e bollette fisse. Ogni voce mostra categoria, frequenza, prossima scadenza, importo e stato (con badge **SCADUTA** in rosso). Filtri Tutti / Attivi / In pausa. In alto la spesa ricorrente stimata al mese e all'anno.
+   - Tocca **"Segna pagato"** (o **"Registra"** se è scaduto): l'app **crea un vero movimento** sul conto scelto — quindi entra in saldi, totali e storico — con associata la data di ricorrenza, e sposta la scadenza a quella successiva. I movimenti creati così hanno un piccolo simbolo ↻ nello storico.
+
+Nuova barra in basso: **Home · Storico · (+) · Ricorrenti · Conti**. Il Budget resta nel Profilo (in alto a destra).
 
 ## Cosa NON è cambiato
+Dati, conti, categorie, tag, ricerca, importazione CSV, sincronizzazione Firebase, notifiche e inserimento manuale PayPal funzionano come prima. I dati già salvati (telefono e cloud) restano intatti: i ricorrenti sono un elenco nuovo che parte vuoto.
 
-Nessuna funzione è stata toccata: movimenti, conti, categorie, tag, ricerca, importazione CSV, sincronizzazione Firebase, registrazione da notifiche e inserimento manuale PayPal funzionano esattamente come prima. I dati salvati sul telefono e sul cloud restano identici.
+## Pubblicazione su GitHub (passo per passo)
+1. Repository **Spese-Tracker** → **Add file → Upload files**.
+2. Trascina **tutti i file insieme** (index.html, service-worker.js, manifest.json, le 5 icone).
+3. Messaggio "v11 ricorrenti" → **Commit changes**.
+4. **Controllo dimensioni** (lezione delle volte scorse): `index.html` deve pesare circa **180 KB**, `service-worker.js` ~1,7 KB. Se uno risulta 0 byte, ricaricalo da solo.
+5. Lascia il file `.nojekyll` dov'è.
+6. Riapri l'app: se non vedi le novità, chiudila del tutto e riaprila (la cache v11 forza il refresh al secondo avvio).
 
-## Come pubblicare su GitHub (passo per passo)
-
-1. Apri il repository **Spese-Tracker** su GitHub e accedi.
-2. Clicca **Add file → Upload files**.
-3. Trascina **tutti i file di questo zip insieme** (index.html, service-worker.js, manifest.json e le 5 icone).
-4. Scrivi un messaggio tipo "Restyling v10" e clicca **Commit changes**.
-5. **Controllo importante** (lezione imparata l'altra volta): apri la lista dei file nel repository e verifica che `index.html` risulti di circa **156 KB** e `service-worker.js` di circa **1,7 KB**. Se uno risulta 0 byte, ricaricalo da solo.
-6. Il file `.nojekyll` deve restare nel repository (non toccarlo).
-7. Attendi 1–2 minuti, poi apri l'app. Se non vedi le novità: chiudi completamente l'app/scheda e riaprila (la cache v10 forza il refresh al secondo avvio). Per vedere subito la nuova icona su iPhone può servire rimuovere l'app dalla schermata Home e aggiungerla di nuovo da Safari.
-
-## Verifiche consigliate dopo la pubblicazione
-
-- Il cerchio del profilo in alto a destra si apre e il tema Scuro funziona.
-- Dal Profilo → Budget mensili: gli slider muovono i limiti e il numero si aggiorna.
-- La scheda Dashboard mostra i grafici con i tuoi dati reali.
-- Swipe destra/sinistra cambia scheda; trascinando in giù compare la rotellina.
-- Conto PayPal, campo Esercente e Nota: tutto come prima.
+## Verifiche consigliate
+- Barra: Home · Storico · Ricorrenti · Conti.
+- In un foglio aperto, trascina in giù dall'alto: si chiude.
+- Budget (Profilo → Budget): muovi uno slider, la pagina non sfarfalla.
+- Nuova spesa → "+ Nuova" categoria: si aggiunge e resta selezionata.
+- Ricorrenti → aggiungi un abbonamento → "Segna pagato": compare un movimento nello storico e la scadenza avanza.
