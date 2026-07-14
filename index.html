@@ -985,6 +985,10 @@ async function startSync(uid,email){
   if(!state.inboxToken){state.inboxToken=randToken();await saveState();}
   attachSnapshotListener();
   try{attachInboxListener();}catch(e){console.error('Inbox notifiche non disponibile',e);}
+  try{
+    var u=sync.auth&&sync.auth.currentUser;
+    sync.providers=u?u.providerData.map(function(pd){return pd.providerId;}):[];
+  }catch(e){sync.providers=[];}
   sync.status='connected';
   if(sync.pendingPush&&isOnline())await rawPushStateToCloud();
   renderActiveTab();
@@ -1912,6 +1916,62 @@ function dashboardData(){
 /* ================================================================
    ACCOUNTS VIEW
 ================================================================ */
+/* iPhone con l'app installata dalla schermata Home: dentro questa modalita'
+   Safari blocca sia i pop-up sia il rientro dal redirect di Google, quindi
+   l'accesso Google li' spesso non va. La via che funziona sempre e' collegare
+   una password allo stesso account Google e usare email+password sul telefono. */
+function isIOSStandalone(){
+  try{
+    var ios=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    var standalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+    return ios&&standalone;
+  }catch(e){return false;}
+}
+function openLinkPasswordModal(){
+  var m={busy:false,err:'',ok:false};
+  function html(){
+    if(m.ok){
+      return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;">Password aggiunta ✅</h3>'+
+        '<p class="hint">Ora sull\'iPhone puoi accedere con <strong>'+esc(sync.email||'')+'</strong> e questa password: entri nello <strong>stesso account</strong> e vedi gli stessi dati dell\'accesso Google.</p>'+
+        '<button class="btn-primary full-width" id="lpClose">Ho capito</button></div>';
+    }
+    return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;">Aggiungi una password</h3>'+
+      '<p class="hint">Serve per accedere <strong>allo stesso account</strong> dall\'iPhone, dove l\'accesso con Google non funziona dentro l\'app installata. L\'account resta uno solo: '+esc(sync.email||'')+'.</p>'+
+      '<div class="field-group"><label class="field-label">Nuova password (almeno 6 caratteri)</label><input type="password" class="text-input" id="lpPwd" autocomplete="new-password"></div>'+
+      (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
+      '<button class="btn-primary full-width" id="lpGo" '+(m.busy?'disabled':'')+'>'+(m.busy?'Collegamento…':'Collega la password')+'</button>'+
+      '<button class="btn-secondary full-width" id="lpCancel">Annulla</button></div>';
+  }
+  function render(){
+    var w=document.querySelector('#modal-root .sheet-wrap');
+    if(!w)return;
+    w.innerHTML=html();
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    var c=document.getElementById('lpCancel');if(c)c.onclick=closeModal;
+    var cl=document.getElementById('lpClose');if(cl)cl.onclick=closeModal;
+    var go=document.getElementById('lpGo');
+    if(go)go.onclick=async function(){
+      var pwd=document.getElementById('lpPwd').value;
+      if(!pwd||pwd.length<6){m.err='La password deve avere almeno 6 caratteri.';render();return;}
+      m.busy=true;m.err='';render();
+      try{
+        var cred=firebase.auth.EmailAuthProvider.credential(sync.email,pwd);
+        await sync.auth.currentUser.linkWithCredential(cred);
+        sync.providers.push('password');
+        m.ok=true;
+      }catch(e){
+        if(e&&e.code==='auth/provider-already-linked')m.ok=true;
+        else if(e&&e.code==='auth/requires-recent-login')m.err='Per sicurezza Firebase chiede un accesso recente: esci e rientra con Google, poi riprova subito.';
+        else if(e&&e.code==='auth/email-already-in-use')m.err='Esiste già un account con questa email e password: usalo direttamente sull\'iPhone.';
+        else m.err=(e&&e.message)?e.message:'Non è riuscito.';
+      }
+      m.busy=false;render();
+      if(m.ok)renderActiveTab();
+    };
+  }
+  openModal('<div class="sheet"></div>');render();
+}
+
 /* Riga di stato: dice sempre dove stanno i dati in questo momento. */
 function syncStateLineHTML(){
   if(sync.status==='connected'){
@@ -1929,12 +1989,16 @@ function syncStatusCardHTML(){
   if(sync.status==='unconfigured'){
     body='<p class="hint">Collega Firebase per avere spese, entrate e conti sincronizzati automaticamente tra telefono e PC.</p><button class="btn-primary full-width" id="openSyncBtn">☁️ Configura sincronizzazione</button>';
   }else if(sync.status==='configured'){
-    body='<button class="btn-primary full-width" id="googleSyncBtn">Accedi con Google</button><button class="btn-secondary full-width" id="openSyncBtn">Accedi con email e password</button>';
+    body='<button class="btn-primary full-width" id="googleSyncBtn">Accedi con Google</button>'+
+      (isIOSStandalone()?'<p class="hint">Su iPhone, dentro l\'app installata, l\'accesso con Google spesso viene bloccato da Safari. Usa email e password: se il tuo account è Google, apri l\'app dal PC, accedi con Google e premi «Aggiungi una password» — resta lo stesso account.</p>':'')+
+      '<button class="btn-secondary full-width" id="openSyncBtn">Accedi con email e password</button>';
   }else if(sync.status==='connecting'){
     body='';
   }else if(sync.status==='connected'){
     body='<div class="toggle-row" style="margin-bottom:2px;"><span>🟢 Connesso come <strong>'+esc(sync.email||'')+'</strong></span></div>'+
       '<button class="btn-primary full-width" id="syncNowBtn" '+(sync.busy?'disabled':'')+'>'+(sync.busy?'Sincronizzazione…':'🔄 Sincronizza')+'</button>'+
+      ((sync.providers||[]).indexOf('google.com')>-1&&(sync.providers||[]).indexOf('password')<0
+        ? '<button class="btn-secondary full-width" id="linkPwdBtn">🔑 Aggiungi una password (per entrare da iPhone)</button>' : '')+
       '<button class="btn-secondary full-width" id="disconnectSyncBtn">Esci dall\'account / cambia account</button>';
   }else if(sync.status==='error'){
     body='<button class="btn-primary full-width" id="openSyncBtn">Riprova</button>';
@@ -1950,7 +2014,7 @@ function accountsHTML(){
     }).join('')+'</section>'+
     (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="Nome conto" autofocus><button class="btn-primary-sm" id="confirmNewAcc">Crea</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">+ Nuovo conto</button>')+
     syncStatusCardHTML()+
-    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa movimenti</button></section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
     '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">Salva i movimenti in un file da conservare, aprire in Excel o inviare.</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
     notifCardHTML()+
     '<div style="text-align:center;"><button class="reset-link" id="resetBtn">Reimposta tutti i dati</button></div>'+
@@ -1994,6 +2058,7 @@ function wireAccounts(){
   var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast('Dai un nome al conto');return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast('Conto creato');renderActiveTab();};
   var syncBtn=document.getElementById('openSyncBtn');if(syncBtn)syncBtn.onclick=openSyncModal;
   var syncNowBtn=document.getElementById('syncNowBtn');if(syncNowBtn)syncNowBtn.onclick=syncNow;
+  var lpBtn=document.getElementById('linkPwdBtn');if(lpBtn)lpBtn.onclick=openLinkPasswordModal;
   var gBtn=document.getElementById('googleSyncBtn');
   if(gBtn)gBtn.onclick=async function(){
     var cfg=loadSyncConfig();
@@ -2510,19 +2575,45 @@ function xlsxSheetRows(xml,shared,dateStyles){
   }
   return rows;
 }
-async function xlsxToRows(arrayBuffer){
+/* Nomi dei fogli, nell'ordine in cui compaiono nella cartella di lavoro */
+function xlsxSheetNames(wbXml){
+  var out=[],re=/<sheet\b[^>]*name="([^"]*)"/g,m;
+  while((m=re.exec(wbXml||'')))out.push(xmlUnesc(m[1]));
+  return out;
+}
+/* Legge TUTTI i fogli: [{name, rows}] */
+async function xlsxToSheets(arrayBuffer){
   var files=await zipRead(arrayBuffer),dec=new TextDecoder();
-  var names=Object.keys(files).filter(function(n){return /^xl\/worksheets\/sheet\d+\.xml$/i.test(n);}).sort();
+  var names=Object.keys(files).filter(function(n){return /^xl\/worksheets\/sheet\d+\.xml$/i.test(n);})
+    .sort(function(a,b){
+      var na=parseInt((/sheet(\d+)\.xml/i.exec(a)||[])[1]||'0',10);
+      var nb=parseInt((/sheet(\d+)\.xml/i.exec(b)||[])[1]||'0',10);
+      return na-nb;
+    });
   if(!names.length)throw new Error('Nel file .xlsx non ho trovato nessun foglio di calcolo.');
   var shared=xlsxSharedStrings(files['xl/sharedStrings.xml']?dec.decode(files['xl/sharedStrings.xml']):'');
   var styles=xlsxDateStyles(files['xl/styles.xml']?dec.decode(files['xl/styles.xml']):'');
-  var best=[];
-  names.forEach(function(n){
+  var titles=xlsxSheetNames(files['xl/workbook.xml']?dec.decode(files['xl/workbook.xml']):'');
+  var out=[];
+  names.forEach(function(n,i){
     var rows=xlsxSheetRows(dec.decode(files[n]),shared,styles);
-    if(rows.length>best.length)best=rows;
+    if(rows.length)out.push({name:titles[i]||('Foglio '+(i+1)),rows:rows});
   });
-  if(!best.length)throw new Error('Il foglio di calcolo risulta vuoto.');
-  return best;
+  if(!out.length)throw new Error('Il foglio di calcolo risulta vuoto.');
+  return out;
+}
+async function xlsxToRows(arrayBuffer){
+  var sheets=await xlsxToSheets(arrayBuffer);
+  var best=sheets[0];
+  sheets.forEach(function(sh){if(sh.rows.length>best.rows.length)best=sh;});
+  return best.rows;
+}
+/* Un foglio che si chiama "Spese"/"Uscite" contiene solo spese, e viceversa. */
+function sheetForcedType(name){
+  var n=String(name||'').toLowerCase();
+  if(/spes|uscit|addebit|pagament|costi|debit/.test(n))return 'expense';
+  if(/entrat|ricav|accredit|incass|guadagn|credit|income/.test(n))return 'income';
+  return null;
 }
 
 /* ---- XLSX: scrittura ---- */
@@ -2635,12 +2726,148 @@ function pdfBlob(title,subtitle,cols,rows,summary){
 }
 
 /* ---- PDF: lettura del testo ----
-   Il contenuto di un PDF non ha "righe": ha pezzetti di testo con una
-   posizione. Qui si ricostruiscono prima le righe (stessa altezza y),
-   poi le colonne (stessa x), in modo da ottenere una vera tabella. */
-function pdfContentToGroups(txt){
-  var chunks=[],cur='',nums=[],curX=0,curY=0,inTJ=false,i=0,n=txt.length;
-  function push(){var t=cur;cur='';if(t.trim())chunks.push({y:curY,x:curX,t:t.trim()});}
+   I PDF veri delle banche non contengono "testo": contengono codici di
+   caratteri che hanno senso solo passando dalla tabella del font
+   (/ToUnicode). Senza quella tabella esce spazzatura. Qui si fa il lavoro
+   completo: si leggono gli oggetti del PDF (anche quelli dentro gli
+   "object stream" compressi), si trovano i font di ogni pagina, si legge
+   la loro tabella ToUnicode e solo allora si decodifica il testo.
+   Poi si ricostruiscono righe (stessa altezza) e colonne (stessa x). */
+
+var WINANSI_EXTRA={128:8364,130:8218,131:402,132:8222,133:8230,134:8224,135:8225,136:710,137:8240,138:352,139:8249,140:338,142:381,145:8216,146:8217,147:8220,148:8221,149:8226,150:8211,151:8212,152:732,153:8482,154:353,155:8250,156:339,158:382,159:376};
+function winAnsiChar(code){
+  if(WINANSI_EXTRA[code])return String.fromCharCode(WINANSI_EXTRA[code]);
+  return String.fromCharCode(code);
+}
+function hexToStr(hex){
+  var out='';
+  hex=hex.replace(/\s+/g,'');
+  for(var i=0;i+3<hex.length+1;i+=4){
+    var part=hex.substr(i,4);
+    if(part.length<4)break;
+    out+=String.fromCharCode(parseInt(part,16));
+  }
+  if(hex.length%4===2)out+=String.fromCharCode(parseInt(hex.substr(hex.length-2,2),16));
+  return out;
+}
+/* Tabella ToUnicode: codice del font → carattere vero */
+function parseToUnicode(txt){
+  var map={},m;
+  var bc=/beginbfchar([\s\S]*?)endbfchar/g;
+  while((m=bc.exec(txt))){
+    var re=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g,p;
+    while((p=re.exec(m[1])))map[parseInt(p[1],16)]=hexToStr(p[2]);
+  }
+  var br=/beginbfrange([\s\S]*?)endbfrange/g;
+  while((m=br.exec(txt))){
+    var re2=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([\s\S]*?)\])/g,q;
+    while((q=re2.exec(m[1]))){
+      var lo=parseInt(q[1],16),hi=parseInt(q[2],16);
+      if(hi-lo>65535)continue;
+      if(q[3]!==undefined){
+        var base=parseInt(q[3],16);
+        for(var c=lo;c<=hi;c++)map[c]=String.fromCharCode(base+(c-lo));
+      }else if(q[4]!==undefined){
+        var items=q[4].match(/<([0-9A-Fa-f]+)>/g)||[];
+        for(var k=0;k<items.length&&lo+k<=hi;k++)map[lo+k]=hexToStr(items[k].replace(/[<>]/g,''));
+      }
+    }
+  }
+  return map;
+}
+
+/* Estrae gli oggetti del PDF (num → {dict, start, end}) */
+function pdfScanObjects(s){
+  var objs={},re=/(\d+)\s+\d+\s+obj\b/g,m;
+  while((m=re.exec(s))){
+    var num=parseInt(m[1],10);
+    var start=m.index+m[0].length;
+    var end=s.indexOf('endobj',start);
+    if(end<0)end=s.length;
+    objs[num]={body:s.slice(start,end),start:start};
+  }
+  return objs;
+}
+function pdfStreamBytes(u8,s,body,start){
+  var st=body.indexOf('stream');
+  if(st<0)return null;
+  var abs=start+st+6;
+  if(s[abs]==='\r')abs++;
+  if(s[abs]==='\n')abs++;
+  var endRel=body.indexOf('endstream',st);
+  var absEnd=start+(endRel<0?body.length:endRel);
+  var dict=body.slice(0,st);
+  var stop=absEnd;
+  var lm=/\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(dict);
+  if(lm&&abs+parseInt(lm[1],10)<=absEnd)stop=abs+parseInt(lm[1],10);
+  else{while(stop>abs&&(s.charCodeAt(stop-1)===10||s.charCodeAt(stop-1)===13))stop--;}
+  return{dict:dict,bytes:u8.subarray(abs,stop)};
+}
+async function pdfDecodeStream(st,dec){
+  if(!st)return null;
+  if(/\/Image|\/DCTDecode|\/JPXDecode|\/CCITTFaxDecode|\/JBIG2Decode/.test(st.dict))return null;
+  if(/\/FlateDecode/.test(st.dict)){
+    try{return await inflateBytes(st.bytes,'deflate');}
+    catch(e){try{return await inflateBytes(st.bytes,'deflate-raw');}catch(e2){return null;}}
+  }
+  if(/\/Filter/.test(st.dict))return null;
+  return st.bytes;
+}
+
+/* Font di una pagina: nome usato nel contenuto (/F1) → tabella e larghezza codice */
+async function pdfLoadFonts(resDict,objs,u8,s,dec,cache){
+  var fonts={};
+  var fm=/\/Font\s*<<([\s\S]*?)>>/.exec(resDict||'');
+  if(!fm)return fonts;
+  var re=/\/([^\s\/<>]+)\s+(\d+)\s+\d+\s+R/g,m;
+  while((m=re.exec(fm[1]))){
+    var name=m[1],num=parseInt(m[2],10);
+    if(cache[num]){fonts[name]=cache[num];continue;}
+    var fo=objs[num];
+    if(!fo)continue;
+    var body=fo.body;
+    var twoByte=/\/Subtype\s*\/Type0/.test(body)||/Identity-H/.test(body);
+    var map=null;
+    var tu=/\/ToUnicode\s+(\d+)\s+\d+\s+R/.exec(body);
+    if(tu){
+      var to=objs[parseInt(tu[1],10)];
+      if(to){
+        var bytes=await pdfDecodeStream(pdfStreamBytes(u8,s,to.body,to.start),dec);
+        if(bytes)map=parseToUnicode(dec.decode(bytes));
+      }
+    }
+    var font={twoByte:twoByte,map:map};
+    cache[num]=font;
+    fonts[name]=font;
+  }
+  return fonts;
+}
+function pdfDecodeCodes(codes,font){
+  var out='';
+  if(font&&font.twoByte){
+    for(var i=0;i+1<codes.length;i+=2){
+      var c=(codes[i]<<8)|codes[i+1];
+      out+=font.map&&font.map[c]!==undefined?font.map[c]:'';
+    }
+    return out;
+  }
+  for(var j=0;j<codes.length;j++){
+    var b=codes[j];
+    if(font&&font.map&&font.map[b]!==undefined)out+=font.map[b];
+    else out+=winAnsiChar(b);
+  }
+  return out;
+}
+
+/* Percorre un content stream e restituisce i pezzetti di testo con posizione */
+function pdfContentChunks(txt,fonts){
+  var chunks=[],codes=[],nums=[],curX=0,curY=0,inTJ=false,i=0,n=txt.length,font=null,pendingName='';
+  function push(){
+    if(!codes.length)return;
+    var t=pdfDecodeCodes(codes,font);
+    codes=[];
+    if(t&&t.trim())chunks.push({y:curY,x:curX,t:t});
+  }
   while(i<n){
     var c=txt[i];
     if(c==='('){
@@ -2652,14 +2879,16 @@ function pdfContentToGroups(txt){
           if(nx>='0'&&nx<='7'){
             var oct=nx,k=i+2;
             while(k<n&&oct.length<3&&txt[k]>='0'&&txt[k]<='7'){oct+=txt[k];k++;}
-            cur+=String.fromCharCode(parseInt(oct,8));i=k;continue;
+            codes.push(parseInt(oct,8)&0xFF);i=k;continue;
           }
-          var map={'n':' ','r':' ','t':' ','b':'','f':'','(':'(',')':')','\\':'\\'};
-          cur+=(map[nx]!==undefined?map[nx]:nx);i+=2;continue;
+          var map={'n':10,'r':13,'t':9,'b':8,'f':12};
+          if(map[nx]!==undefined)codes.push(map[nx]);
+          else if(nx!==undefined)codes.push(nx.charCodeAt(0)&0xFF);
+          i+=2;continue;
         }
         if(ch==='(')d++;
         else if(ch===')'){d--;if(d===0){i++;break;}}
-        if(d>0)cur+=ch;
+        if(d>0)codes.push(ch.charCodeAt(0)&0xFF);
         i++;
       }
       continue;
@@ -2677,11 +2906,13 @@ function pdfContentToGroups(txt){
       var e=txt.indexOf('>',i);
       if(e<0)break;
       var hex=txt.slice(i+1,e).replace(/\s+/g,'');
-      for(var h=0;h+1<hex.length;h+=2){
-        var code=parseInt(hex.substr(h,2),16);
-        if(!isNaN(code)&&code>=32)cur+=String.fromCharCode(code);
-      }
+      for(var h=0;h+1<hex.length;h+=2)codes.push(parseInt(hex.substr(h,2),16)&0xFF);
       i=e+1;continue;
+    }
+    if(c==='/'){
+      var j3=i+1,nm='';
+      while(j3<n&&/[^\s\/\[\]<>()]/.test(txt[j3])){nm+=txt[j3];j3++;}
+      pendingName=nm;i=j3;continue;
     }
     if(c==='['){inTJ=true;i++;continue;}
     if(c===']'){inTJ=false;i++;continue;}
@@ -2691,7 +2922,7 @@ function pdfContentToGroups(txt){
       var val=parseFloat(num);
       if(!isNaN(val)){
         nums.push(val);
-        if(inTJ&&val<=-120&&cur&&cur.slice(-1)!==' ')cur+=' ';
+        if(inTJ&&val<=-120&&codes.length&&codes[codes.length-1]!==32)codes.push(32);
       }
       i=j;continue;
     }
@@ -2699,7 +2930,8 @@ function pdfContentToGroups(txt){
       var j2=i,op='';
       while(j2<n&&/[A-Za-z*'"0-9]/.test(txt[j2])){op+=txt[j2];j2++;}
       i=j2;
-      if(op==='Tj'||op==='TJ'||op==="'"||op==='"')push();
+      if(op==='Tf'){if(fonts&&fonts[pendingName])font=fonts[pendingName];}
+      else if(op==='Tj'||op==='TJ'||op==="'"||op==='"')push();
       else if(op==='Td'||op==='TD'){if(nums.length>=2){curX+=nums[nums.length-2];curY+=nums[nums.length-1];}}
       else if(op==='Tm'){if(nums.length>=6){curX=nums[nums.length-2];curY=nums[nums.length-1];}}
       else if(op==='T*')curY-=12;
@@ -2710,6 +2942,9 @@ function pdfContentToGroups(txt){
     i++;
   }
   push();
+  return chunks;
+}
+function chunksToGroups(chunks){
   var groups=[];
   chunks.forEach(function(ch){
     var g=null;
@@ -2721,44 +2956,82 @@ function pdfContentToGroups(txt){
   groups.forEach(function(g){g.items.sort(function(a,b){return a.x-b.x;});});
   return groups.filter(function(g){return g.items.length;});
 }
-function pdfContentToLines(txt){
-  return pdfContentToGroups(txt).map(function(g){
-    return g.items.map(function(it){return it.t;}).join(' ').replace(/\s+/g,' ').trim();
-  }).filter(function(l){return l;});
-}
+
 async function pdfToGroups(arrayBuffer){
   var u8=new Uint8Array(arrayBuffer);
   var dec=new TextDecoder('windows-1252');
   var s=dec.decode(u8);
-  if(s.slice(0,5)!=='%PDF-')throw new Error('Il file non sembra un PDF.');
-  var all=[],idx=0,guard=0;
-  while(guard++<4000){
-    var st=s.indexOf('stream',idx);
-    if(st<0)break;
-    var dictStart=s.lastIndexOf('<<',st);
-    var dict=dictStart>=0?s.slice(dictStart,st):'';
-    var dataStart=st+6;
-    if(s[dataStart]==='\r')dataStart++;
-    if(s[dataStart]==='\n')dataStart++;
-    var end=s.indexOf('endstream',dataStart);
-    if(end<0)break;
-    idx=end+9;
-    if(/\/Image|\/DCTDecode|\/JPXDecode|\/CCITTFaxDecode|\/JBIG2Decode/.test(dict))continue;
-    var stop=end;
-    var lm=/\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(dict);
-    if(lm&&dataStart+parseInt(lm[1],10)<=end)stop=dataStart+parseInt(lm[1],10);
-    else{while(stop>dataStart&&(s.charCodeAt(stop-1)===10||s.charCodeAt(stop-1)===13))stop--;}
-    var bytes=u8.subarray(dataStart,stop);
-    var content=null;
-    if(/\/FlateDecode/.test(dict)){
-      try{content=await inflateBytes(bytes,'deflate');}
-      catch(e1){try{content=await inflateBytes(bytes,'deflate-raw');}catch(e2){continue;}}
-    }else if(!/\/Filter/.test(dict)){
-      content=bytes;
-    }else continue;
-    var text=dec.decode(content);
-    if(text.indexOf('Tj')<0&&text.indexOf('TJ')<0)continue;
-    all=all.concat(pdfContentToGroups(text));
+  if(s.indexOf('%PDF-')<0)throw new Error('Il file non sembra un PDF.');
+  var objs=pdfScanObjects(s);
+
+  /* Oggetti dentro gli "object stream" compressi (PDF moderni) */
+  var nums=Object.keys(objs);
+  for(var oi=0;oi<nums.length;oi++){
+    var o=objs[nums[oi]];
+    if(!/\/Type\s*\/ObjStm/.test(o.body))continue;
+    var st=pdfStreamBytes(u8,s,o.body,o.start);
+    var bytes=await pdfDecodeStream(st,dec);
+    if(!bytes)continue;
+    var txt=dec.decode(bytes);
+    var N=parseInt((/\/N\s+(\d+)/.exec(o.body)||[])[1]||'0',10);
+    var first=parseInt((/\/First\s+(\d+)/.exec(o.body)||[])[1]||'0',10);
+    var headerNums=txt.slice(0,first).trim().split(/\s+/).map(Number);
+    for(var p=0;p<N;p++){
+      var onum=headerNums[p*2],off=headerNums[p*2+1];
+      if(isNaN(onum)||isNaN(off))continue;
+      var nextOff=(p+1<N&&!isNaN(headerNums[(p+1)*2+1]))?headerNums[(p+1)*2+1]:(txt.length-first);
+      if(!objs[onum])objs[onum]={body:txt.slice(first+off,first+nextOff),start:-1,inObjStm:true};
+    }
+  }
+
+  /* Pagine: risorse (font) + contenuti */
+  var fontCache={},all=[];
+  var pageNums=Object.keys(objs).filter(function(k){return /\/Type\s*\/Page\b/.test(objs[k].body);});
+  async function resolveDict(body,key){
+    var inline=new RegExp('\\/'+key+'\\s*<<([\\s\\S]*?)>>\\s*(?:\\/|>>)').exec(body);
+    if(inline)return inline[0];
+    var ref=new RegExp('\\/'+key+'\\s+(\\d+)\\s+\\d+\\s+R').exec(body);
+    if(ref&&objs[parseInt(ref[1],10)])return objs[parseInt(ref[1],10)].body;
+    return '';
+  }
+  for(var pi=0;pi<pageNums.length;pi++){
+    var pg=objs[pageNums[pi]];
+    var res=await resolveDict(pg.body,'Resources');
+    var fonts=await pdfLoadFonts(res,objs,u8,s,dec,fontCache);
+    var contents=[];
+    var cRef=/\/Contents\s+(\d+)\s+\d+\s+R/.exec(pg.body);
+    var cArr=/\/Contents\s*\[([\s\S]*?)\]/.exec(pg.body);
+    if(cRef)contents.push(parseInt(cRef[1],10));
+    else if(cArr){
+      var rr=/(\d+)\s+\d+\s+R/g,mm;
+      while((mm=rr.exec(cArr[1])))contents.push(parseInt(mm[1],10));
+    }
+    var pageTxt='';
+    for(var ci=0;ci<contents.length;ci++){
+      var co=objs[contents[ci]];
+      if(!co||co.start<0)continue;
+      var bytes2=await pdfDecodeStream(pdfStreamBytes(u8,s,co.body,co.start),dec);
+      if(bytes2)pageTxt+=dec.decode(bytes2)+'\n';
+    }
+    if(!pageTxt)continue;
+    all=all.concat(chunksToGroups(pdfContentChunks(pageTxt,fonts)));
+  }
+
+  /* Riserva: se non si sono trovate pagine (PDF strani), si leggono comunque
+     tutti gli stream che contengono testo, senza tabella dei font. */
+  if(!all.length){
+    var keys=Object.keys(objs);
+    for(var q2=0;q2<keys.length;q2++){
+      var ob=objs[keys[q2]];
+      if(ob.start<0)continue;
+      var stb=pdfStreamBytes(u8,s,ob.body,ob.start);
+      if(!stb)continue;
+      var by=await pdfDecodeStream(stb,dec);
+      if(!by)continue;
+      var t2=dec.decode(by);
+      if(t2.indexOf('Tj')<0&&t2.indexOf('TJ')<0)continue;
+      all=all.concat(chunksToGroups(pdfContentChunks(t2,null)));
+    }
   }
   if(!all.length)throw new Error('Da questo PDF non esce nessun testo: è probabilmente una scansione (immagine). Usa il CSV o l\'Excel della banca.');
   return all;
@@ -2978,7 +3251,7 @@ function openExportModal(){
         '<button class="'+(ex.scope==='all'?'active':'')+'" data-exp-scope="all">Tutto</button>'+
       '</div></div>'+
       '<p class="hint">'+esc(exportScopeLabel(ex.scope))+' · <strong>'+n+'</strong> movimenti (spese, entrate e trasferimenti).</p>'+
-      '<button class="btn-primary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 Esporta PDF</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 Esporta PDF</button>'+
       '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 Esporta Excel (.xlsx)</button>'+
       '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 Esporta CSV</button>'+
       (ex.msg?'<p class="hint">'+esc(ex.msg)+'</p>':'<p class="hint">Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.</p>')+
@@ -3083,7 +3356,7 @@ function guessColMapByContent(rows,start){
 }
 
 function openImportModal(){
-  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],rawLines:[],
+  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],rawLines:[],sheets:[],refSheet:null,
            hasHeader:true,headers:[],mapping:{date:0,description:1,amount:2,amountIn:-1,amountOut:-1,typeCol:-1},
            amountMode:'single',signRule:'auto',analyzed:false,
            parsed:[],error:'',warn:'',busy:false};
@@ -3125,8 +3398,15 @@ function openImportModal(){
   function analyze(){
     if(imp.analyzed||!imp.rows.length)return;
     imp.analyzed=true;
+    /* Ogni foglio puo' avere le sue righe di titolo prima della tabella. */
+    imp.sheets.forEach(function(sh){
+      var h=findHeaderRow(sh.rows);
+      if(h>0)sh.rows=sh.rows.slice(h);
+      sh.hasHeader=h>-1;
+      sh.forced=sheetForcedType(sh.name);
+    });
+    if(imp.refSheet)imp.rows=imp.refSheet.rows;
     var hr=findHeaderRow(imp.rows);
-    if(hr>0)imp.rows=imp.rows.slice(hr);        // butta le righe di intestazione del documento
     imp.hasHeader=hr>-1?true:imp.hasHeader;
     var head=imp.hasHeader?imp.rows[0].map(String):[];
     var start=imp.hasHeader?1:0;
@@ -3172,7 +3452,9 @@ function openImportModal(){
         tot++;
         if(a<0||/[-−]\s*$/.test(String(v)))neg++;
       }
+      var allForced=imp.sheets.length>0&&imp.sheets.every(function(sh){return !!sh.forced;});
       if(imp.mapping.typeCol>-1)imp.signRule='column';
+      else if(allForced)imp.signRule='auto';
       else if(tot>0&&neg===0){imp.signRule='expense';imp.warn='Nel file non ci sono importi negativi: li tratto tutti come spese. Se non è così, cambia qui sotto o correggi le singole righe nel passo successivo.';}
       else imp.signRule='auto';
     }
@@ -3193,7 +3475,17 @@ function openImportModal(){
   function step2(){
     analyze();
     var dual=imp.amountMode==='dual';
+    var multi='';
+    if(imp.sheets.length>1){
+      multi='<p class="hint">📑 Il file ha '+imp.sheets.length+' fogli: '+
+        imp.sheets.map(function(sh){
+          var f=sh.forced==='expense'?' → tutte spese':sh.forced==='income'?' → tutte entrate':'';
+          return '<strong>'+esc(sh.name)+'</strong> ('+Math.max(0,sh.rows.length-(sh.hasHeader?1:0))+' righe)'+f;
+        }).join(' · ')+
+        '. Le colonne scelte qui sotto valgono per tutti (sugli altri fogli le ritrovo dai nomi di intestazione).</p>';
+    }
     return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Associa le colonne</h3>'+
+      multi+
       (imp.warn?'<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.warn)+'</p>':'')+
       '<label class="toggle-row"><span>Prima riga come intestazione</span><input type="checkbox" id="impHeader" '+(imp.hasHeader?'checked':'')+'></label>'+
       '<div class="field-group"><label class="field-label">Colonna data</label>'+colOptions('date',imp.mapping.date)+'</div>'+
@@ -3225,10 +3517,36 @@ function openImportModal(){
     if(/uscit|addebit|dare|debit|spesa|spese|pagament|prelie|-/.test(t))return 'expense';
     return val<0?'expense':'income';
   }
+  /* Le colonne scelte valgono per il foglio di riferimento; sugli altri fogli
+     si riconoscono per NOME di intestazione (se ce l'hanno), altrimenti si usa
+     la stessa posizione. */
+  function mappingForSheet(sh){
+    var m=imp.mapping;
+    if(!imp.refSheet||sh===imp.refSheet)return m;
+    if(!imp.hasHeader||!sh.hasHeader||!sh.rows.length)return m;
+    var refHead=(imp.rows[0]||[]).map(function(x){return String(x||'').toLowerCase().trim();});
+    var head=(sh.rows[0]||[]).map(function(x){return String(x||'').toLowerCase().trim();});
+    function conv(idx){
+      if(idx==null||idx<0)return idx;
+      var nm=refHead[idx];
+      if(!nm)return idx;
+      var j=head.indexOf(nm);
+      return j>-1?j:idx;
+    }
+    return{date:conv(m.date),description:conv(m.description),amount:conv(m.amount),
+           amountIn:conv(m.amountIn),amountOut:conv(m.amountOut),typeCol:conv(m.typeCol)};
+  }
   function buildParsed(){
-    var out=[],start=imp.hasHeader?1:0,m=imp.mapping,lastDate='';
-    for(var i=start;i<imp.rows.length;i++){
-      var cols=imp.rows[i]||[];
+    var out=[];
+    imp.sheets.forEach(function(sh){parseSheet(sh,out);});
+    imp.parsed=out;
+  }
+  function parseSheet(sh,out){
+    var rows=sh.rows||[];
+    var hasHead=(sh===imp.refSheet)?imp.hasHeader:(sh.hasHeader!==false&&imp.hasHeader);
+    var start=hasHead?1:0,m=mappingForSheet(sh),lastDate='';
+    for(var i=start;i<rows.length;i++){
+      var cols=rows[i]||[];
       var type,amount;
       if(imp.amountMode==='dual'){
         var o=m.amountOut>-1?parseAmount(cols[m.amountOut]):NaN;
@@ -3254,9 +3572,10 @@ function openImportModal(){
       if(!date)date=todayISO();
       lastDate=date;
       var desc=String(cols[m.description]==null?'':cols[m.description]).trim();
-      out.push({id:uid('imp'),date:date,desc:desc,amount:amount,include:true,type:type,categoryId:guessCat(desc,type)});
+      if(sh.forced)type=sh.forced;   // foglio "Spese" o "Entrate": decide lui
+      out.push({id:uid('imp'),date:date,desc:desc,amount:amount,include:true,type:type,
+                sheet:sh.name||'',categoryId:guessCat(desc,type)});
     }
-    imp.parsed=out;
   }
 
   /* ---------- passo 3: anteprima ---------- */
@@ -3269,7 +3588,7 @@ function openImportModal(){
       '<div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){
         return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'>'+
           '<span class="imp-date">'+formatShortDate(r.date)+'</span>'+
-          '<span class="imp-desc">'+esc(r.desc||'—')+'</span>'+
+          '<span class="imp-desc">'+esc(r.desc||'—')+(r.sheet&&imp.sheets.length>1?' <em style="opacity:.6;">['+esc(r.sheet)+']</em>':'')+'</span>'+
           '<button class="chip" data-flip="'+i+'" style="padding:2px 8px;font-size:11px;">'+(r.type==='income'?'E':'S')+'</button>'+
           '<span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span>'+
           '<select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select></div>';
@@ -3284,7 +3603,10 @@ function openImportModal(){
     try{
       if(/\.xlsx$/.test(name)||(f.type||'').indexOf('spreadsheetml')>-1){
         imp.source='xlsx';
-        imp.rows=await xlsxToRows(await f.arrayBuffer());
+        imp.sheets=await xlsxToSheets(await f.arrayBuffer());
+        imp.refSheet=imp.sheets[0];
+        imp.sheets.forEach(function(sh){if(sh.rows.length>imp.refSheet.rows.length)imp.refSheet=sh;});
+        imp.rows=imp.refSheet.rows;
         imp.hasHeader=true;imp.rawText='';
       }else if(/\.pdf$/.test(name)||f.type==='application/pdf'){
         imp.source='pdf';
@@ -3305,8 +3627,12 @@ function openImportModal(){
         if(!imp.rows.length)throw new Error('Il file risulta vuoto.');
       }
     }catch(e){
-      imp.rows=[];
+      imp.rows=[];imp.sheets=[];
       imp.error=(e&&e.message)?e.message:'Non sono riuscito a leggere il file.';
+    }
+    if(imp.rows.length&&imp.source!=='xlsx'){
+      imp.sheets=[{name:'',rows:imp.rows}];
+      imp.refSheet=imp.sheets[0];
     }
     imp.busy=false;
     renderStep();
@@ -3320,6 +3646,8 @@ function openImportModal(){
       ta.oninput=function(){
         imp.rawText=ta.value;imp.source='csv';imp.fileName='';imp.error='';imp.analyzed=false;
         imp.rows=rowsFromCSV(imp.rawText);
+        imp.sheets=imp.rows.length?[{name:'',rows:imp.rows}]:[];
+        imp.refSheet=imp.sheets[0]||null;
         n1.disabled=!imp.rows.length;
       };
       document.getElementById('impAcc').onchange=function(e){imp.accountId=e.target.value;};
