@@ -563,7 +563,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -599,13 +599,26 @@ async function loadState(){
     try{return raw?JSON.parse(raw):null;}catch(e){return null;}
   }
   var data=await tryLoad(STORAGE_KEY)||await tryLoad(STORAGE_KEY_V2);
-  if(data){state=migrateFromRaw(data);await saveState();}
-  else{state=ensureV3Fields(defaultState());await saveState();}
+  if(data){state=migrateFromRaw(data);}
+  else{state=ensureV3Fields(defaultState());state.updatedAt=Date.now();}
+  await persistLocal();
 }
 
-async function saveState(){
+/* Salvataggio solo locale: NON tocca updatedAt e non spinge nel cloud.
+   Serve all'avvio e quando si adottano i dati arrivati dal cloud. */
+async function persistLocal(){
   var ok=await storageSet(STORAGE_KEY,JSON.stringify(state));
   if(!ok)showToast('Errore nel salvataggio');
+  return ok;
+}
+
+/* Salvataggio di una modifica dell'utente: aggiorna updatedAt (serve a
+   capire, al momento della sincronizzazione, quale versione è la più
+   recente) e prova a spingere nel cloud. Se il cloud non è raggiungibile
+   il dato resta in locale e viene marcato "da sincronizzare". */
+async function saveState(){
+  state.updatedAt=Date.now();
+  await persistLocal();
   pushStateToCloud();
 }
 
@@ -618,6 +631,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
+var SYNC_META_KEY='expense-tracker-sync-meta-v1';
 var sync={
   status:'unconfigured', // unconfigured | configured | connecting | connected | error
   email:null,
@@ -629,8 +643,40 @@ var sync={
   unsubscribeInbox:null,
   pendingInbox:[],
   lastPushedJSON:null,
-  sdkLoadPromise:null
+  sdkLoadPromise:null,
+  pendingPush:false,   // ci sono modifiche locali non ancora salite nel cloud
+  lastSyncAt:0,        // ultima sincronizzazione riuscita (ms)
+  busy:false
 };
+
+/* Meta della sincronizzazione (sopravvive alla chiusura dell'app):
+   serve a sapere, riaprendo l'app, se erano rimaste modifiche offline. */
+function loadSyncMeta(){
+  try{
+    var raw=window.localStorage.getItem(SYNC_META_KEY);
+    var m=raw?JSON.parse(raw):null;
+    if(m){sync.pendingPush=!!m.pendingPush;sync.lastSyncAt=m.lastSyncAt||0;}
+  }catch(e){}
+}
+function saveSyncMeta(){
+  try{window.localStorage.setItem(SYNC_META_KEY,JSON.stringify({pendingPush:sync.pendingPush,lastSyncAt:sync.lastSyncAt}));}catch(e){}
+}
+function markPendingPush(v){
+  sync.pendingPush=!!v;
+  if(!v)sync.lastSyncAt=Date.now();
+  saveSyncMeta();
+}
+function isOnline(){try{return navigator.onLine!==false;}catch(e){return true;}}
+function lastSyncLabel(){
+  if(!sync.lastSyncAt)return 'mai';
+  var d=new Date(sync.lastSyncAt);
+  var diff=Math.floor((Date.now()-sync.lastSyncAt)/1000);
+  if(diff<60)return 'adesso';
+  if(diff<3600)return Math.floor(diff/60)+' min fa';
+  if(isToday(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')))
+    return 'oggi alle '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  return new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(d);
+}
 
 function loadSyncConfig(){
   try{
@@ -716,18 +762,34 @@ function syncDocRef(uid){
 }
 
 async function rawPushStateToCloud(){
-  if(!sync.db||!sync.uid)return;
+  if(!sync.db||!sync.uid)return false;
   try{
     var json=JSON.stringify(state);
-    sync.lastPushedJSON=json;
     await syncDocRef(sync.uid).set({data:json,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:sync.email||'device'});
+    sync.lastPushedJSON=json;
+    markPendingPush(false);
+    return true;
   }catch(e){
     console.error('Errore sync push',e);
+    markPendingPush(true);
+    return false;
   }
 }
 async function pushStateToCloud(){
-  if(sync.status!=='connected')return;
-  await rawPushStateToCloud();
+  if(sync.status!=='connected'||!isOnline()){
+    if(loadSyncConfig()){markPendingPush(true);updateSyncBadge();}
+    return false;
+  }
+  var ok=await rawPushStateToCloud();
+  updateSyncBadge();
+  return ok;
+}
+
+/* Aggiorna solo la riga di stato nella scheda Conti, senza ridisegnare
+   tutta la vista (evita sfarfallii mentre si scrive). */
+function updateSyncBadge(){
+  var el=document.getElementById('syncStateLine');
+  if(el)el.innerHTML=syncStateLineHTML();
 }
 
 function attachSnapshotListener(){
@@ -739,9 +801,12 @@ function attachSnapshotListener(){
     if(remote.data===sync.lastPushedJSON)return; // eco della nostra stessa scrittura
     try{
       var parsed=JSON.parse(remote.data);
+      var remoteAt=parsed.updatedAt||0,localAt=(state&&state.updatedAt)||0;
+      if(sync.pendingPush&&localAt>remoteAt){rawPushStateToCloud();return;}
       state=migrateFromRaw(parsed);
       sync.lastPushedJSON=remote.data;
-      storageSet(STORAGE_KEY,JSON.stringify(state));
+      persistLocal();
+      markPendingPush(false);
       renderActiveTab();
       showToast('Dati aggiornati da un altro dispositivo');
     }catch(e){console.error('Errore applicando dati remoti',e);}
@@ -751,48 +816,88 @@ function attachSnapshotListener(){
   });
 }
 
-async function resolveInitialConflict(uid){
-  var snap=await syncDocRef(uid).get();
-  if(!snap.exists){
-    await rawPushStateToCloud();
-    return 'pushed-empty-remote';
-  }
+/* Allineamento automatico locale <-> cloud (nessuna domanda all'utente).
+   Regola: vince la versione modificata piu' di recente (state.updatedAt).
+   A parita' di data vince il CLOUD, che e' la fonte di verita' di default;
+   se pero' su questo dispositivo ci sono modifiche fatte offline e non
+   ancora caricate, quelle vengono spinte nel cloud. */
+async function reconcileWithCloud(){
+  if(!sync.db||!sync.uid)return 'no-db';
+  var snap;
+  try{snap=await syncDocRef(sync.uid).get();}
+  catch(e){markPendingPush(true);return 'offline';}
+  if(!snap.exists){await rawPushStateToCloud();return 'pushed';}
   var remote=snap.data();
+  if(!remote||!remote.data){await rawPushStateToCloud();return 'pushed';}
   var localJSON=JSON.stringify(state);
-  if(!remote||!remote.data||remote.data===localJSON){
-    sync.lastPushedJSON=remote?remote.data:null;
+  if(remote.data===localJSON){
+    sync.lastPushedJSON=remote.data;
+    markPendingPush(false);
     return 'identical';
   }
-  return new Promise(function(resolve){
-    openCenteredModal(
-      '<div class="confirm-box"><p><strong>Trovati dati sincronizzati nel cloud.</strong><br>Vuoi usare quelli (i dati presenti solo su questo dispositivo verranno sostituiti) oppure caricare i dati di questo dispositivo nel cloud (sovrascrivendo quelli sincronizzati)?</p>'+
-      '<div class="confirm-actions"><button class="btn-secondary" id="conflictUseLocal">Usa questo dispositivo</button><button class="btn-primary" id="conflictUseRemote">Usa il cloud</button></div></div>'
-    );
-    document.getElementById('conflictUseRemote').onclick=function(){
-      try{
-        state=migrateFromRaw(JSON.parse(remote.data));
-        sync.lastPushedJSON=remote.data;
-        storageSet(STORAGE_KEY,JSON.stringify(state));
-        renderActiveTab();
-      }catch(e){}
-      closeModal();resolve('used-remote');
-    };
-    document.getElementById('conflictUseLocal').onclick=function(){
-      rawPushStateToCloud();
-      closeModal();resolve('used-local');
-    };
-  });
+  var remoteState=null;
+  try{remoteState=JSON.parse(remote.data);}catch(e){}
+  if(!remoteState){await rawPushStateToCloud();return 'pushed';}
+  var remoteAt=remoteState.updatedAt||0;
+  var localAt=(state&&state.updatedAt)||0;
+  var cloudWins=remoteAt>localAt||(!sync.pendingPush&&remoteAt>=localAt);
+  if(cloudWins){
+    state=migrateFromRaw(remoteState);
+    sync.lastPushedJSON=remote.data;
+    await persistLocal();
+    markPendingPush(false);
+    renderActiveTab();
+    return 'used-remote';
+  }
+  await rawPushStateToCloud();
+  return 'used-local';
+}
+
+/* Pulsante "Sincronizza": scarica le novita' dal cloud e carica quelle
+   locali rimaste in sospeso. Se non c'e' rete lo dice e basta: i dati
+   restano salvati sul telefono e ripartiranno alla prossima occasione. */
+async function syncNow(){
+  if(sync.busy)return;
+  if(sync.status==='unconfigured'){openSyncModal();return;}
+  if(sync.status==='configured'||sync.status==='error'){
+    if(!isOnline()){showToast('Nessuna connessione: i dati restano in locale');return;}
+    showToast('Riconnessione…');
+    await initSyncFromSavedConfig();
+    return;
+  }
+  if(sync.status!=='connected'){showToast('Connessione in corso…');return;}
+  if(!isOnline()){markPendingPush(true);renderActiveTab();showToast('Offline: sincronizzo appena torna la rete');return;}
+  sync.busy=true;renderActiveTab();
+  var res;
+  try{res=await reconcileWithCloud();}
+  catch(e){res='offline';markPendingPush(true);}
+  sync.busy=false;
+  renderActiveTab();
+  if(res==='offline')showToast('Nessuna connessione: i dati restano in locale');
+  else if(res==='used-remote')showToast('Aggiornato dal cloud');
+  else if(res==='used-local')showToast('Modifiche caricate nel cloud');
+  else showToast('Già sincronizzato');
 }
 
 async function startSync(uid,email){
   sync.uid=uid;sync.email=email;sync.status='connecting';
   renderActiveTab();
-  await resolveInitialConflict(uid);
+  await reconcileWithCloud();
   if(!state.inboxToken){state.inboxToken=randToken();await saveState();}
   attachSnapshotListener();
   try{attachInboxListener();}catch(e){console.error('Inbox notifiche non disponibile',e);}
   sync.status='connected';
+  if(sync.pendingPush&&isOnline())await rawPushStateToCloud();
   renderActiveTab();
+}
+
+/* Quando la rete torna: riconnetti o risincronizza in silenzio. */
+function initConnectivityWatch(){
+  window.addEventListener('online',function(){
+    if(sync.status==='connected'){reconcileWithCloud().then(function(){renderActiveTab();});}
+    else if(loadSyncConfig()){initSyncFromSavedConfig();}
+  });
+  window.addEventListener('offline',function(){updateSyncBadge();});
 }
 
 function stopSync(keepConfig){
@@ -973,6 +1078,14 @@ async function initSyncFromSavedConfig(){
     sync.firebaseApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(cfg.firebaseConfig);
     sync.auth=firebase.auth();
     sync.db=firebase.firestore();
+    /* Se si è appena tornati dalla pagina di accesso Google (redirect),
+       qui si raccoglie il risultato; poi ci pensa onAuthStateChanged. */
+    try{
+      var rr=await sync.auth.getRedirectResult();
+      if(rr&&rr.user){saveSyncConfig({firebaseConfig:cfg.firebaseConfig,email:rr.user.email});}
+    }catch(e){
+      if(e&&e.code)console.error('Redirect Google',e.code);
+    }
     sync.auth.onAuthStateChanged(function(user){
       if(user){startSync(user.uid,user.email);}
       else{sync.status='configured';renderActiveTab();}
@@ -980,6 +1093,48 @@ async function initSyncFromSavedConfig(){
   }catch(e){
     sync.status='error';sync.errorMsg='Impossibile inizializzare Firebase. Controlla la configurazione.';
     renderActiveTab();
+  }
+}
+
+/* Accesso con l'account Google (deve essere attivo il provider Google
+   in Firebase → Authentication → Sign-in method, e il dominio dell'app
+   deve essere fra i "domini autorizzati"). Prova prima la finestra pop-up;
+   se il browser la blocca (tipico dentro una PWA su iPhone) passa al
+   redirect: si esce dall'app, si sceglie l'account, si rientra. */
+async function connectSyncWithGoogle(firebaseConfig){
+  sync.status='connecting';renderActiveTab();
+  try{
+    await loadFirebaseSDK();
+    sync.firebaseApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(firebaseConfig);
+    sync.auth=firebase.auth();
+    sync.db=firebase.firestore();
+    saveSyncConfig({firebaseConfig:firebaseConfig,email:(loadSyncConfig()||{}).email||null});
+    var provider=new firebase.auth.GoogleAuthProvider();
+    try{
+      var cred=await sync.auth.signInWithPopup(provider);
+      saveSyncConfig({firebaseConfig:firebaseConfig,email:cred.user.email});
+      await startSync(cred.user.uid,cred.user.email);
+      return {ok:true};
+    }catch(e1){
+      var c=e1&&e1.code;
+      if(c==='auth/popup-closed-by-user'||c==='auth/cancelled-popup-request'){
+        sync.status='configured';renderActiveTab();
+        return {ok:false,error:'Accesso annullato.'};
+      }
+      if(c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'||c==='auth/web-storage-unsupported'){
+        await sync.auth.signInWithRedirect(provider);
+        return {ok:true,redirect:true};
+      }
+      throw e1;
+    }
+  }catch(e){
+    sync.status='configured';renderActiveTab();
+    var msg='Accesso con Google non riuscito.';
+    if(e&&e.code==='auth/unauthorized-domain')msg='Dominio non autorizzato: aggiungi l\'indirizzo dell\'app in Firebase → Authentication → Impostazioni → Domini autorizzati.';
+    else if(e&&e.code==='auth/operation-not-allowed')msg='Il provider Google non è attivo: abilitalo in Firebase → Authentication → Sign-in method.';
+    else if(e&&e.code==='auth/network-request-failed')msg='Connessione di rete non disponibile.';
+    else if(e&&e.message)msg='Accesso con Google non riuscito: '+e.message;
+    return {ok:false,error:msg};
   }
 }
 
@@ -1054,6 +1209,8 @@ function parseDateFlexible(str){
   var m=str.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];
   m=str.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{4})/);
   if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  m=str.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2})(?!\d)/);
+  if(m)return '20'+m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
   return null;
 }
 function splitCSV(line,d){var out=[],cur='',inQ=false;for(var i=0;i<line.length;i++){var c=line[i];if(inQ){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}else cur+=c;}else{if(c==='"')inQ=true;else if(c===d){out.push(cur);cur='';}else cur+=c;}}out.push(cur);return out.map(function(s){return s.trim();});}
@@ -1610,20 +1767,35 @@ function dashboardData(){
 /* ================================================================
    ACCOUNTS VIEW
 ================================================================ */
+/* Riga di stato: dice sempre dove stanno i dati in questo momento. */
+function syncStateLineHTML(){
+  if(sync.status==='connected'){
+    if(!isOnline())return '<span class="hint">📴 Offline — le modifiche sono salvate sul telefono e partiranno da sole al ritorno della rete.</span>';
+    if(sync.pendingPush)return '<span class="hint">⏳ Modifiche in attesa di essere caricate. Ultima sincronizzazione: '+esc(lastSyncLabel())+'.</span>';
+    return '<span class="hint">✅ Tutto sincronizzato · ultimo aggiornamento '+esc(lastSyncLabel())+'.</span>';
+  }
+  if(sync.status==='connecting')return '<span class="hint">Connessione in corso…</span>';
+  if(sync.status==='configured')return '<span class="hint">'+(sync.pendingPush?'⏳ Ci sono modifiche salvate solo su questo dispositivo: accedi per caricarle.':'Sincronizzazione configurata ma non connessa.')+'</span>';
+  if(sync.status==='error')return '<span class="hint" style="color:var(--red);">⚠️ '+esc(sync.errorMsg||'Errore di sincronizzazione')+'</span>';
+  return '<span class="hint">I dati sono salvati solo su questo dispositivo.</span>';
+}
 function syncStatusCardHTML(){
   var body='';
   if(sync.status==='unconfigured'){
     body='<p class="hint">Collega Firebase per avere spese, entrate e conti sincronizzati automaticamente tra telefono e PC.</p><button class="btn-primary full-width" id="openSyncBtn">☁️ Configura sincronizzazione</button>';
   }else if(sync.status==='configured'){
-    body='<p class="hint">Sincronizzazione configurata ma non connessa.</p><button class="btn-primary full-width" id="openSyncBtn">Accedi</button>';
+    body='<button class="btn-primary full-width" id="googleSyncBtn">Accedi con Google</button><button class="btn-secondary full-width" id="openSyncBtn">Accedi con email e password</button>';
   }else if(sync.status==='connecting'){
-    body='<p class="hint">Connessione in corso…</p>';
+    body='';
   }else if(sync.status==='connected'){
-    body='<div class="toggle-row" style="margin-bottom:2px;"><span>🟢 Connesso come <strong>'+esc(sync.email||'')+'</strong></span></div><button class="btn-secondary full-width" id="disconnectSyncBtn">Disconnetti questo dispositivo</button>';
+    body='<div class="toggle-row" style="margin-bottom:2px;"><span>🟢 Connesso come <strong>'+esc(sync.email||'')+'</strong></span></div>'+
+      '<button class="btn-primary full-width" id="syncNowBtn" '+(sync.busy?'disabled':'')+'>'+(sync.busy?'Sincronizzazione…':'🔄 Sincronizza')+'</button>'+
+      '<button class="btn-secondary full-width" id="disconnectSyncBtn">Disconnetti questo dispositivo</button>';
   }else if(sync.status==='error'){
-    body='<p class="hint" style="color:var(--red);">⚠️ '+esc(sync.errorMsg||'Errore di sincronizzazione')+'</p><button class="btn-primary full-width" id="openSyncBtn">Riprova</button>';
+    body='<button class="btn-primary full-width" id="openSyncBtn">Riprova</button>';
   }
-  return '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Sincronizzazione cloud</h3>'+body+'</section>';
+  return '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Sincronizzazione cloud</h3>'+
+    '<div id="syncStateLine">'+syncStateLineHTML()+'</div>'+body+'</section>';
 }
 function accountsHTML(){
   return '<div class="view">'+
@@ -1633,7 +1805,8 @@ function accountsHTML(){
     }).join('')+'</section>'+
     (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="Nome conto" autofocus><button class="btn-primary-sm" id="confirmNewAcc">Crea</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">+ Nuovo conto</button>')+
     syncStatusCardHTML()+
-    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Estratto conto</h3><p class="hint">Importa spese e entrate da CSV esportato dalla banca.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa CSV</button></section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Estratto conto</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa movimenti</button></section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">Salva i movimenti in un file da conservare, aprire in Excel o inviare.</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
     notifCardHTML()+
     '<div style="text-align:center;"><button class="reset-link" id="resetBtn">Reimposta tutti i dati</button></div>'+
   '</div>';
@@ -1674,6 +1847,17 @@ function wireAccounts(){
   var addB=document.getElementById('addAccBtn');if(addB)addB.onclick=function(){ui.addingAccount=true;renderActiveTab();};
   var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast('Dai un nome al conto');return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast('Conto creato');renderActiveTab();};
   var syncBtn=document.getElementById('openSyncBtn');if(syncBtn)syncBtn.onclick=openSyncModal;
+  var syncNowBtn=document.getElementById('syncNowBtn');if(syncNowBtn)syncNowBtn.onclick=syncNow;
+  var gBtn=document.getElementById('googleSyncBtn');
+  if(gBtn)gBtn.onclick=async function(){
+    var cfg=loadSyncConfig();
+    if(!cfg||!cfg.firebaseConfig){openSyncModal();return;}
+    gBtn.disabled=true;gBtn.textContent='Accesso in corso…';
+    var res=await connectSyncWithGoogle(cfg.firebaseConfig);
+    if(res.ok&&!res.redirect)showToast('Sincronizzazione connessa');
+    else if(!res.ok)showToast(res.error||'Accesso non riuscito');
+    renderActiveTab();
+  };
   document.querySelectorAll('[data-copy-target]').forEach(function(btn){
     btn.onclick=function(){
       var field=document.getElementById(btn.dataset.copyTarget);
@@ -1695,6 +1879,7 @@ function wireAccounts(){
     },'Disconnetti');
   };
   document.getElementById('openImportBtn').onclick=openImportModal;
+  var expBtn=document.getElementById('openExportBtn');if(expBtn)expBtn.onclick=openExportModal;
   document.getElementById('resetBtn').onclick=function(){
     confirmDialog('Eliminare definitivamente tutti i dati? Questa azione non si può annullare.',function(){
       state=ensureV3Fields(defaultState());ui={activeTab:'accounts',viewMonth:currentMonthKey(),viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense'};
@@ -1931,9 +2116,6 @@ function openSearchOverlay(){
 }
 
 /* ================================================================
-   CSV IMPORT
-================================================================ */
-/* ================================================================
    SYNC SETUP MODAL
 ================================================================ */
 function openSyncModal(){
@@ -1968,6 +2150,8 @@ function openSyncModal(){
   function step2HTML(){
     return '<div class="sheet">'+stepDots()+
       '<h3 style="margin:4px 0 0;">Accedi alla sincronizzazione</h3>'+
+      '<button class="btn-primary full-width" id="syncGoogle" '+(m.busy?'disabled':'')+'>Accedi con Google</button>'+
+      '<p class="hint" style="text-align:center;margin:2px 0;">oppure con email e password</p>'+
       '<div class="segmented"><button class="'+(m.mode==='login'?'active':'')+'" data-sync-mode="login">Accedi</button><button class="'+(m.mode==='signup'?'active mode-income':'')+'" data-sync-mode="signup">Crea account</button></div>'+
       '<p class="hint">'+(m.mode==='signup'?'Crea le credenziali la prima volta, da questo dispositivo. Userai le stesse email e password per accedere dagli altri dispositivi.':'Usa le stesse email e password create sul primo dispositivo.')+'</p>'+
       '<div class="field-group"><label class="field-label">Email</label><input type="email" class="text-input" id="syncEmail" value="'+esc(m.email)+'" autocomplete="email"></div>'+
@@ -1992,6 +2176,14 @@ function openSyncModal(){
     }else{
       document.querySelectorAll('[data-sync-mode]').forEach(function(b){b.onclick=function(){m.mode=b.dataset.syncMode;m.errorMsg=null;renderStep();};});
       document.getElementById('syncBack2').onclick=function(){m.step=1;renderStep();};
+      document.getElementById('syncGoogle').onclick=async function(){
+        m.busy=true;m.errorMsg=null;renderStep();
+        var res=await connectSyncWithGoogle(m.parsedConfig);
+        m.busy=false;
+        if(res.ok&&!res.redirect){closeModal();showToast('Sincronizzazione connessa');renderActiveTab();}
+        else if(res.ok&&res.redirect){/* la pagina sta per cambiare */}
+        else{m.errorMsg=res.error;renderStep();}
+      };
       document.getElementById('syncSubmit').onclick=async function(){
         var email=document.getElementById('syncEmail').value.trim();
         var password=document.getElementById('syncPassword').value;
@@ -2010,29 +2202,745 @@ function openSyncModal(){
 }
 
 /* ================================================================
-   CSV IMPORT
+   FILE IN ENTRATA E IN USCITA (CSV · XLSX · PDF)
+   Tutto scritto a mano, senza librerie esterne: l'app resta un file
+   solo e continua a funzionare anche offline.
+   - .xlsx = archivio ZIP con dentro XML: qui c'è un lettore ZIP
+     (usa DecompressionStream del browser) e uno scrittore ZIP senza
+     compressione (valido per Excel, Numbers e Fogli Google).
+   - .pdf  = il testo viene estratto dagli "stream" del documento.
+     Funziona con i PDF digitali (estratti conto scaricati dalla banca),
+     NON con le scansioni/foto, che non contengono testo.
 ================================================================ */
+var CRC_TABLE=(function(){
+  var t=new Uint32Array(256);
+  for(var n=0;n<256;n++){
+    var c=n;
+    for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+    t[n]=c>>>0;
+  }
+  return t;
+})();
+function crc32(u8){
+  var c=0xFFFFFFFF;
+  for(var i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function strBytes(s){return new TextEncoder().encode(s);}
+function latinBytes(s){var u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i)&0xFF;return u;}
+
+/* ---- ZIP: scrittura (metodo "stored", nessuna compressione) ---- */
+function zipStore(files,mime){
+  var chunks=[],central=[],offset=0;
+  files.forEach(function(f){
+    var name=strBytes(f.name),data=f.data,crc=crc32(data);
+    var lh=new Uint8Array(30+name.length),dv=new DataView(lh.buffer);
+    dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);
+    dv.setUint16(8,0,true);dv.setUint16(10,0,true);dv.setUint16(12,0,true);
+    dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);
+    dv.setUint16(26,name.length,true);dv.setUint16(28,0,true);
+    lh.set(name,30);
+    chunks.push(lh,data);
+    var ch=new Uint8Array(46+name.length),cv=new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);
+    cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,0,true);cv.setUint16(14,0,true);
+    cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);
+    cv.setUint16(28,name.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);
+    cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,offset,true);
+    ch.set(name,46);
+    central.push(ch);
+    offset+=lh.length+data.length;
+  });
+  var cdSize=central.reduce(function(s,c){return s+c.length;},0);
+  var eocd=new Uint8Array(22),ev=new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);
+  ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cdSize,true);ev.setUint32(16,offset,true);ev.setUint16(20,0,true);
+  return new Blob(chunks.concat(central).concat([eocd]),{type:mime||'application/zip'});
+}
+
+/* ---- ZIP: lettura ---- */
+async function inflateBytes(bytes,format){
+  if(typeof DecompressionStream==='undefined')throw new Error('Questo browser non sa aprire i file .xlsx: prova a esportare in CSV dalla banca.');
+  var ds=new DecompressionStream(format);
+  var stream=new Blob([bytes]).stream().pipeThrough(ds);
+  var ab=await new Response(stream).arrayBuffer();
+  return new Uint8Array(ab);
+}
+async function zipRead(arrayBuffer){
+  var u8=new Uint8Array(arrayBuffer),dv=new DataView(arrayBuffer);
+  var eo=-1,min=Math.max(0,u8.length-65558);
+  for(var i=u8.length-22;i>=min;i--){if(dv.getUint32(i,true)===0x06054b50){eo=i;break;}}
+  if(eo<0)throw new Error('Il file non sembra un .xlsx valido.');
+  var count=dv.getUint16(eo+10,true),cdOff=dv.getUint32(eo+16,true);
+  var out={},p=cdOff,dec=new TextDecoder();
+  for(var k=0;k<count;k++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    var method=dv.getUint16(p+10,true);
+    var csize=dv.getUint32(p+20,true);
+    var nlen=dv.getUint16(p+28,true),elen=dv.getUint16(p+30,true),clen=dv.getUint16(p+32,true);
+    var lo=dv.getUint32(p+42,true);
+    var name=dec.decode(u8.subarray(p+46,p+46+nlen));
+    var lnlen=dv.getUint16(lo+26,true),lelen=dv.getUint16(lo+28,true);
+    var start=lo+30+lnlen+lelen;
+    var raw=u8.subarray(start,start+csize);
+    out[name]=method===0?raw:await inflateBytes(raw,'deflate-raw');
+    p+=46+nlen+elen+clen;
+  }
+  return out;
+}
+
+/* ---- XLSX: lettura ---- */
+function xmlUnesc(s){
+  return String(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'")
+    .replace(/&#x([0-9a-fA-F]+);/g,function(_,h){return String.fromCharCode(parseInt(h,16));})
+    .replace(/&#(\d+);/g,function(_,d){return String.fromCharCode(parseInt(d,10));})
+    .replace(/&amp;/g,'&');
+}
+function xlsxColIndex(ref){
+  var m=/^([A-Z]+)/.exec(ref||'');
+  if(!m)return 0;
+  var n=0;
+  for(var i=0;i<m[1].length;i++)n=n*26+(m[1].charCodeAt(i)-64);
+  return n-1;
+}
+function excelSerialToISO(n){
+  var d=new Date(Date.UTC(1899,11,30)+Math.round(n)*86400000);
+  return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+}
+function xlsxSharedStrings(xml){
+  var out=[];
+  if(!xml)return out;
+  var re=/<si\b[^>]*>([\s\S]*?)<\/si>/g,m;
+  while((m=re.exec(xml))){
+    var ts=m[1].match(/<t[^>]*>([\s\S]*?)<\/t>/g)||[];
+    out.push(ts.map(function(x){return xmlUnesc(x.replace(/<[^>]+>/g,''));}).join(''));
+  }
+  return out;
+}
+function xlsxDateStyles(xml){
+  var out=[];
+  if(!xml)return out;
+  var codes={},m,re=/<numFmt[^>]*numFmtId="(\d+)"[^>]*formatCode="([^"]*)"/g;
+  while((m=re.exec(xml)))codes[m[1]]=xmlUnesc(m[2]);
+  var block=/<cellXfs[^>]*>([\s\S]*?)<\/cellXfs>/.exec(xml);
+  if(!block)return out;
+  var xre=/<xf\b[^>]*?numFmtId="(\d+)"[^>]*>/g,x;
+  while((x=xre.exec(block[1]))){
+    var id=parseInt(x[1],10),code=codes[x[1]]||'';
+    var isDate=(id>=14&&id<=22)||(id>=45&&id<=47)||(code&&/[dmy]/i.test(code.replace(/\[[^\]]*\]/g,'').replace(/"[^"]*"/g,'')));
+    out.push(!!isDate);
+  }
+  return out;
+}
+function xlsxSheetRows(xml,shared,dateStyles){
+  var rows=[],rowRe=/<row\b[^>]*>([\s\S]*?)<\/row>/g,rm;
+  while((rm=rowRe.exec(xml))){
+    var cells=[],cre=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g,cm;
+    while((cm=cre.exec(rm[1]))){
+      var attrs=cm[1]||'',inner=cm[2]||'';
+      var refm=/r="([A-Z]+\d+)"/.exec(attrs);
+      var t=(/t="([^"]+)"/.exec(attrs)||[])[1]||'n';
+      var sm=/s="(\d+)"/.exec(attrs);
+      var idx=refm?xlsxColIndex(refm[1]):cells.length;
+      var val='';
+      if(t==='inlineStr'){
+        var ts=inner.match(/<t[^>]*>([\s\S]*?)<\/t>/g)||[];
+        val=ts.map(function(x){return xmlUnesc(x.replace(/<[^>]+>/g,''));}).join('');
+      }else{
+        var v=/<v[^>]*>([\s\S]*?)<\/v>/.exec(inner);
+        var raw=v?xmlUnesc(v[1]):'';
+        if(t==='s')val=shared[parseInt(raw,10)]||'';
+        else if(t==='b')val=raw==='1'?'VERO':'FALSO';
+        else if(t==='str'||t==='e')val=raw;
+        else if(raw!==''&&sm&&dateStyles[parseInt(sm[1],10)]&&!isNaN(parseFloat(raw)))val=excelSerialToISO(parseFloat(raw));
+        else val=raw;
+      }
+      while(cells.length<idx)cells.push('');
+      cells[idx]=String(val).trim();
+    }
+    if(cells.some(function(c){return c!=='';}))rows.push(cells);
+  }
+  return rows;
+}
+async function xlsxToRows(arrayBuffer){
+  var files=await zipRead(arrayBuffer),dec=new TextDecoder();
+  var names=Object.keys(files).filter(function(n){return /^xl\/worksheets\/sheet\d+\.xml$/i.test(n);}).sort();
+  if(!names.length)throw new Error('Nel file .xlsx non ho trovato nessun foglio di calcolo.');
+  var shared=xlsxSharedStrings(files['xl/sharedStrings.xml']?dec.decode(files['xl/sharedStrings.xml']):'');
+  var styles=xlsxDateStyles(files['xl/styles.xml']?dec.decode(files['xl/styles.xml']):'');
+  var best=[];
+  names.forEach(function(n){
+    var rows=xlsxSheetRows(dec.decode(files[n]),shared,styles);
+    if(rows.length>best.length)best=rows;
+  });
+  if(!best.length)throw new Error('Il foglio di calcolo risulta vuoto.');
+  return best;
+}
+
+/* ---- XLSX: scrittura ---- */
+function xlsxColName(i){var s='';i++;while(i>0){var r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=Math.floor((i-1)/26);}return s;}
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function xlsxBlob(sheetName,header,rows){
+  var all=[header].concat(rows);
+  var body=all.map(function(r,ri){
+    var cells=r.map(function(c,ci){
+      var ref=xlsxColName(ci)+(ri+1);
+      if(typeof c==='number'&&isFinite(c))return '<c r="'+ref+'"><v>'+c+'</v></c>';
+      return '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(c)+'</t></is></c>';
+    }).join('');
+    return '<row r="'+(ri+1)+'">'+cells+'</row>';
+  }).join('');
+  var X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  var sheet=X+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+body+'</sheetData></worksheet>';
+  var wb=X+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+xmlEsc(sheetName||'Movimenti')+'" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  var wbRels=X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>';
+  var rootRels=X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  var ct=X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  return zipStore([
+    {name:'[Content_Types].xml',data:strBytes(ct)},
+    {name:'_rels/.rels',data:strBytes(rootRels)},
+    {name:'xl/workbook.xml',data:strBytes(wb)},
+    {name:'xl/_rels/workbook.xml.rels',data:strBytes(wbRels)},
+    {name:'xl/worksheets/sheet1.xml',data:strBytes(sheet)}
+  ],'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+}
+
+/* ---- PDF: scrittura ---- */
+var WINANSI_MAP={8364:0x80,8218:0x82,402:0x83,8222:0x84,8230:0x85,8224:0x86,8225:0x87,710:0x88,8240:0x89,352:0x8A,8249:0x8B,338:0x8C,381:0x8E,8216:0x91,8217:0x92,8220:0x93,8221:0x94,8226:0x95,8211:0x96,8212:0x97,732:0x98,8482:0x99,353:0x9A,8250:0x9B,339:0x9C,382:0x9E,376:0x9F,8722:0x2D};
+function pdfEsc(s){
+  s=String(s==null?'':s);
+  var out='';
+  for(var i=0;i<s.length;i++){
+    var ch=s[i],code=s.charCodeAt(i);
+    if(code>255&&WINANSI_MAP[code]!==undefined){out+=String.fromCharCode(WINANSI_MAP[code]);continue;}
+    if(ch==='('||ch===')'||ch==='\\')out+='\\'+ch;
+    else if(code<32)out+=' ';
+    else if(code>255)out+='?';
+    else out+=ch;
+  }
+  return out;
+}
+function pdfFit(s,width,size){
+  s=String(s==null?'':s);
+  var max=Math.max(1,Math.floor(width/(size*0.5)));
+  return s.length>max?s.slice(0,max-1)+'…':s;
+}
+function pdfBlob(title,subtitle,cols,rows,summary){
+  var W=595.28,H=841.89,M=40,size=8,lead=13;
+  var pages=[],cur=[],y=0;
+  function txt(x,yy,s,bold,sz,align,width){
+    sz=sz||size;
+    var t=pdfEsc(pdfFit(s,width||9999,sz));
+    var xx=x;
+    if(align==='right')xx=x+(width||0)-t.length*sz*0.5;
+    cur.push('BT /'+(bold?'F2':'F1')+' '+sz+' Tf '+xx.toFixed(1)+' '+yy.toFixed(1)+' Td ('+t+') Tj ET');
+  }
+  function line(yy){cur.push('0.75 0.75 0.75 RG 0.6 w '+M+' '+yy.toFixed(1)+' m '+(W-M)+' '+yy.toFixed(1)+' l S');}
+  function header(first){
+    y=H-M;
+    if(first){
+      txt(M,y,title,true,15);y-=18;
+      txt(M,y,subtitle,false,9);y-=14;
+    }else{
+      txt(M,y,title,true,11);y-=14;
+    }
+    line(y+4);y-=12;
+    cols.forEach(function(c){txt(M+c.x,y,c.label,true,8,c.align,c.w);});
+    y-=6;line(y);y-=lead;
+  }
+  function newPage(first){cur=[];pages.push(cur);header(first);}
+  newPage(true);
+  rows.forEach(function(r){
+    if(y<M+40){newPage(false);}
+    cols.forEach(function(c,ci){txt(M+c.x,y,r[ci],false,8,c.align,c.w);});
+    y-=lead;
+  });
+  if(summary&&summary.length){
+    if(y<M+70)newPage(false);
+    y-=6;line(y);y-=16;
+    summary.forEach(function(s){txt(M,y,s,true,9);y-=13;});
+  }
+  var objs=[];
+  function add(s){objs.push(s);return objs.length;}
+  var fontR=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  var fontB=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  var pagesId=add('');
+  var kids=[];
+  pages.forEach(function(p){
+    var content=p.join('\n');
+    var cid=add('<< /Length '+content.length+' >>\nstream\n'+content+'\nendstream');
+    var pid=add('<< /Type /Page /Parent '+pagesId+' 0 R /MediaBox [0 0 '+W.toFixed(2)+' '+H.toFixed(2)+'] /Resources << /Font << /F1 '+fontR+' 0 R /F2 '+fontB+' 0 R >> >> /Contents '+cid+' 0 R >>');
+    kids.push(pid+' 0 R');
+  });
+  objs[pagesId-1]='<< /Type /Pages /Count '+pages.length+' /Kids ['+kids.join(' ')+'] >>';
+  var catId=add('<< /Type /Catalog /Pages '+pagesId+' 0 R >>');
+  var out='%PDF-1.4\n',offsets=[];
+  objs.forEach(function(o,i){
+    offsets.push(out.length);
+    out+=(i+1)+' 0 obj\n'+o+'\nendobj\n';
+  });
+  var xref=out.length;
+  out+='xref\n0 '+(objs.length+1)+'\n0000000000 65535 f \n';
+  offsets.forEach(function(o){out+=String(o).padStart(10,'0')+' 00000 n \n';});
+  out+='trailer\n<< /Size '+(objs.length+1)+' /Root '+catId+' 0 R >>\nstartxref\n'+xref+'\n%%EOF';
+  return new Blob([latinBytes(out)],{type:'application/pdf'});
+}
+
+/* ---- PDF: lettura del testo ---- */
+function pdfContentToLines(txt){
+  var chunks=[],cur='',nums=[],curX=0,curY=0,inTJ=false,i=0,n=txt.length;
+  function push(){var t=cur;cur='';if(t.trim())chunks.push({y:curY,x:curX,t:t});}
+  while(i<n){
+    var c=txt[i];
+    if(c==='('){
+      var d=1;i++;
+      while(i<n&&d>0){
+        var ch=txt[i];
+        if(ch==='\\'){
+          var nx=txt[i+1];
+          if(nx>='0'&&nx<='7'){
+            var oct=nx,k=i+2;
+            while(k<n&&oct.length<3&&txt[k]>='0'&&txt[k]<='7'){oct+=txt[k];k++;}
+            cur+=String.fromCharCode(parseInt(oct,8));i=k;continue;
+          }
+          var map={'n':' ','r':' ','t':' ','b':'','f':'','(':'(',')':')','\\':'\\'};
+          cur+=(map[nx]!==undefined?map[nx]:nx);i+=2;continue;
+        }
+        if(ch==='(')d++;
+        else if(ch===')'){d--;if(d===0){i++;break;}}
+        if(d>0)cur+=ch;
+        i++;
+      }
+      continue;
+    }
+    if(c==='<'&&txt[i+1]==='<'){
+      var depth=0;
+      while(i<n){
+        if(txt[i]==='<'&&txt[i+1]==='<'){depth++;i+=2;continue;}
+        if(txt[i]==='>'&&txt[i+1]==='>'){depth--;i+=2;if(depth<=0)break;continue;}
+        i++;
+      }
+      continue;
+    }
+    if(c==='<'){
+      var e=txt.indexOf('>',i);
+      if(e<0)break;
+      var hex=txt.slice(i+1,e).replace(/\s+/g,'');
+      for(var h=0;h+1<hex.length;h+=2){
+        var code=parseInt(hex.substr(h,2),16);
+        if(!isNaN(code)&&code>=32)cur+=String.fromCharCode(code);
+      }
+      i=e+1;continue;
+    }
+    if(c==='['){inTJ=true;i++;continue;}
+    if(c===']'){inTJ=false;i++;continue;}
+    if(/[-+.\d]/.test(c)){
+      var j=i,num='';
+      while(j<n&&/[-+.\d]/.test(txt[j])){num+=txt[j];j++;}
+      var val=parseFloat(num);
+      if(!isNaN(val)){
+        nums.push(val);
+        if(inTJ&&val<=-120&&cur&&cur.slice(-1)!==' ')cur+=' ';
+      }
+      i=j;continue;
+    }
+    if(/[A-Za-z*'"]/.test(c)){
+      var j2=i,op='';
+      while(j2<n&&/[A-Za-z*'"0-9]/.test(txt[j2])){op+=txt[j2];j2++;}
+      i=j2;
+      if(op==='Tj'||op==='TJ'||op==="'"||op==='"')push();
+      else if(op==='Td'||op==='TD'){if(nums.length>=2){curX+=nums[nums.length-2];curY+=nums[nums.length-1];}}
+      else if(op==='Tm'){if(nums.length>=6){curX=nums[nums.length-2];curY=nums[nums.length-1];}}
+      else if(op==='T*')curY-=12;
+      else if(op==='BT'){curX=0;curY=0;}
+      nums=[];
+      continue;
+    }
+    i++;
+  }
+  push();
+  var groups=[];
+  chunks.forEach(function(ch){
+    var g=null;
+    for(var q=0;q<groups.length;q++){if(Math.abs(groups[q].y-ch.y)<=2.5){g=groups[q];break;}}
+    if(!g){g={y:ch.y,items:[]};groups.push(g);}
+    g.items.push(ch);
+  });
+  groups.sort(function(a,b){return b.y-a.y;});
+  return groups.map(function(g){
+    return g.items.map(function(it){return it.t;}).join(' ').replace(/\s+/g,' ').trim();
+  }).filter(function(l){return l;});
+}
+async function pdfToLines(arrayBuffer){
+  var u8=new Uint8Array(arrayBuffer);
+  var dec=new TextDecoder('windows-1252');
+  var s=dec.decode(u8);
+  if(s.slice(0,5)!=='%PDF-')throw new Error('Il file non sembra un PDF.');
+  var lines=[],idx=0,guard=0;
+  while(guard++<4000){
+    var st=s.indexOf('stream',idx);
+    if(st<0)break;
+    var dictStart=s.lastIndexOf('<<',st);
+    var dict=dictStart>=0?s.slice(dictStart,st):'';
+    var dataStart=st+6;
+    if(s[dataStart]==='\r')dataStart++;
+    if(s[dataStart]==='\n')dataStart++;
+    var end=s.indexOf('endstream',dataStart);
+    if(end<0)break;
+    idx=end+9;
+    if(/\/Image|\/DCTDecode|\/JPXDecode|\/CCITTFaxDecode|\/JBIG2Decode/.test(dict))continue;
+    /* La lunghezza reale dei dati: se il dizionario dichiara /Length uso
+       quella, altrimenti taglio gli a-capo che precedono "endstream"
+       (altrimenti la decompressione fallisce per "byte di troppo"). */
+    var stop=end;
+    var lm=/\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(dict);
+    if(lm&&dataStart+parseInt(lm[1],10)<=end)stop=dataStart+parseInt(lm[1],10);
+    else{while(stop>dataStart&&(s.charCodeAt(stop-1)===10||s.charCodeAt(stop-1)===13))stop--;}
+    var bytes=u8.subarray(dataStart,stop);
+    var content=null;
+    if(/\/FlateDecode/.test(dict)){
+      try{content=await inflateBytes(bytes,'deflate');}
+      catch(e1){try{content=await inflateBytes(bytes,'deflate-raw');}catch(e2){continue;}}
+    }else if(!/\/Filter/.test(dict)){
+      content=bytes;
+    }else continue;
+    var text=dec.decode(content);
+    if(text.indexOf('Tj')<0&&text.indexOf('TJ')<0)continue;
+    lines=lines.concat(pdfContentToLines(text));
+  }
+  if(!lines.length)throw new Error('Da questo PDF non esce nessun testo: è probabilmente una scansione (immagine). Usa il CSV o l\'Excel della banca.');
+  return lines;
+}
+/* Da righe di testo a righe "data · descrizione · importo". */
+function pdfLinesToRows(lines){
+  var AMT=/[-+−]?\s?\d{1,3}(?:[.\s]\d{3})*,\d{2}(?:\s?[-−])?/g;
+  var DATE=/\b(\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4})\b/;
+  var rows=[];
+  lines.forEach(function(l){
+    var dm=DATE.exec(l);
+    if(!dm)return;
+    var date=parseDateFlexible(dm[1]);
+    if(!date)return;
+    var rest=l.slice(dm.index+dm[1].length);
+    var amts=rest.match(AMT);
+    if(!amts||!amts.length)return;
+    var raw=amts[0];
+    var val=parseAmount(raw.replace(/−/g,'-').replace(/\s/g,''));
+    if(isNaN(val)||val===0)return;
+    if(/[-−]\s*$/.test(raw)&&val>0)val=-val;
+    var desc=rest.replace(new RegExp(raw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),' ')
+      .replace(/\b\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4}\b/g,' ')
+      .replace(/\s+/g,' ').trim();
+    rows.push([date,desc||'Movimento',String(val).replace('.',',')]);
+  });
+  return rows;
+}
+
+/* ---- Salvataggio del file sul telefono ---- */
+async function saveOrShare(filename,blob,mime){
+  try{
+    if(navigator.canShare&&navigator.share&&typeof File!=='undefined'){
+      var file=new File([blob],filename,{type:mime});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:filename});
+        return 'shared';
+      }
+    }
+  }catch(e){
+    if(e&&e.name==='AbortError')return 'cancelled';
+  }
+  try{
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=filename;a.rel='noopener';
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){try{document.body.removeChild(a);}catch(e2){}URL.revokeObjectURL(url);},5000);
+    return 'downloaded';
+  }catch(e3){return 'failed';}
+}
+
+/* ================================================================
+   ESPORTAZIONE (PDF · CSV · XLSX)
+================================================================ */
+function exportEntries(scope){
+  var txs=state.transactions.slice();
+  var trs=state.transfers.slice();
+  if(scope==='month'){
+    var mk=ui.viewMonth||currentMonthKey();
+    txs=txs.filter(function(t){return t.date.slice(0,7)===mk;});
+    trs=trs.filter(function(t){return t.date.slice(0,7)===mk;});
+  }else if(scope==='year'){
+    var y=String(ui.viewYear||new Date().getFullYear());
+    txs=txs.filter(function(t){return t.date.slice(0,4)===y;});
+    trs=trs.filter(function(t){return t.date.slice(0,4)===y;});
+  }
+  var rows=txs.map(function(t){
+    var c=catById(t.categoryId);
+    return{
+      date:t.date,
+      type:t.type==='income'?'Entrata':'Spesa',
+      signed:t.type==='income'?t.amount:-t.amount,
+      amount:t.amount,
+      category:c?c.name:'',
+      account:accById(t.accountId).name,
+      merchant:t.merchant||'',
+      note:t.note||'',
+      tags:(t.tags||[]).map(function(id){var g=tagById(id);return g?g.name:'';}).filter(Boolean).join(', ')
+    };
+  }).concat(trs.map(function(t){
+    return{
+      date:t.date,
+      type:'Trasferimento',
+      signed:0,
+      amount:t.amount,
+      category:'',
+      account:accById(t.fromAccountId).name+' → '+accById(t.toAccountId).name,
+      merchant:'',
+      note:t.note||'',
+      tags:(t.tags||[]).map(function(id){var g=tagById(id);return g?g.name:'';}).filter(Boolean).join(', ')
+    };
+  }));
+  rows.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+  return rows;
+}
+function exportScopeLabel(scope){
+  if(scope==='month')return formatMonthLabel(ui.viewMonth||currentMonthKey());
+  if(scope==='year')return 'Anno '+(ui.viewYear||new Date().getFullYear());
+  return 'Tutti i movimenti';
+}
+function exportFileBase(scope){
+  var s=exportScopeLabel(scope).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  return 'spese-'+s;
+}
+var EXPORT_HEADER=['Data','Tipo','Importo','Categoria','Conto','Esercente','Nota','Tag'];
+function exportCSV(scope){
+  var rows=exportEntries(scope);
+  function q(v){var s=String(v==null?'':v);return '"'+s.replace(/"/g,'""')+'"';}
+  var out=EXPORT_HEADER.map(q).join(';')+'\r\n';
+  rows.forEach(function(r){
+    out+=[r.date,r.type,String(r.signed||(r.type==='Trasferimento'?r.amount:0)).replace('.',','),r.category,r.account,r.merchant,r.note,r.tags].map(q).join(';')+'\r\n';
+  });
+  return {blob:new Blob(['\ufeff'+out],{type:'text/csv;charset=utf-8'}),name:exportFileBase(scope)+'.csv',mime:'text/csv',count:rows.length};
+}
+function exportXLSX(scope){
+  var rows=exportEntries(scope);
+  var body=rows.map(function(r){
+    return [r.date,r.type,(r.type==='Trasferimento'?r.amount:r.signed),r.category,r.account,r.merchant,r.note,r.tags];
+  });
+  return {blob:xlsxBlob('Movimenti',EXPORT_HEADER,body),name:exportFileBase(scope)+'.xlsx',mime:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',count:rows.length};
+}
+function exportPDF(scope){
+  var rows=exportEntries(scope);
+  var inc=0,exp=0;
+  rows.forEach(function(r){
+    if(r.type==='Entrata')inc+=r.amount;
+    else if(r.type==='Spesa')exp+=r.amount;
+  });
+  var cols=[
+    {x:0,w:54,label:'Data'},
+    {x:58,w:60,label:'Tipo'},
+    {x:122,w:150,label:'Descrizione'},
+    {x:276,w:88,label:'Categoria'},
+    {x:368,w:80,label:'Conto'},
+    {x:452,w:63,label:'Importo',align:'right'}
+  ];
+  var body=rows.map(function(r){
+    var desc=r.merchant||r.note||'—';
+    var amt=(r.type==='Trasferimento'?'':(r.signed<0?'-':'+'))+Math.abs(r.type==='Trasferimento'?r.amount:r.signed).toFixed(2).replace('.',',')+' €';
+    return [formatShortDate(r.date),r.type,desc,r.category,r.account,amt];
+  });
+  var summary=[
+    'Entrate: '+inc.toFixed(2).replace('.',',')+' €     Spese: '+exp.toFixed(2).replace('.',',')+' €     Saldo del periodo: '+(inc-exp).toFixed(2).replace('.',',')+' €',
+    'Movimenti esportati: '+rows.length
+  ];
+  var blob=pdfBlob('Spese — '+exportScopeLabel(scope),'Esportato il '+formatShortDate(todayISO())+' · '+rows.length+' movimenti',cols,body,summary);
+  return {blob:blob,name:exportFileBase(scope)+'.pdf',mime:'application/pdf',count:rows.length};
+}
+
+function openExportModal(){
+  var ex={scope:'month',busy:false,msg:''};
+  function sheetHTML(){
+    var n=exportEntries(ex.scope).length;
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">Esporta i movimenti</h3>'+
+      '<div class="field-group"><label class="field-label">Periodo</label><div class="segmented small">'+
+        '<button class="'+(ex.scope==='month'?'active':'')+'" data-exp-scope="month">Mese</button>'+
+        '<button class="'+(ex.scope==='year'?'active':'')+'" data-exp-scope="year">Anno</button>'+
+        '<button class="'+(ex.scope==='all'?'active':'')+'" data-exp-scope="all">Tutto</button>'+
+      '</div></div>'+
+      '<p class="hint">'+esc(exportScopeLabel(ex.scope))+' · <strong>'+n+'</strong> movimenti (spese, entrate e trasferimenti).</p>'+
+      '<button class="btn-primary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 Esporta PDF</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 Esporta Excel (.xlsx)</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 Esporta CSV</button>'+
+      (ex.msg?'<p class="hint">'+esc(ex.msg)+'</p>':'<p class="hint">Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.</p>')+
+    '</div>';
+  }
+  function render(){
+    var wrap=document.querySelector('#modal-root .sheet-wrap');
+    if(!wrap)return;
+    wrap.innerHTML=sheetHTML();
+    wire();
+  }
+  function wire(){
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    document.querySelectorAll('[data-exp-scope]').forEach(function(b){
+      b.onclick=function(){ex.scope=b.dataset.expScope;ex.msg='';render();};
+    });
+    document.querySelectorAll('[data-exp-fmt]').forEach(function(b){
+      b.onclick=async function(){
+        if(ex.busy)return;
+        ex.busy=true;
+        var fmt=b.dataset.expFmt,res=null;
+        try{
+          res=fmt==='pdf'?exportPDF(ex.scope):fmt==='xlsx'?exportXLSX(ex.scope):exportCSV(ex.scope);
+        }catch(e){
+          ex.busy=false;ex.msg='Errore durante la creazione del file.';render();return;
+        }
+        var out=await saveOrShare(res.name,res.blob,res.mime);
+        ex.busy=false;
+        if(out==='cancelled'){ex.msg='Esportazione annullata.';render();return;}
+        if(out==='failed'){ex.msg='Non è stato possibile salvare il file.';render();return;}
+        closeModal();
+        showToast(res.count+' movimenti esportati in '+res.name);
+      };
+    });
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
+
+/* ================================================================
+   IMPORT ESTRATTO CONTO (CSV · XLSX · PDF)
+   Il file viene sempre trasformato in una tabella (righe × colonne):
+   da lì in poi il percorso è identico per tutti i formati, con
+   l'anteprima riga per riga prima di salvare qualsiasi cosa.
+================================================================ */
+function rowsFromCSV(text){
+  var lines=String(text||'').split(/\r?\n/).filter(function(l){return l.trim()!=='';});
+  if(!lines.length)return [];
+  var d=detectDelim(lines[0]);
+  return lines.map(function(l){return splitCSV(l,d);});
+}
 function openImportModal(){
-  var imp={step:1,accountId:state.accounts[0].id,rawText:'',hasHeader:true,delimiter:';',headers:[],mapping:{date:0,description:1,amount:2},mappingGuessed:false,parsed:[]};
+  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],
+           hasHeader:true,headers:[],mapping:{date:0,description:1,amount:2},mappingGuessed:false,
+           parsed:[],error:'',busy:false};
+
   function renderStep(){var r=document.querySelector('#modal-root .sheet-wrap');if(r){r.innerHTML=stepHTML();wireStep();}}
   function stepDots(){var h='<div class="step-dots">';for(var i=1;i<=3;i++)h+='<span class="step-dot'+(i===imp.step?' active':'')+'"></span>';return h+'</div>';}
   function stepHTML(){return imp.step===1?step1():imp.step===2?step2():step3();}
-  function step1(){var opts=state.accounts.map(function(a){return'<option value="'+a.id+'" '+(a.id===imp.accountId?'selected':'')+'>'+esc(a.name)+'</option>';}).join('');return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Importa estratto conto</h3><div class="field-group"><label class="field-label">Conto di destinazione</label><select class="select" id="impAcc">'+opts+'</select></div><div class="field-group"><label class="field-label">File CSV</label><input type="file" accept=".csv,text/csv,text/plain" id="impFile"></div><div class="field-group"><label class="field-label">Oppure incolla il contenuto</label><textarea class="text-input" id="impText" placeholder="data;descrizione;importo">'+esc(imp.rawText)+'</textarea></div><button class="btn-primary full-width" id="impNext1" disabled>Continua</button><button class="btn-secondary full-width" id="impCancel1">Annulla</button></div>';}
-  function deriveHeaders(){var lines=imp.rawText.split(/\r?\n/).filter(function(l){return l.trim()!=='';});if(!lines.length)return;imp.delimiter=detectDelim(lines[0]);var first=splitCSV(lines[0],imp.delimiter);imp.headers=imp.hasHeader?first:first.map(function(_,i){return'Colonna '+(i+1);});if(!imp.mappingGuessed){var g=guessColMap(imp.hasHeader?first:[]);imp.mapping={date:g.date>-1?g.date:0,description:g.description>-1?g.description:1,amount:g.amount>-1?g.amount:(first.length-1)};imp.mappingGuessed=true;}}
-  function step2(){deriveHeaders();function sel(f){return'<select class="select" data-map-field="'+f+'">'+imp.headers.map(function(h,i){return'<option value="'+i+'" '+(imp.mapping[f]===i?'selected':'')+'>'+esc(h)+'</option>';}).join('')+'</select>';}return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Associa le colonne</h3><label class="toggle-row"><span>Prima riga come intestazione</span><input type="checkbox" id="impHeader" '+(imp.hasHeader?'checked':'')+'></label><div class="field-group"><label class="field-label">Colonna data</label>'+sel('date')+'</div><div class="field-group"><label class="field-label">Colonna descrizione</label>'+sel('description')+'</div><div class="field-group"><label class="field-label">Colonna importo</label>'+sel('amount')+'</div><p class="hint">Importi negativi → spese. Positivi → entrate. Potrai correggere nel passo successivo.</p><button class="btn-primary full-width" id="impNext2">Continua</button><button class="btn-secondary full-width" id="impBack2">Indietro</button></div>';}
-  function buildParsed(){var lines=imp.rawText.split(/\r?\n/).filter(function(l){return l.trim()!=='';});var out=[];for(var i=imp.hasHeader?1:0;i<lines.length;i++){var cols=splitCSV(lines[i],imp.delimiter);if(cols.length<=Math.max(imp.mapping.date,imp.mapping.description,imp.mapping.amount))continue;var ra=parseAmount(cols[imp.mapping.amount]);if(isNaN(ra)||ra===0)continue;var date=parseDateFlexible(cols[imp.mapping.date])||todayISO();var desc=cols[imp.mapping.description]||'';var type=ra<0?'expense':'income';out.push({id:uid('imp'),date:date,desc:desc,amount:Math.abs(ra),include:true,type:type,categoryId:guessCat(desc,type)});}imp.parsed=out;}
+
+  function step1(){
+    var opts=state.accounts.map(function(a){return'<option value="'+a.id+'" '+(a.id===imp.accountId?'selected':'')+'>'+esc(a.name)+'</option>';}).join('');
+    var status='';
+    if(imp.busy)status='<p class="hint">Lettura del file in corso…</p>';
+    else if(imp.error)status='<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.error)+'</p>';
+    else if(imp.rows.length)status='<p class="hint">✅ '+esc(imp.fileName||'File')+': '+imp.rows.length+' righe lette.</p>';
+    return'<div class="sheet">'+stepDots()+
+      '<h3 style="margin:4px 0 0;">Importa estratto conto</h3>'+
+      '<div class="field-group"><label class="field-label">Conto di destinazione</label><select class="select" id="impAcc">'+opts+'</select></div>'+
+      '<div class="field-group"><label class="field-label">File (CSV, Excel .xlsx o PDF)</label><input type="file" accept=".csv,.txt,.xlsx,.pdf,text/csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="impFile"></div>'+
+      status+
+      '<div class="field-group"><label class="field-label">Oppure incolla il contenuto (CSV)</label><textarea class="text-input" id="impText" placeholder="data;descrizione;importo">'+esc(imp.rawText)+'</textarea></div>'+
+      '<p class="hint">Il PDF viene letto come testo: funziona con gli estratti conto scaricati dalla banca, non con le scansioni o le foto. Controlla sempre le righe nel passo finale.</p>'+
+      '<button class="btn-primary full-width" id="impNext1" '+(imp.rows.length?'':'disabled')+'>Continua</button>'+
+      '<button class="btn-secondary full-width" id="impCancel1">Annulla</button></div>';
+  }
+
+  function deriveHeaders(){
+    if(!imp.rows.length)return;
+    var first=imp.rows[0];
+    imp.headers=imp.hasHeader?first.map(function(h,i){return String(h||'Colonna '+(i+1));}):first.map(function(_,i){return'Colonna '+(i+1);});
+    if(!imp.mappingGuessed){
+      var g=guessColMap(imp.hasHeader?first.map(String):[]);
+      imp.mapping={date:g.date>-1?g.date:0,description:g.description>-1?g.description:1,amount:g.amount>-1?g.amount:(first.length-1)};
+      imp.mappingGuessed=true;
+    }
+  }
+  function step2(){
+    deriveHeaders();
+    function sel(f){return'<select class="select" data-map-field="'+f+'">'+imp.headers.map(function(h,i){return'<option value="'+i+'" '+(imp.mapping[f]===i?'selected':'')+'>'+esc(h)+'</option>';}).join('')+'</select>';}
+    return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Associa le colonne</h3>'+
+      '<label class="toggle-row"><span>Prima riga come intestazione</span><input type="checkbox" id="impHeader" '+(imp.hasHeader?'checked':'')+'></label>'+
+      '<div class="field-group"><label class="field-label">Colonna data</label>'+sel('date')+'</div>'+
+      '<div class="field-group"><label class="field-label">Colonna descrizione</label>'+sel('description')+'</div>'+
+      '<div class="field-group"><label class="field-label">Colonna importo</label>'+sel('amount')+'</div>'+
+      '<p class="hint">Importi negativi → spese. Positivi → entrate. Potrai correggere nel passo successivo.</p>'+
+      '<button class="btn-primary full-width" id="impNext2">Continua</button>'+
+      '<button class="btn-secondary full-width" id="impBack2">Indietro</button></div>';
+  }
+  function buildParsed(){
+    var out=[],start=imp.hasHeader?1:0;
+    for(var i=start;i<imp.rows.length;i++){
+      var cols=imp.rows[i];
+      if(!cols||cols.length<=Math.max(imp.mapping.date,imp.mapping.description,imp.mapping.amount))continue;
+      var ra=parseAmount(cols[imp.mapping.amount]);
+      if(isNaN(ra)||ra===0)continue;
+      var date=parseDateFlexible(cols[imp.mapping.date])||todayISO();
+      var desc=cols[imp.mapping.description]||'';
+      var type=ra<0?'expense':'income';
+      out.push({id:uid('imp'),date:date,desc:desc,amount:Math.abs(ra),include:true,type:type,categoryId:guessCat(desc,type)});
+    }
+    imp.parsed=out;
+  }
   function catOptsGrouped(sel){return'<optgroup label="Spese">'+catsByType('expense').map(function(c){return'<option value="'+c.id+'" '+(c.id===sel?'selected':'')+'>'+esc(c.emoji)+' '+esc(c.name)+'</option>';}).join('')+'</optgroup><optgroup label="Entrate">'+catsByType('income').map(function(c){return'<option value="'+c.id+'" '+(c.id===sel?'selected':'')+'>'+esc(c.emoji)+' '+esc(c.name)+'</option>';}).join('')+'</optgroup>';}
-  function step3(){var cnt=imp.parsed.filter(function(r){return r.include;}).length;return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Controlla e importa</h3><p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'"</p><div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'><span class="imp-date">'+formatShortDate(r.date)+'</span><span class="imp-desc">'+esc(r.desc||'—')+'</span><span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span><select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select></div>';}).join(''):'<p class="empty-note">Nessuna riga valida.</p>')+'</div><button class="btn-primary full-width" id="impConfirm" '+(cnt?'':'disabled')+'>Importa '+cnt+' movimenti</button><button class="btn-secondary full-width" id="impBack3">Indietro</button></div>';}
+  function step3(){
+    var cnt=imp.parsed.filter(function(r){return r.include;}).length;
+    return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Controlla e importa</h3>'+
+      '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'"</p>'+
+      '<div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){
+        return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'><span class="imp-date">'+formatShortDate(r.date)+'</span><span class="imp-desc">'+esc(r.desc||'—')+'</span><span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span><select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select></div>';
+      }).join(''):'<p class="empty-note">Nessuna riga valida.</p>')+'</div>'+
+      '<button class="btn-primary full-width" id="impConfirm" '+(cnt?'':'disabled')+'>Importa '+cnt+' movimenti</button>'+
+      '<button class="btn-secondary full-width" id="impBack3">Indietro</button></div>';
+  }
+
+  async function readFile(f){
+    imp.busy=true;imp.error='';imp.fileName=f.name;renderStep();
+    var name=(f.name||'').toLowerCase();
+    try{
+      if(/\.xlsx$/.test(name)||f.type.indexOf('spreadsheetml')>-1){
+        imp.source='xlsx';
+        imp.rows=await xlsxToRows(await f.arrayBuffer());
+        imp.hasHeader=true;imp.mappingGuessed=false;imp.rawText='';
+      }else if(/\.pdf$/.test(name)||f.type==='application/pdf'){
+        imp.source='pdf';
+        var lines=await pdfToLines(await f.arrayBuffer());
+        var rows=pdfLinesToRows(lines);
+        if(!rows.length)throw new Error('Nel PDF non ho trovato righe con data e importo. Prova con il CSV o l\'Excel della banca.');
+        imp.rows=[['Data','Descrizione','Importo']].concat(rows);
+        imp.hasHeader=true;imp.mapping={date:0,description:1,amount:2};imp.mappingGuessed=true;imp.rawText='';
+      }else{
+        imp.source='csv';
+        var text=await f.text();
+        imp.rawText=text;
+        imp.rows=rowsFromCSV(text);
+        imp.hasHeader=true;imp.mappingGuessed=false;
+        if(!imp.rows.length)throw new Error('Il file risulta vuoto.');
+      }
+    }catch(e){
+      imp.rows=[];
+      imp.error=(e&&e.message)?e.message:'Non sono riuscito a leggere il file.';
+    }
+    imp.busy=false;
+    renderStep();
+  }
+
   function wireStep(){
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     if(imp.step===1){
       var fi=document.getElementById('impFile'),ta=document.getElementById('impText'),n1=document.getElementById('impNext1');
-      function chk(){n1.disabled=!imp.rawText.trim();}
-      fi.onchange=function(){var f=fi.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){imp.rawText=String(rd.result||'');ta.value=imp.rawText;chk();};rd.readAsText(f);};
-      ta.oninput=function(){imp.rawText=ta.value;chk();};
+      fi.onchange=function(){var f=fi.files[0];if(f)readFile(f);};
+      ta.oninput=function(){
+        imp.rawText=ta.value;imp.source='csv';imp.fileName='';imp.error='';
+        imp.rows=rowsFromCSV(imp.rawText);imp.mappingGuessed=false;
+        n1.disabled=!imp.rows.length;
+      };
       document.getElementById('impAcc').onchange=function(e){imp.accountId=e.target.value;};
-      n1.onclick=function(){imp.step=2;renderStep();};
-      document.getElementById('impCancel1').onclick=closeModal;chk();
+      n1.onclick=function(){if(!imp.rows.length)return;imp.step=2;renderStep();};
+      document.getElementById('impCancel1').onclick=closeModal;
     }else if(imp.step===2){
       document.getElementById('impHeader').onchange=function(e){imp.hasHeader=e.target.checked;renderStep();};
       document.querySelectorAll('[data-map-field]').forEach(function(s){s.onchange=function(){imp.mapping[s.dataset.mapField]=parseInt(s.value,10);};});
@@ -2043,8 +2951,9 @@ function openImportModal(){
       document.querySelectorAll('[data-cat]').forEach(function(s){s.onchange=function(){var idx=+s.dataset.cat,cat=catById(s.value);imp.parsed[idx].categoryId=s.value;imp.parsed[idx].type=cat.type;renderStep();};});
       document.getElementById('impBack3').onclick=function(){imp.step=2;renderStep();};
       document.getElementById('impConfirm').onclick=function(){
-        imp.parsed.filter(function(r){return r.include;}).forEach(function(r){state.transactions.push({id:uid('tx'),type:r.type,amount:r.amount,accountId:imp.accountId,categoryId:r.categoryId,note:r.desc,date:r.date,tags:[],createdAt:Date.now()});});
-        saveState();closeModal();showToast('Importati '+imp.parsed.filter(function(r){return r.include;}).length+' movimenti');renderActiveTab();
+        var chosen=imp.parsed.filter(function(r){return r.include;});
+        chosen.forEach(function(r){state.transactions.push({id:uid('tx'),type:r.type,amount:r.amount,accountId:imp.accountId,categoryId:r.categoryId,merchant:'',note:r.desc,date:r.date,tags:[],createdAt:Date.now(),source:'import'});});
+        saveState();closeModal();showToast('Importati '+chosen.length+' movimenti');renderActiveTab();
       };
     }
   }
@@ -2303,14 +3212,7 @@ function initSwipeTabs(){
    sincronizzazione si limita a ridisegnare la schermata. */
 async function refreshFromCloud(){
   if(sync.status!=='connected'||!sync.db||!sync.uid)return;
-  var snap=await syncDocRef(sync.uid).get();
-  if(!snap.exists)return;
-  var remote=snap.data();
-  if(!remote||!remote.data||remote.data===sync.lastPushedJSON)return;
-  if(remote.data===JSON.stringify(state)){sync.lastPushedJSON=remote.data;return;}
-  state=migrateFromRaw(JSON.parse(remote.data));
-  sync.lastPushedJSON=remote.data;
-  storageSet(STORAGE_KEY,JSON.stringify(state));
+  await reconcileWithCloud();
 }
 async function doRefresh(){
   var ptr=document.getElementById('ptr');
@@ -2433,6 +3335,8 @@ async function init(){
   if(!usingClaudeStorage&&'serviceWorker' in navigator){
     navigator.serviceWorker.register('service-worker.js').catch(function(){});
   }
+  loadSyncMeta();
+  initConnectivityWatch();
   initSyncFromSavedConfig();
   initNativeNotificationBridge();
 }

@@ -113,31 +113,87 @@
     openApp.style.display='block';
   }
 
-  async function run(){
-    var stored=fromStorage();
-    var token=cleanText(qs('token'))||stored.token;
-    var pid=cleanText(qs('pid'))||stored.pid;
-    var importo=cleanAmount(qs('importo')||qs('i'));
-    var negozio=cleanText(qs('negozio')||qs('n'))||'Apple Pay';
+  /* ----------------------------------------------------------------
+     ANTI-DOPPIONE
+     L'automazione apre questa pagina in Safari con importo e negozio
+     nell'indirizzo. Se la pagina viene ricaricata (anche per sbaglio),
+     senza protezione il pagamento verrebbe inviato una seconda volta.
+     Tre protezioni, in ordine:
+     1) se la pagina e' stata RICARICATA (o si e' tornati indietro con il
+        tasto Back) non si invia nulla: si mostra solo l'esito precedente;
+     2) dopo un invio riuscito i parametri vengono tolti dall'indirizzo,
+        quindi un ricaricamento non ha piu' niente da inviare;
+     3) se lo stesso identico pagamento (stesso importo e stesso negozio)
+        ripassa entro 3 minuti, viene chiesta conferma invece di
+        registrarlo di nuovo in automatico.
+  ---------------------------------------------------------------- */
+  var GUARD_KEY='registra-ultimo-invio-v1';
+  var GUARD_MS=3*60*1000;
 
-    if(!importo){
-      fail('Importo mancante o non riconosciuto nell\'indirizzo.\n\nL\'automazione deve aprire un indirizzo tipo:\n…/registra.html?importo=12,34&negozio=NOME\n\ncon la variabile Importo inserita dopo «importo=».');
-      return;
-    }
-    if(!token||!pid){
-      fail('Token o project ID mancanti.\n\nAggiungili all\'indirizzo dell\'automazione:\n…/registra.html?pid=IL-TUO-PROJECT-ID&token=IL-TUO-TOKEN&importo=…\n\nEntrambi si ricavano dall\'indirizzo che copi dall\'app in Conti → «Copia indirizzo»: il project ID è la parola dopo /projects/, il token è il codice dopo /inbox/.');
-      return;
-    }
-
-    var text='Pagamento di '+importo+' € presso '+negozio;
+  function navType(){
+    try{
+      var e=performance.getEntriesByType('navigation')[0];
+      if(e&&e.type)return e.type;
+      if(performance.navigation)return performance.navigation.type===1?'reload':(performance.navigation.type===2?'back_forward':'navigate');
+    }catch(e){}
+    return 'navigate';
+  }
+  function guardRead(){
+    try{var raw=window.localStorage.getItem(GUARD_KEY);return raw?JSON.parse(raw):null;}catch(e){return null;}
+  }
+  function guardWrite(key,text){
+    try{window.localStorage.setItem(GUARD_KEY,JSON.stringify({key:key,text:text,at:Date.now()}));}catch(e){}
+  }
+  function stripParams(){
+    try{history.replaceState({},'',window.location.pathname);}catch(e){}
+  }
+  function alreadyDone(text){
+    spinner.style.display='none';
+    icon.textContent='✅';
+    title.textContent='Già registrato';
+    detail.textContent=text||'';
+    sub.textContent='';
+    msg.className='msg ok';
+    msg.textContent='Questo pagamento era già stato inviato all\'app. La pagina è stata solo ricaricata, quindi non l\'ho registrato una seconda volta.';
+    openApp.style.display='block';
+  }
+  function nothingToDo(){
+    spinner.style.display='none';
+    icon.textContent='👍';
+    title.textContent='Niente da registrare';
+    detail.textContent='';
+    sub.textContent='Questa pagina serve all\'automazione dei pagamenti. Puoi chiuderla.';
+    openApp.style.display='block';
+  }
+  function askConfirm(text,onYes){
+    spinner.style.display='none';
+    icon.textContent='⚠️';
+    title.textContent='Sembra un doppione';
     detail.textContent=text;
+    sub.textContent='';
+    msg.className='msg err';
+    msg.textContent='Un pagamento identico è stato registrato pochi minuti fa. Se è davvero un secondo pagamento, tocca «Registra comunque»; altrimenti chiudi la pagina.';
+    retryBtn.textContent='Registra comunque';
+    retryBtn.style.display='block';
+    openApp.style.display='block';
+    retryBtn.onclick=function(){
+      retryBtn.style.display='none';
+      msg.className='msg';
+      spinner.style.display='block';
+      icon.textContent='💸';
+      title.textContent='Registrazione in corso…';
+      onYes();
+    };
+  }
 
+  async function send(token,pid,text,key){
     var url='https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(pid)+'/databases/(default)/documents/inbox/'+encodeURIComponent(token)+'/items';
     var body={fields:{title:{stringValue:'Apple Pay'},text:{stringValue:text}}};
-
     try{
       var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       if(resp.ok){
+        guardWrite(key,text);
+        stripParams();
         success('«'+text+'»\n\nSe «Registra automaticamente» è acceso, lo trovi già nello storico; altrimenti è nella card "Dalle notifiche" in cima al Riepilogo.');
       }else{
         var t=await resp.text();
@@ -149,6 +205,41 @@
     }catch(e){
       fail('Errore di rete: '+(e&&e.message?e.message:e)+'\n\nControlla la connessione e riprova.');
     }
+  }
+
+  async function run(){
+    var stored=fromStorage();
+    var token=cleanText(qs('token'))||stored.token;
+    var pid=cleanText(qs('pid'))||stored.pid;
+    var importo=cleanAmount(qs('importo')||qs('i'));
+    var negozio=cleanText(qs('negozio')||qs('n'))||'Apple Pay';
+    var g=guardRead();
+
+    if(!importo){
+      if(g&&Date.now()-g.at<GUARD_MS)alreadyDone(g.text);
+      else if(!window.location.search)nothingToDo();
+      else fail('Importo mancante o non riconosciuto nell\'indirizzo.\n\nL\'automazione deve aprire un indirizzo tipo:\n…/registra.html?importo=12,34&negozio=NOME\n\ncon la variabile Importo inserita dopo «importo=».');
+      return;
+    }
+    if(!token||!pid){
+      fail('Token o project ID mancanti.\n\nAggiungili all\'indirizzo dell\'automazione:\n…/registra.html?pid=IL-TUO-PROJECT-ID&token=IL-TUO-TOKEN&importo=…\n\nEntrambi si ricavano dall\'indirizzo che copi dall\'app in Conti → «Copia indirizzo»: il project ID è la parola dopo /projects/, il token è il codice dopo /inbox/.');
+      return;
+    }
+
+    var text='Pagamento di '+importo+' € presso '+negozio;
+    var key=importo+'|'+negozio;
+    detail.textContent=text;
+
+    var nt=navType();
+    if(nt==='reload'||nt==='back_forward'){
+      alreadyDone((g&&g.key===key)?g.text:text);
+      return;
+    }
+    if(g&&g.key===key&&(Date.now()-g.at)<GUARD_MS){
+      askConfirm(text,function(){send(token,pid,text,key);});
+      return;
+    }
+    send(token,pid,text,key);
   }
 
   retryBtn.onclick=function(){
