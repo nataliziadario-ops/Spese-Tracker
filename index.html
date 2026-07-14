@@ -550,12 +550,17 @@ function ensureV3Fields(s){
    possono registrare a mano scegliendolo come conto. */
 function ensurePayPalSetup(s){
   if(!s.accounts)s.accounts=[];
-  var pp=s.paypalAccountId&&s.accounts.filter(function(a){return a.id===s.paypalAccountId;})[0];
-  if(!pp){
-    pp=s.accounts.filter(function(a){return /paypal/i.test(a.name);})[0];
-    if(!pp){pp={id:uid('acc'),name:'PayPal',color:2};s.accounts.push(pp);}
-    s.paypalAccountId=pp.id;
+  /* Il conto PayPal si crea UNA VOLTA SOLA, alla prima apertura. Se poi
+     l'utente lo elimina, non deve tornare a ogni riavvio: il flag
+     paypalSetupDone ricorda che la creazione e' gia' avvenuta. */
+  if(s.paypalSetupDone){
+    if(s.paypalAccountId&&!s.accounts.some(function(a){return a.id===s.paypalAccountId;}))s.paypalAccountId=null;
+    return s;
   }
+  var pp=s.accounts.filter(function(a){return /paypal/i.test(a.name);})[0];
+  if(!pp){pp={id:uid('acc'),name:'PayPal',color:2};s.accounts.push(pp);}
+  s.paypalAccountId=pp.id;
+  s.paypalSetupDone=true;
   return s;
 }
 
@@ -563,7 +568,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -592,22 +597,99 @@ async function storageSet(key,value){
   try{window.localStorage.setItem(key,value);return true;}
   catch(e){return false;}
 }
+async function storageRemove(key){
+  if(usingClaudeStorage){
+    try{await window.storage.delete(key,false);}catch(e){}
+    return;
+  }
+  try{window.localStorage.removeItem(key);}catch(e){}
+}
+
+/* ----------------------------------------------------------------
+   DATI SEPARATI PER ACCOUNT
+   Ogni account cloud ha la sua "cassetta" locale: expense-tracker-state-v3::UID.
+   Chi non ha mai collegato il cloud usa la cassetta senza UID.
+   Cosi' due account sullo stesso telefono non vedono mai i dati dell'altro,
+   e uscendo dall'account i dati spariscono dal dispositivo (restano nel cloud).
+---------------------------------------------------------------- */
+var SESSION_KEY='expense-tracker-session-v1';
+var activeUid=null;
+function stateKeyFor(uid){return uid?STORAGE_KEY+'::'+uid:STORAGE_KEY;}
+function currentStateKey(){return stateKeyFor(activeUid);}
+function loadSession(){
+  try{var raw=window.localStorage.getItem(SESSION_KEY);return raw?JSON.parse(raw):null;}
+  catch(e){return null;}
+}
+function saveSession(sess){
+  try{window.localStorage.setItem(SESSION_KEY,JSON.stringify(sess));}catch(e){}
+}
+function clearSession(){
+  try{window.localStorage.removeItem(SESSION_KEY);}catch(e){}
+}
 
 async function loadState(){
   async function tryLoad(key){
     var raw=await storageGet(key);
     try{return raw?JSON.parse(raw):null;}catch(e){return null;}
   }
-  var data=await tryLoad(STORAGE_KEY)||await tryLoad(STORAGE_KEY_V2);
+  var sess=loadSession();
+  activeUid=sess?sess.uid:null;
+  var data=await tryLoad(currentStateKey());
+  if(!data&&!activeUid)data=await tryLoad(STORAGE_KEY_V2);
   if(data){state=migrateFromRaw(data);}
-  else{state=ensureV3Fields(defaultState());state.updatedAt=Date.now();}
+  else{state=ensureV3Fields(defaultState());state.updatedAt=activeUid?0:Date.now();}
   await persistLocal();
 }
 
-/* Salvataggio solo locale: NON tocca updatedAt e non spinge nel cloud.
-   Serve all'avvio e quando si adottano i dati arrivati dal cloud. */
+/* Passa alla cassetta dell'account che ha appena fatto l'accesso.
+   Se su questo dispositivo non c'e' ancora niente per quell'account,
+   si parte VUOTI: i dati veri arrivano dal cloud. Mai, in nessun caso,
+   i dati di un altro account. */
+async function switchUserState(uid){
+  activeUid=uid;
+  var raw=await storageGet(stateKeyFor(uid));
+  if(raw){
+    try{state=migrateFromRaw(JSON.parse(raw));sync.freshUser=false;return;}catch(e){}
+  }
+  state=ensureV3Fields(defaultState());
+  state.updatedAt=0;
+  sync.freshUser=true;
+}
+
+/* Se il cloud dell'account e' vuoto ma sul telefono ci sono dati "senza
+   account" (registrati prima di collegare il cloud), chiede una volta sola
+   se portarli dentro questo account. */
+function anonStateHasData(a){
+  if(!a)return false;
+  return (a.transactions&&a.transactions.length)||(a.transfers&&a.transfers.length)||(a.recurring&&a.recurring.length)||(a.accounts&&a.accounts.length>2);
+}
+async function maybeClaimLocalData(uid){
+  var skipKey='expense-tracker-anon-skip::'+uid;
+  try{if(window.localStorage.getItem(skipKey))return;}catch(e){}
+  var raw=await storageGet(STORAGE_KEY);
+  var anon=null;
+  try{anon=raw?JSON.parse(raw):null;}catch(e){}
+  if(!anonStateHasData(anon))return;
+  var n=(anon.transactions||[]).length+(anon.transfers||[]).length;
+  return new Promise(function(resolve){
+    openCenteredModal('<div class="confirm-box"><p><strong>Dati non collegati a nessun account.</strong><br>Su questo telefono ci sono '+n+' movimenti registrati prima di collegare il cloud, e l\'account <strong>'+esc(sync.email||'')+'</strong> nel cloud è vuoto.<br>Vuoi portarli dentro questo account?</p>'+
+      '<div class="confirm-actions"><button class="btn-secondary" id="claimNo">Inizia da zero</button><button class="btn-primary" id="claimYes">Porta i dati qui</button></div></div>');
+    document.getElementById('claimYes').onclick=async function(){
+      state=migrateFromRaw(anon);
+      await saveState();
+      await storageRemove(STORAGE_KEY);
+      closeModal();renderActiveTab();showToast('Dati collegati all\'account');resolve();
+    };
+    document.getElementById('claimNo').onclick=function(){
+      try{window.localStorage.setItem(skipKey,'1');}catch(e){}
+      closeModal();resolve();
+    };
+  });
+}
+
+/* Salvataggio solo locale: NON tocca updatedAt e non spinge nel cloud. */
 async function persistLocal(){
-  var ok=await storageSet(STORAGE_KEY,JSON.stringify(state));
+  var ok=await storageSet(currentStateKey(),JSON.stringify(state));
   if(!ok)showToast('Errore nel salvataggio');
   return ok;
 }
@@ -776,7 +858,7 @@ async function rawPushStateToCloud(){
   }
 }
 async function pushStateToCloud(){
-  if(sync.status!=='connected'||!isOnline()){
+  if(sync.status!=='connected'||sync.offlineSession||!isOnline()){
     if(loadSyncConfig()){markPendingPush(true);updateSyncBadge();}
     return false;
   }
@@ -826,9 +908,15 @@ async function reconcileWithCloud(){
   var snap;
   try{snap=await syncDocRef(sync.uid).get();}
   catch(e){markPendingPush(true);return 'offline';}
-  if(!snap.exists){await rawPushStateToCloud();return 'pushed';}
+  if(!snap.exists){
+    if(sync.freshUser)return 'no-remote';
+    await rawPushStateToCloud();return 'pushed';
+  }
   var remote=snap.data();
-  if(!remote||!remote.data){await rawPushStateToCloud();return 'pushed';}
+  if(!remote||!remote.data){
+    if(sync.freshUser)return 'no-remote';
+    await rawPushStateToCloud();return 'pushed';
+  }
   var localJSON=JSON.stringify(state);
   if(remote.data===localJSON){
     sync.lastPushedJSON=remote.data;
@@ -881,13 +969,48 @@ async function syncNow(){
 
 async function startSync(uid,email){
   sync.uid=uid;sync.email=email;sync.status='connecting';
+  sync.offlineSession=false;
+  saveSession({uid:uid,email:email});
+  if(activeUid!==uid){
+    markPendingPush(false);
+    sync.lastPushedJSON=null;
+    await switchUserState(uid);
+  }
   renderActiveTab();
-  await reconcileWithCloud();
+  var res=await reconcileWithCloud();
+  if(sync.freshUser){
+    sync.freshUser=false;
+    if(res==='pushed'||res==='no-remote')await maybeClaimLocalData(uid);
+  }
   if(!state.inboxToken){state.inboxToken=randToken();await saveState();}
   attachSnapshotListener();
   try{attachInboxListener();}catch(e){console.error('Inbox notifiche non disponibile',e);}
   sync.status='connected';
   if(sync.pendingPush&&isOnline())await rawPushStateToCloud();
+  renderActiveTab();
+}
+
+/* Uscita dall'account: i dati restano nel cloud ma spariscono dal telefono,
+   cosi' chi apre l'app senza accedere non vede piu' niente. */
+async function signOutFromCloud(){
+  if(sync.status==='connected'&&isOnline()&&sync.pendingPush){
+    try{await rawPushStateToCloud();}catch(e){}
+  }
+  var uid=activeUid;
+  if(sync.unsubscribeSnapshot){sync.unsubscribeSnapshot();sync.unsubscribeSnapshot=null;}
+  if(sync.unsubscribeInbox){sync.unsubscribeInbox();sync.unsubscribeInbox=null;}
+  sync.pendingInbox=[];
+  if(sync.auth){try{await sync.auth.signOut();}catch(e){}}
+  if(uid)await storageRemove(stateKeyFor(uid));
+  clearSession();
+  activeUid=null;
+  sync.uid=null;sync.email=null;sync.offlineSession=false;sync.lastPushedJSON=null;
+  sync.status='configured';
+  markPendingPush(false);
+  state=ensureV3Fields(defaultState());
+  state.updatedAt=Date.now();
+  await persistLocal();
+  ui.accountFilter='all';ui.categoryFilter='all';ui.typeFilter='all';ui.tagFilter=null;
   renderActiveTab();
 }
 
@@ -1086,10 +1209,27 @@ async function initSyncFromSavedConfig(){
     }catch(e){
       if(e&&e.code)console.error('Redirect Google',e.code);
     }
-    sync.auth.onAuthStateChanged(function(user){
-      if(user){startSync(user.uid,user.email);}
-      else{sync.status='configured';renderActiveTab();}
-    });
+    try{await sync.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+    if(!sync.authWired){
+      sync.authWired=true;
+      sync.auth.onAuthStateChanged(function(user){
+        if(user){startSync(user.uid,user.email);return;}
+        /* Nessun utente da Firebase. Se pero' la nostra sessione e' ancora
+           valida (tipico quando si va in aereo e Firebase non riesce a
+           rinnovare il token), NON si esce dall'account: si resta connessi
+           "offline" e si continua a lavorare sui dati locali. */
+        var sess=loadSession();
+        if(sess&&sess.uid){
+          sync.uid=sess.uid;sync.email=sess.email;
+          if(activeUid!==sess.uid)switchUserState(sess.uid).then(renderActiveTab);
+          sync.offlineSession=true;
+          sync.status='connected';
+          renderActiveTab();
+          return;
+        }
+        sync.status='configured';sync.offlineSession=false;renderActiveTab();
+      });
+    }
   }catch(e){
     sync.status='error';sync.errorMsg='Impossibile inizializzare Firebase. Controlla la configurazione.';
     renderActiveTab();
@@ -1110,6 +1250,10 @@ async function connectSyncWithGoogle(firebaseConfig){
     sync.db=firebase.firestore();
     saveSyncConfig({firebaseConfig:firebaseConfig,email:(loadSyncConfig()||{}).email||null});
     var provider=new firebase.auth.GoogleAuthProvider();
+    /* Chiede sempre quale account Google usare: senza questo, dopo una
+       disconnessione si rientrerebbe in automatico sempre con lo stesso. */
+    provider.setCustomParameters({prompt:'select_account'});
+    try{await sync.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e0){}
     try{
       var cred=await sync.auth.signInWithPopup(provider);
       saveSyncConfig({firebaseConfig:firebaseConfig,email:cred.user.email});
@@ -1145,6 +1289,7 @@ async function connectSyncWithCredentials(firebaseConfig,email,password,mode){
     sync.firebaseApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(firebaseConfig);
     sync.auth=firebase.auth();
     sync.db=firebase.firestore();
+    try{await sync.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e0){}
     var cred;
     if(mode==='signup')cred=await sync.auth.createUserWithEmailAndPassword(email,password);
     else cred=await sync.auth.signInWithEmailAndPassword(email,password);
@@ -1770,7 +1915,7 @@ function dashboardData(){
 /* Riga di stato: dice sempre dove stanno i dati in questo momento. */
 function syncStateLineHTML(){
   if(sync.status==='connected'){
-    if(!isOnline())return '<span class="hint">📴 Offline — le modifiche sono salvate sul telefono e partiranno da sole al ritorno della rete.</span>';
+    if(!isOnline()||sync.offlineSession)return '<span class="hint">📴 Offline — resti dentro l\'account <strong>'+esc(sync.email||'')+'</strong>: le modifiche sono salvate sul telefono e partiranno da sole al ritorno della rete.</span>';
     if(sync.pendingPush)return '<span class="hint">⏳ Modifiche in attesa di essere caricate. Ultima sincronizzazione: '+esc(lastSyncLabel())+'.</span>';
     return '<span class="hint">✅ Tutto sincronizzato · ultimo aggiornamento '+esc(lastSyncLabel())+'.</span>';
   }
@@ -1790,7 +1935,7 @@ function syncStatusCardHTML(){
   }else if(sync.status==='connected'){
     body='<div class="toggle-row" style="margin-bottom:2px;"><span>🟢 Connesso come <strong>'+esc(sync.email||'')+'</strong></span></div>'+
       '<button class="btn-primary full-width" id="syncNowBtn" '+(sync.busy?'disabled':'')+'>'+(sync.busy?'Sincronizzazione…':'🔄 Sincronizza')+'</button>'+
-      '<button class="btn-secondary full-width" id="disconnectSyncBtn">Disconnetti questo dispositivo</button>';
+      '<button class="btn-secondary full-width" id="disconnectSyncBtn">Esci dall\'account / cambia account</button>';
   }else if(sync.status==='error'){
     body='<button class="btn-primary full-width" id="openSyncBtn">Riprova</button>';
   }
@@ -1805,7 +1950,7 @@ function accountsHTML(){
     }).join('')+'</section>'+
     (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="Nome conto" autofocus><button class="btn-primary-sm" id="confirmNewAcc">Crea</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">+ Nuovo conto</button>')+
     syncStatusCardHTML()+
-    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Estratto conto</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa movimenti</button></section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa movimenti</button></section>'+
     '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">Salva i movimenti in un file da conservare, aprire in Excel o inviare.</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
     notifCardHTML()+
     '<div style="text-align:center;"><button class="reset-link" id="resetBtn">Reimposta tutti i dati</button></div>'+
@@ -1839,6 +1984,7 @@ function wireAccounts(){
         state.transactions=state.transactions.filter(function(t){return t.accountId!==id;});
         state.transfers=state.transfers.filter(function(t){return t.fromAccountId!==id&&t.toAccountId!==id;});
         state.accounts=state.accounts.filter(function(a){return a.id!==id;});
+        if(state.paypalAccountId===id)state.paypalAccountId=null;
         if(ui.accountFilter===id)ui.accountFilter='all';
         saveState();showToast('Conto eliminato');renderActiveTab();
       },'Elimina');
@@ -1874,9 +2020,10 @@ function wireAccounts(){
   var autoTog=document.getElementById('autoRegisterToggle');
   if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();renderActiveTab();};
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
-    confirmDialog('Disconnettere questo dispositivo? I dati resteranno salvati sul cloud e su questo dispositivo, ma smetteranno di sincronizzarsi finché non accedi di nuovo.',function(){
-      stopSync(true);showToast('Disconnesso');
-    },'Disconnetti');
+    var warn=sync.pendingPush&&!isOnline()?' ⚠️ Ci sono modifiche non ancora sincronizzate: collegati a internet e premi «Sincronizza» prima di uscire, altrimenti le perdi.':'';
+    confirmDialog('Uscire dall\'account '+(sync.email||'')+'? I dati restano al sicuro nel cloud, ma vengono rimossi da questo dispositivo: non saranno più visibili finché non rientri. Potrai poi accedere con un altro account.'+warn,function(){
+      signOutFromCloud().then(function(){showToast('Uscito dall\'account');});
+    },'Esci');
   };
   document.getElementById('openImportBtn').onclick=openImportModal;
   var expBtn=document.getElementById('openExportBtn');if(expBtn)expBtn.onclick=openExportModal;
@@ -2487,10 +2634,13 @@ function pdfBlob(title,subtitle,cols,rows,summary){
   return new Blob([latinBytes(out)],{type:'application/pdf'});
 }
 
-/* ---- PDF: lettura del testo ---- */
-function pdfContentToLines(txt){
+/* ---- PDF: lettura del testo ----
+   Il contenuto di un PDF non ha "righe": ha pezzetti di testo con una
+   posizione. Qui si ricostruiscono prima le righe (stessa altezza y),
+   poi le colonne (stessa x), in modo da ottenere una vera tabella. */
+function pdfContentToGroups(txt){
   var chunks=[],cur='',nums=[],curX=0,curY=0,inTJ=false,i=0,n=txt.length;
-  function push(){var t=cur;cur='';if(t.trim())chunks.push({y:curY,x:curX,t:t});}
+  function push(){var t=cur;cur='';if(t.trim())chunks.push({y:curY,x:curX,t:t.trim()});}
   while(i<n){
     var c=txt[i];
     if(c==='('){
@@ -2568,16 +2718,20 @@ function pdfContentToLines(txt){
     g.items.push(ch);
   });
   groups.sort(function(a,b){return b.y-a.y;});
-  return groups.map(function(g){
+  groups.forEach(function(g){g.items.sort(function(a,b){return a.x-b.x;});});
+  return groups.filter(function(g){return g.items.length;});
+}
+function pdfContentToLines(txt){
+  return pdfContentToGroups(txt).map(function(g){
     return g.items.map(function(it){return it.t;}).join(' ').replace(/\s+/g,' ').trim();
   }).filter(function(l){return l;});
 }
-async function pdfToLines(arrayBuffer){
+async function pdfToGroups(arrayBuffer){
   var u8=new Uint8Array(arrayBuffer);
   var dec=new TextDecoder('windows-1252');
   var s=dec.decode(u8);
   if(s.slice(0,5)!=='%PDF-')throw new Error('Il file non sembra un PDF.');
-  var lines=[],idx=0,guard=0;
+  var all=[],idx=0,guard=0;
   while(guard++<4000){
     var st=s.indexOf('stream',idx);
     if(st<0)break;
@@ -2590,9 +2744,6 @@ async function pdfToLines(arrayBuffer){
     if(end<0)break;
     idx=end+9;
     if(/\/Image|\/DCTDecode|\/JPXDecode|\/CCITTFaxDecode|\/JBIG2Decode/.test(dict))continue;
-    /* La lunghezza reale dei dati: se il dizionario dichiara /Length uso
-       quella, altrimenti taglio gli a-capo che precedono "endstream"
-       (altrimenti la decompressione fallisce per "byte di troppo"). */
     var stop=end;
     var lm=/\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(dict);
     if(lm&&dataStart+parseInt(lm[1],10)<=end)stop=dataStart+parseInt(lm[1],10);
@@ -2607,32 +2758,87 @@ async function pdfToLines(arrayBuffer){
     }else continue;
     var text=dec.decode(content);
     if(text.indexOf('Tj')<0&&text.indexOf('TJ')<0)continue;
-    lines=lines.concat(pdfContentToLines(text));
+    all=all.concat(pdfContentToGroups(text));
   }
-  if(!lines.length)throw new Error('Da questo PDF non esce nessun testo: è probabilmente una scansione (immagine). Usa il CSV o l\'Excel della banca.');
-  return lines;
+  if(!all.length)throw new Error('Da questo PDF non esce nessun testo: è probabilmente una scansione (immagine). Usa il CSV o l\'Excel della banca.');
+  return all;
 }
-/* Da righe di testo a righe "data · descrizione · importo". */
+async function pdfToLines(arrayBuffer){
+  return (await pdfToGroups(arrayBuffer)).map(function(g){
+    return g.items.map(function(it){return it.t;}).join(' ').replace(/\s+/g,' ').trim();
+  }).filter(function(l){return l;});
+}
+
+/* Riconoscimento di un importo: servono i centesimi (o il simbolo €),
+   altrimenti si scambierebbero anni e numeri di conto per soldi. */
+var MONEY_RE=/^[-+−(]?\s*(?:€|EUR)?\s*\d[\d.\s']*[.,]\d{2}\s*(?:€|EUR)?\s*[-−)]?$/i;
+var DATE_RE=/^\s*(\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4}|\d{4}-\d{2}-\d{2})\s*$/;
+function isMoneyCell(t){return MONEY_RE.test(String(t||'').trim());}
+function moneyValue(t){return parseAmount(String(t||'').replace(/−/g,'-').replace(/[()]/g,'').replace(/EUR/i,'').trim());}
+
+/* Da PDF a tabella: la data, la descrizione e fino a 3 colonne di importi,
+   riconosciute dalla posizione orizzontale (es. Uscite | Entrate | Saldo). */
+function pdfGroupsToRows(groups){
+  var moneyX=[];
+  groups.forEach(function(g){
+    g.items.forEach(function(it){if(isMoneyCell(it.t))moneyX.push(it.x);});
+  });
+  if(!moneyX.length)return [];
+  moneyX.sort(function(a,b){return a-b;});
+  var clusters=[],curC=[moneyX[0]];
+  for(var i=1;i<moneyX.length;i++){
+    if(moneyX[i]-moneyX[i-1]>40){clusters.push(curC);curC=[];}
+    curC.push(moneyX[i]);
+  }
+  clusters.push(curC);
+  if(clusters.length>3)clusters=clusters.slice(0,3);
+  var centers=clusters.map(function(c){return c.reduce(function(a,b){return a+b;},0)/c.length;});
+  function colOf(x){
+    var best=0,bd=Infinity;
+    centers.forEach(function(c,i){var d=Math.abs(c-x);if(d<bd){bd=d;best=i;}});
+    return best;
+  }
+  var rows=[],lastDate='';
+  groups.forEach(function(g){
+    var date='',desc=[],amts=['','',''],found=false;
+    g.items.forEach(function(it){
+      var t=it.t.trim();
+      if(!date&&DATE_RE.test(t)&&parseDateFlexible(t)){date=t;return;}
+      if(isMoneyCell(t)){amts[colOf(it.x)]=t;found=true;return;}
+      desc.push(t);
+    });
+    if(!found)return;
+    var dtxt=desc.join(' ');
+    if(/^\s*(saldo|totale|totali|riporto|segue)\b/i.test(dtxt))return;  // righe di totale, non movimenti
+    if(!date&&lastDate)date=lastDate;
+    if(date)lastDate=date;
+    rows.push([date,desc.join(' ').replace(/\s+/g,' ').trim(),amts[0],amts[1],amts[2]]);
+  });
+  return rows;
+}
+/* Riserva: se il PDF ha ogni riga in un unico blocco di testo, si torna
+   al riconoscimento con le espressioni regolari sulla riga intera. */
 function pdfLinesToRows(lines){
   var AMT=/[-+−]?\s?\d{1,3}(?:[.\s]\d{3})*,\d{2}(?:\s?[-−])?/g;
   var DATE=/\b(\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4})\b/;
-  var rows=[];
+  var rows=[],lastDate='';
   lines.forEach(function(l){
     var dm=DATE.exec(l);
-    if(!dm)return;
-    var date=parseDateFlexible(dm[1]);
-    if(!date)return;
-    var rest=l.slice(dm.index+dm[1].length);
+    var rest=dm?l.slice(dm.index+dm[1].length):l;
     var amts=rest.match(AMT);
     if(!amts||!amts.length)return;
+    var date=dm?parseDateFlexible(dm[1]):'';
+    if(!date&&lastDate)date=lastDate;
+    if(!date)return;
+    lastDate=date;
     var raw=amts[0];
-    var val=parseAmount(raw.replace(/−/g,'-').replace(/\s/g,''));
+    var val=moneyValue(raw);
     if(isNaN(val)||val===0)return;
     if(/[-−]\s*$/.test(raw)&&val>0)val=-val;
     var desc=rest.replace(new RegExp(raw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),' ')
       .replace(/\b\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4}\b/g,' ')
       .replace(/\s+/g,' ').trim();
-    rows.push([date,desc||'Movimento',String(val).replace('.',',')]);
+    rows.push([date,desc||'Movimento',String(val).replace('.',','),'','']);
   });
   return rows;
 }
@@ -2643,7 +2849,8 @@ async function saveOrShare(filename,blob,mime){
     if(navigator.canShare&&navigator.share&&typeof File!=='undefined'){
       var file=new File([blob],filename,{type:mime});
       if(navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:filename});
+        /* Solo il file: passando anche title/text iOS allega un .txt inutile. */
+        await navigator.share({files:[file]});
         return 'shared';
       }
     }
@@ -2812,10 +3019,10 @@ function openExportModal(){
 }
 
 /* ================================================================
-   IMPORT ESTRATTO CONTO (CSV · XLSX · PDF)
-   Il file viene sempre trasformato in una tabella (righe × colonne):
-   da lì in poi il percorso è identico per tutti i formati, con
-   l'anteprima riga per riga prima di salvare qualsiasi cosa.
+   IMPORT DEI TUOI DATI (CSV · XLSX · PDF)
+   Ogni file diventa una tabella; poi si decide quali colonne sono
+   data / descrizione / importo, e come capire se è una spesa o un'entrata.
+   Nulla viene salvato prima dell'anteprima riga per riga.
 ================================================================ */
 function rowsFromCSV(text){
   var lines=String(text||'').split(/\r?\n/).filter(function(l){return l.trim()!=='';});
@@ -2823,101 +3030,278 @@ function rowsFromCSV(text){
   var d=detectDelim(lines[0]);
   return lines.map(function(l){return splitCSV(l,d);});
 }
+var KW_DATE=['data','date','giorno','valuta'];
+var KW_DESC=['descrizione','causale','description','memo','dettag','operazione','beneficiario','esercente','note'];
+var KW_AMT=['importo','amount','valore','somma','totale'];
+var KW_OUT=['uscite','uscita','addebiti','addebito','dare','spese','spesa','pagamenti','debito','debit','withdraw','negativo'];
+var KW_IN=['entrate','entrata','accrediti','accredito','avere','ricavi','credito','credit','deposit','positivo'];
+var KW_TYPE=['tipo','type','segno','movimento','operazione','d/a','dare/avere'];
+function hasKW(h,list){h=String(h||'').toLowerCase();return list.some(function(k){return h.indexOf(k)>-1;});}
+
+/* Trova la riga di intestazione: nelle esportazioni bancarie spesso ci sono
+   righe di titolo, intestatario, IBAN… prima della tabella vera. */
+function findHeaderRow(rows){
+  var limit=Math.min(rows.length,25);
+  for(var i=0;i<limit;i++){
+    var r=rows[i]||[];
+    var score=0;
+    if(r.some(function(c){return hasKW(c,KW_DATE);}))score++;
+    if(r.some(function(c){return hasKW(c,KW_AMT)||hasKW(c,KW_OUT)||hasKW(c,KW_IN);}))score++;
+    if(r.some(function(c){return hasKW(c,KW_DESC);}))score++;
+    if(score>=2)return i;
+  }
+  return -1;
+}
+/* Quando l'intestazione non c'è (o non dice niente), si capiscono le colonne
+   dal contenuto: dove ci sono date, dove ci sono soldi, dove c'è testo. */
+function guessColMapByContent(rows,start){
+  var cols=0;
+  rows.forEach(function(r){cols=Math.max(cols,r.length);});
+  var dateScore=[],moneyScore=[],textScore=[];
+  for(var c=0;c<cols;c++){dateScore[c]=0;moneyScore[c]=0;textScore[c]=0;}
+  var n=0;
+  for(var i=start;i<rows.length&&n<200;i++,n++){
+    var r=rows[i]||[];
+    for(var c2=0;c2<cols;c2++){
+      var v=String(r[c2]==null?'':r[c2]).trim();
+      if(!v)continue;
+      if(parseDateFlexible(v))dateScore[c2]++;
+      else if(isMoneyCell(v)||(!isNaN(parseAmount(v))&&/[.,]\d{2}$/.test(v)))moneyScore[c2]++;
+      else if(/[a-zA-Z]{3}/.test(v))textScore[c2]+=v.length;
+    }
+  }
+  function best(arr){var bi=-1,bv=0;arr.forEach(function(v,i){if(v>bv){bv=v;bi=i;}});return bi;}
+  var money=[];
+  moneyScore.forEach(function(v,i){if(v>0)money.push({i:i,v:v});});
+  money.sort(function(a,b){return b.v-a.v;});
+  return{
+    date:best(dateScore),
+    description:best(textScore),
+    amount:money.length?money[0].i:-1,
+    moneyCols:money.map(function(m){return m.i;}).sort(function(a,b){return a-b;})
+  };
+}
+
 function openImportModal(){
-  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],
-           hasHeader:true,headers:[],mapping:{date:0,description:1,amount:2},mappingGuessed:false,
-           parsed:[],error:'',busy:false};
+  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],rawLines:[],
+           hasHeader:true,headers:[],mapping:{date:0,description:1,amount:2,amountIn:-1,amountOut:-1,typeCol:-1},
+           amountMode:'single',signRule:'auto',analyzed:false,
+           parsed:[],error:'',warn:'',busy:false};
 
   function renderStep(){var r=document.querySelector('#modal-root .sheet-wrap');if(r){r.innerHTML=stepHTML();wireStep();}}
   function stepDots(){var h='<div class="step-dots">';for(var i=1;i<=3;i++)h+='<span class="step-dot'+(i===imp.step?' active':'')+'"></span>';return h+'</div>';}
   function stepHTML(){return imp.step===1?step1():imp.step===2?step2():step3();}
 
+  /* ---------- passo 1: il file ---------- */
   function step1(){
     var opts=state.accounts.map(function(a){return'<option value="'+a.id+'" '+(a.id===imp.accountId?'selected':'')+'>'+esc(a.name)+'</option>';}).join('');
     var status='';
     if(imp.busy)status='<p class="hint">Lettura del file in corso…</p>';
-    else if(imp.error)status='<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.error)+'</p>';
+    else if(imp.error)status='<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.error)+'</p>'+(imp.rawLines.length?'<div class="field-group"><label class="field-label">Testo che sono riuscito a leggere (per capire cosa non va)</label><textarea class="text-input" readonly style="font-family:monospace;font-size:11px;">'+esc(imp.rawLines.slice(0,60).join('\n'))+'</textarea></div>':'');
     else if(imp.rows.length)status='<p class="hint">✅ '+esc(imp.fileName||'File')+': '+imp.rows.length+' righe lette.</p>';
     return'<div class="sheet">'+stepDots()+
-      '<h3 style="margin:4px 0 0;">Importa estratto conto</h3>'+
+      '<h3 style="margin:4px 0 0;">Importa i tuoi dati</h3>'+
       '<div class="field-group"><label class="field-label">Conto di destinazione</label><select class="select" id="impAcc">'+opts+'</select></div>'+
       '<div class="field-group"><label class="field-label">File (CSV, Excel .xlsx o PDF)</label><input type="file" accept=".csv,.txt,.xlsx,.pdf,text/csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="impFile"></div>'+
       status+
       '<div class="field-group"><label class="field-label">Oppure incolla il contenuto (CSV)</label><textarea class="text-input" id="impText" placeholder="data;descrizione;importo">'+esc(imp.rawText)+'</textarea></div>'+
-      '<p class="hint">Il PDF viene letto come testo: funziona con gli estratti conto scaricati dalla banca, non con le scansioni o le foto. Controlla sempre le righe nel passo finale.</p>'+
+      '<p class="hint">Il PDF viene letto come testo: funziona con gli estratti conto scaricati dalla banca, non con scansioni o foto.</p>'+
       '<button class="btn-primary full-width" id="impNext1" '+(imp.rows.length?'':'disabled')+'>Continua</button>'+
       '<button class="btn-secondary full-width" id="impCancel1">Annulla</button></div>';
   }
 
-  function deriveHeaders(){
-    if(!imp.rows.length)return;
-    var first=imp.rows[0];
-    imp.headers=imp.hasHeader?first.map(function(h,i){return String(h||'Colonna '+(i+1));}):first.map(function(_,i){return'Colonna '+(i+1);});
-    if(!imp.mappingGuessed){
-      var g=guessColMap(imp.hasHeader?first.map(String):[]);
-      imp.mapping={date:g.date>-1?g.date:0,description:g.description>-1?g.description:1,amount:g.amount>-1?g.amount:(first.length-1)};
-      imp.mappingGuessed=true;
+  /* ---------- analisi automatica delle colonne ---------- */
+  function looksLikeTwoColumns(a,b,start){
+    var both=0,either=0;
+    for(var i=start;i<imp.rows.length;i++){
+      var r=imp.rows[i]||[];
+      var va=!isNaN(parseAmount(r[a]))&&parseAmount(r[a])!==0;
+      var vb=!isNaN(parseAmount(r[b]))&&parseAmount(r[b])!==0;
+      if(va||vb)either++;
+      if(va&&vb)both++;
+    }
+    return either>=2&&(both/either)<0.25;
+  }
+  function analyze(){
+    if(imp.analyzed||!imp.rows.length)return;
+    imp.analyzed=true;
+    var hr=findHeaderRow(imp.rows);
+    if(hr>0)imp.rows=imp.rows.slice(hr);        // butta le righe di intestazione del documento
+    imp.hasHeader=hr>-1?true:imp.hasHeader;
+    var head=imp.hasHeader?imp.rows[0].map(String):[];
+    var start=imp.hasHeader?1:0;
+    var byName={date:-1,description:-1,amount:-1,out:-1,in:-1,type:-1};
+    head.forEach(function(h,i){
+      if(byName.date<0&&hasKW(h,KW_DATE))byName.date=i;
+      if(byName.description<0&&hasKW(h,KW_DESC))byName.description=i;
+      if(byName.out<0&&hasKW(h,KW_OUT))byName.out=i;
+      if(byName.in<0&&hasKW(h,KW_IN))byName.in=i;
+      if(byName.amount<0&&hasKW(h,KW_AMT))byName.amount=i;
+      if(byName.type<0&&hasKW(h,KW_TYPE)&&!hasKW(h,KW_DESC))byName.type=i;
+    });
+    var g=guessColMapByContent(imp.rows,start);
+    imp.mapping.date=byName.date>-1?byName.date:(g.date>-1?g.date:0);
+    imp.mapping.description=byName.description>-1?byName.description:(g.description>-1?g.description:Math.min(1,imp.rows[0].length-1));
+    imp.mapping.typeCol=byName.type;
+
+    if(byName.out>-1&&byName.in>-1){
+      imp.amountMode='dual';
+      imp.mapping.amountOut=byName.out;
+      imp.mapping.amountIn=byName.in;
+    }else if(g.moneyCols.length>=2&&looksLikeTwoColumns(g.moneyCols[0],g.moneyCols[1],start)){
+      /* Due colonne di soldi che non sono quasi mai piene insieme:
+         è il classico schema "uscite | entrate" (tipico dei PDF e degli
+         Excel bancari, dove i numeri sono tutti positivi). */
+      imp.amountMode='dual';
+      imp.mapping.amountOut=g.moneyCols[0];
+      imp.mapping.amountIn=g.moneyCols[1];
+    }else{
+      imp.amountMode='single';
+      imp.mapping.amount=byName.amount>-1?byName.amount:(g.amount>-1?g.amount:imp.rows[0].length-1);
+    }
+
+    /* Segno: se nella colonna importo non c'è NESSUN numero negativo,
+       trattarli tutti come entrate sarebbe assurdo → di default sono spese
+       (tipico dei file Excel). Se c'è una colonna "tipo", si usa quella. */
+    if(imp.amountMode==='single'){
+      var neg=0,tot=0;
+      for(var i=start;i<imp.rows.length;i++){
+        var v=(imp.rows[i]||[])[imp.mapping.amount];
+        var a=parseAmount(v);
+        if(isNaN(a)||a===0)continue;
+        tot++;
+        if(a<0||/[-−]\s*$/.test(String(v)))neg++;
+      }
+      if(imp.mapping.typeCol>-1)imp.signRule='column';
+      else if(tot>0&&neg===0){imp.signRule='expense';imp.warn='Nel file non ci sono importi negativi: li tratto tutti come spese. Se non è così, cambia qui sotto o correggi le singole righe nel passo successivo.';}
+      else imp.signRule='auto';
     }
   }
+
+  /* ---------- passo 2: colonne e segno ---------- */
+  function colOptions(field,sel,allowNone){
+    var head=imp.hasHeader?imp.rows[0]:[];
+    var cols=imp.rows[0]?imp.rows[0].length:0;
+    var out='<select class="select" data-map-field="'+field+'">';
+    if(allowNone)out+='<option value="-1" '+(sel===-1?'selected':'')+'>— nessuna —</option>';
+    for(var i=0;i<cols;i++){
+      var label=imp.hasHeader?(String(head[i]||'').trim()||'Colonna '+(i+1)):'Colonna '+(i+1);
+      out+='<option value="'+i+'" '+(sel===i?'selected':'')+'>'+esc(label)+'</option>';
+    }
+    return out+'</select>';
+  }
   function step2(){
-    deriveHeaders();
-    function sel(f){return'<select class="select" data-map-field="'+f+'">'+imp.headers.map(function(h,i){return'<option value="'+i+'" '+(imp.mapping[f]===i?'selected':'')+'>'+esc(h)+'</option>';}).join('')+'</select>';}
+    analyze();
+    var dual=imp.amountMode==='dual';
     return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Associa le colonne</h3>'+
+      (imp.warn?'<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.warn)+'</p>':'')+
       '<label class="toggle-row"><span>Prima riga come intestazione</span><input type="checkbox" id="impHeader" '+(imp.hasHeader?'checked':'')+'></label>'+
-      '<div class="field-group"><label class="field-label">Colonna data</label>'+sel('date')+'</div>'+
-      '<div class="field-group"><label class="field-label">Colonna descrizione</label>'+sel('description')+'</div>'+
-      '<div class="field-group"><label class="field-label">Colonna importo</label>'+sel('amount')+'</div>'+
-      '<p class="hint">Importi negativi → spese. Positivi → entrate. Potrai correggere nel passo successivo.</p>'+
+      '<div class="field-group"><label class="field-label">Colonna data</label>'+colOptions('date',imp.mapping.date)+'</div>'+
+      '<div class="field-group"><label class="field-label">Colonna descrizione</label>'+colOptions('description',imp.mapping.description)+'</div>'+
+      '<div class="field-group"><label class="field-label">Come sono scritti gli importi</label><div class="segmented small">'+
+        '<button class="'+(dual?'':'active')+'" data-amt-mode="single">Una colonna</button>'+
+        '<button class="'+(dual?'active':'')+'" data-amt-mode="dual">Due colonne</button>'+
+      '</div></div>'+
+      (dual
+        ? '<div class="field-group"><label class="field-label">Colonna SPESE (uscite / addebiti / dare)</label>'+colOptions('amountOut',imp.mapping.amountOut,true)+'</div>'+
+          '<div class="field-group"><label class="field-label">Colonna ENTRATE (accrediti / avere)</label>'+colOptions('amountIn',imp.mapping.amountIn,true)+'</div>'
+        : '<div class="field-group"><label class="field-label">Colonna importo</label>'+colOptions('amount',imp.mapping.amount)+'</div>'+
+          '<div class="field-group"><label class="field-label">Spesa o entrata?</label><div class="segmented small">'+
+            '<button class="'+(imp.signRule==='auto'?'active':'')+'" data-sign="auto">Dal segno −</button>'+
+            '<button class="'+(imp.signRule==='expense'?'active':'')+'" data-sign="expense">Tutte spese</button>'+
+            '<button class="'+(imp.signRule==='income'?'active':'')+'" data-sign="income">Tutte entrate</button>'+
+            '<button class="'+(imp.signRule==='column'?'active':'')+'" data-sign="column">Da colonna</button>'+
+          '</div></div>'+
+          (imp.signRule==='column'?'<div class="field-group"><label class="field-label">Colonna che dice spesa/entrata</label>'+colOptions('typeCol',imp.mapping.typeCol,true)+'</div>':'')
+      )+
+      '<p class="hint">Nel passo successivo puoi ancora cambiare riga per riga: c\'è un pulsante per passare da spesa a entrata.</p>'+
       '<button class="btn-primary full-width" id="impNext2">Continua</button>'+
       '<button class="btn-secondary full-width" id="impBack2">Indietro</button></div>';
   }
+
+  function typeFromColumn(v,val){
+    var t=String(v||'').toLowerCase();
+    if(/entrat|accredit|avere|credit|income|incasso|ricev|\+/.test(t))return 'income';
+    if(/uscit|addebit|dare|debit|spesa|spese|pagament|prelie|-/.test(t))return 'expense';
+    return val<0?'expense':'income';
+  }
   function buildParsed(){
-    var out=[],start=imp.hasHeader?1:0;
+    var out=[],start=imp.hasHeader?1:0,m=imp.mapping,lastDate='';
     for(var i=start;i<imp.rows.length;i++){
-      var cols=imp.rows[i];
-      if(!cols||cols.length<=Math.max(imp.mapping.date,imp.mapping.description,imp.mapping.amount))continue;
-      var ra=parseAmount(cols[imp.mapping.amount]);
-      if(isNaN(ra)||ra===0)continue;
-      var date=parseDateFlexible(cols[imp.mapping.date])||todayISO();
-      var desc=cols[imp.mapping.description]||'';
-      var type=ra<0?'expense':'income';
-      out.push({id:uid('imp'),date:date,desc:desc,amount:Math.abs(ra),include:true,type:type,categoryId:guessCat(desc,type)});
+      var cols=imp.rows[i]||[];
+      var type,amount;
+      if(imp.amountMode==='dual'){
+        var o=m.amountOut>-1?parseAmount(cols[m.amountOut]):NaN;
+        var e=m.amountIn>-1?parseAmount(cols[m.amountIn]):NaN;
+        o=isNaN(o)?0:Math.abs(o);
+        e=isNaN(e)?0:Math.abs(e);
+        if(!o&&!e)continue;
+        if(o>=e){type='expense';amount=o;}
+        else{type='income';amount=e;}
+      }else{
+        var rawV=cols[m.amount];
+        var ra=parseAmount(rawV);
+        if(isNaN(ra)||ra===0)continue;
+        if(/[-−]\s*$/.test(String(rawV))&&ra>0)ra=-ra;
+        if(imp.signRule==='expense')type='expense';
+        else if(imp.signRule==='income')type='income';
+        else if(imp.signRule==='column')type=typeFromColumn(m.typeCol>-1?cols[m.typeCol]:'',ra);
+        else type=ra<0?'expense':'income';
+        amount=Math.abs(ra);
+      }
+      var date=parseDateFlexible(cols[m.date]);
+      if(!date&&lastDate)date=lastDate;
+      if(!date)date=todayISO();
+      lastDate=date;
+      var desc=String(cols[m.description]==null?'':cols[m.description]).trim();
+      out.push({id:uid('imp'),date:date,desc:desc,amount:amount,include:true,type:type,categoryId:guessCat(desc,type)});
     }
     imp.parsed=out;
   }
+
+  /* ---------- passo 3: anteprima ---------- */
   function catOptsGrouped(sel){return'<optgroup label="Spese">'+catsByType('expense').map(function(c){return'<option value="'+c.id+'" '+(c.id===sel?'selected':'')+'>'+esc(c.emoji)+' '+esc(c.name)+'</option>';}).join('')+'</optgroup><optgroup label="Entrate">'+catsByType('income').map(function(c){return'<option value="'+c.id+'" '+(c.id===sel?'selected':'')+'>'+esc(c.emoji)+' '+esc(c.name)+'</option>';}).join('')+'</optgroup>';}
   function step3(){
     var cnt=imp.parsed.filter(function(r){return r.include;}).length;
+    var inc=imp.parsed.filter(function(r){return r.include&&r.type==='income';}).length;
     return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Controlla e importa</h3>'+
-      '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'"</p>'+
+      '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'" ('+inc+' entrate, '+(cnt-inc)+' spese). Tocca <strong>S/E</strong> per invertire una riga.</p>'+
       '<div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){
-        return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'><span class="imp-date">'+formatShortDate(r.date)+'</span><span class="imp-desc">'+esc(r.desc||'—')+'</span><span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span><select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select></div>';
-      }).join(''):'<p class="empty-note">Nessuna riga valida.</p>')+'</div>'+
+        return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'>'+
+          '<span class="imp-date">'+formatShortDate(r.date)+'</span>'+
+          '<span class="imp-desc">'+esc(r.desc||'—')+'</span>'+
+          '<button class="chip" data-flip="'+i+'" style="padding:2px 8px;font-size:11px;">'+(r.type==='income'?'E':'S')+'</button>'+
+          '<span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span>'+
+          '<select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select></div>';
+      }).join(''):'<p class="empty-note">Nessuna riga valida: torna indietro e controlla le colonne.</p>')+'</div>'+
       '<button class="btn-primary full-width" id="impConfirm" '+(cnt?'':'disabled')+'>Importa '+cnt+' movimenti</button>'+
       '<button class="btn-secondary full-width" id="impBack3">Indietro</button></div>';
   }
 
   async function readFile(f){
-    imp.busy=true;imp.error='';imp.fileName=f.name;renderStep();
+    imp.busy=true;imp.error='';imp.warn='';imp.fileName=f.name;imp.analyzed=false;imp.rawLines=[];renderStep();
     var name=(f.name||'').toLowerCase();
     try{
-      if(/\.xlsx$/.test(name)||f.type.indexOf('spreadsheetml')>-1){
+      if(/\.xlsx$/.test(name)||(f.type||'').indexOf('spreadsheetml')>-1){
         imp.source='xlsx';
         imp.rows=await xlsxToRows(await f.arrayBuffer());
-        imp.hasHeader=true;imp.mappingGuessed=false;imp.rawText='';
+        imp.hasHeader=true;imp.rawText='';
       }else if(/\.pdf$/.test(name)||f.type==='application/pdf'){
         imp.source='pdf';
-        var lines=await pdfToLines(await f.arrayBuffer());
-        var rows=pdfLinesToRows(lines);
-        if(!rows.length)throw new Error('Nel PDF non ho trovato righe con data e importo. Prova con il CSV o l\'Excel della banca.');
-        imp.rows=[['Data','Descrizione','Importo']].concat(rows);
-        imp.hasHeader=true;imp.mapping={date:0,description:1,amount:2};imp.mappingGuessed=true;imp.rawText='';
+        var groups=await pdfToGroups(await f.arrayBuffer());
+        imp.rawLines=groups.map(function(g){return g.items.map(function(it){return it.t;}).join(' ');});
+        var rows=pdfGroupsToRows(groups);
+        var good=rows.filter(function(r){return r[0]&&(r[2]||r[3]||r[4]);}).length;
+        if(good<2)rows=pdfLinesToRows(imp.rawLines);
+        if(!rows.length)throw new Error('Nel PDF non ho trovato righe con data e importo.');
+        imp.rows=[['Data','Descrizione','Importo 1','Importo 2','Importo 3']].concat(rows);
+        imp.hasHeader=true;imp.rawText='';
       }else{
         imp.source='csv';
         var text=await f.text();
         imp.rawText=text;
         imp.rows=rowsFromCSV(text);
-        imp.hasHeader=true;imp.mappingGuessed=false;
+        imp.hasHeader=true;
         if(!imp.rows.length)throw new Error('Il file risulta vuoto.');
       }
     }catch(e){
@@ -2934,8 +3318,8 @@ function openImportModal(){
       var fi=document.getElementById('impFile'),ta=document.getElementById('impText'),n1=document.getElementById('impNext1');
       fi.onchange=function(){var f=fi.files[0];if(f)readFile(f);};
       ta.oninput=function(){
-        imp.rawText=ta.value;imp.source='csv';imp.fileName='';imp.error='';
-        imp.rows=rowsFromCSV(imp.rawText);imp.mappingGuessed=false;
+        imp.rawText=ta.value;imp.source='csv';imp.fileName='';imp.error='';imp.analyzed=false;
+        imp.rows=rowsFromCSV(imp.rawText);
         n1.disabled=!imp.rows.length;
       };
       document.getElementById('impAcc').onchange=function(e){imp.accountId=e.target.value;};
@@ -2943,11 +3327,33 @@ function openImportModal(){
       document.getElementById('impCancel1').onclick=closeModal;
     }else if(imp.step===2){
       document.getElementById('impHeader').onchange=function(e){imp.hasHeader=e.target.checked;renderStep();};
-      document.querySelectorAll('[data-map-field]').forEach(function(s){s.onchange=function(){imp.mapping[s.dataset.mapField]=parseInt(s.value,10);};});
+      document.querySelectorAll('[data-map-field]').forEach(function(s){
+        s.onchange=function(){imp.mapping[s.dataset.mapField]=parseInt(s.value,10);renderStep();};
+      });
+      document.querySelectorAll('[data-amt-mode]').forEach(function(b){
+        b.onclick=function(){
+          imp.amountMode=b.dataset.amtMode;
+          if(imp.amountMode==='dual'&&imp.mapping.amountOut<0){
+            var g=guessColMapByContent(imp.rows,imp.hasHeader?1:0);
+            imp.mapping.amountOut=g.moneyCols[0]!==undefined?g.moneyCols[0]:0;
+            imp.mapping.amountIn=g.moneyCols[1]!==undefined?g.moneyCols[1]:-1;
+          }
+          imp.warn='';renderStep();
+        };
+      });
+      document.querySelectorAll('[data-sign]').forEach(function(b){
+        b.onclick=function(){imp.signRule=b.dataset.sign;imp.warn='';renderStep();};
+      });
       document.getElementById('impNext2').onclick=function(){buildParsed();imp.step=3;renderStep();};
       document.getElementById('impBack2').onclick=function(){imp.step=1;renderStep();};
     }else{
-      document.querySelectorAll('[data-inc]').forEach(function(c){c.onchange=function(){imp.parsed[+c.dataset.inc].include=c.checked;var cnt=imp.parsed.filter(function(r){return r.include;}).length;document.getElementById('impCnt').textContent=cnt;document.getElementById('impConfirm').textContent='Importa '+cnt+' movimenti';document.getElementById('impConfirm').disabled=!cnt;};});
+      document.querySelectorAll('[data-inc]').forEach(function(c){c.onchange=function(){imp.parsed[+c.dataset.inc].include=c.checked;renderStep();};});
+      document.querySelectorAll('[data-flip]').forEach(function(b){b.onclick=function(){
+        var r=imp.parsed[+b.dataset.flip];
+        r.type=r.type==='income'?'expense':'income';
+        r.categoryId=guessCat(r.desc,r.type);
+        renderStep();
+      };});
       document.querySelectorAll('[data-cat]').forEach(function(s){s.onchange=function(){var idx=+s.dataset.cat,cat=catById(s.value);imp.parsed[idx].categoryId=s.value;imp.parsed[idx].type=cat.type;renderStep();};});
       document.getElementById('impBack3').onclick=function(){imp.step=2;renderStep();};
       document.getElementById('impConfirm').onclick=function(){
