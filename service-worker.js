@@ -2,7 +2,7 @@
 // così si apre anche offline e si installa correttamente come PWA.
 // Cambia CACHE_NAME quando aggiorni index.html per forzare il refresh
 // della cache sui dispositivi già installati.
-var CACHE_NAME = 'spese-tracker-v14';
+var CACHE_NAME = 'spese-tracker-v15';
 var FILES_TO_CACHE = [
   './index.html',
   './registra.html',
@@ -49,6 +49,20 @@ self.addEventListener('fetch', function(event){
       return caches.match(event.request).then(function(cached){
         return cached || caches.match('./index.html');
       });
+    })
+  );
+});
+
+// Quando l'utente tocca la notifica di un pagamento ricorrente, porta
+// (o riporta) l'app in primo piano invece di aprire una nuova scheda.
+self.addEventListener('notificationclick', function(event){
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
+      for (var i = 0; i < list.length; i++) {
+        if ('focus' in list[i]) return list[i].focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./index.html');
     })
   );
 });

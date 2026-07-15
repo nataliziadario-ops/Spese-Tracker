@@ -226,7 +226,15 @@ main#content{flex:1;padding:8px 16px 132px;overflow-y:auto;}
 .account-balance.saldo-neg{color:var(--red);}
 .account-sub{font-size:11.5px;color:var(--ink-faint);}
 .icon-btn-danger{background:var(--surface);border:1px solid var(--hairline);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--red);flex-shrink:0;box-shadow:var(--shadow-xs);}
+.cat-manage-row{display:flex;align-items:center;gap:8px;padding:8px 10px;}
+.cat-manage-row .cat-bubble{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.cat-manage-row .dot{width:14px;height:14px;flex-shrink:0;}
+.cat-manage-row .emoji-input{width:44px;flex-shrink:0;}
 .icon-btn-danger:active{transform:scale(0.92);background:var(--red-soft);}
+.due-rec-card{border:1px solid var(--amber);background:var(--amber-soft,rgba(240,180,60,0.08));}
+.due-rec-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--hairline);}
+.due-rec-row:first-of-type{border-top:none;}
+.due-rec-name{font-size:13.5px;font-weight:600;}
 .reset-link{background:none;border:none;color:var(--ink-faint);font-size:12px;text-decoration:underline;padding:6px;}
 /* ---------- Modali & sheet ---------- */
 #modal-root{position:fixed;inset:0;z-index:40;display:none;}
@@ -350,7 +358,10 @@ input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none;displ
 .budget-slider-row{display:flex;align-items:center;gap:12px;}
 .budget-slider-row .slider{flex:1;}
 /* ---------- Dashboard ---------- */
-.hero-card{background:linear-gradient(165deg,var(--ticket-a),var(--ticket-b) 75%);color:#F2F4F0;border-radius:var(--radius-xl);padding:22px 20px 18px;box-shadow:0 10px 28px rgba(23,27,24,0.26),inset 0 1px 0 rgba(255,255,255,0.09);}
+.hero-card{position:relative;background:linear-gradient(165deg,var(--ticket-a),var(--ticket-b) 75%);color:#F2F4F0;border-radius:var(--radius-xl);padding:22px 20px 18px;box-shadow:0 10px 28px rgba(23,27,24,0.26),inset 0 1px 0 rgba(255,255,255,0.09);}
+.eye-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.12);border:none;color:#F2F4F0;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.eye-btn:active{background:rgba(255,255,255,0.22);}
+.eye-ico{vertical-align:middle;}
 .hero-label{font-size:11px;opacity:0.6;letter-spacing:0.09em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
 .hero-value{font-family:var(--font-display);font-weight:700;font-size:38px;letter-spacing:-0.025em;line-height:1.05;}
 .hero-sub{font-size:12.5px;opacity:0.65;margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -513,8 +524,21 @@ var DEFAULT_INCOME_CATS=[
   {id:'investimenti',name:'Investimenti',emoji:'📈',color:5,type:'income'},
   {id:'altro_entrata',name:'Altro',emoji:'💰',color:7,type:'income'}
 ];
-var EXPENSE_KW={cibo:['esselunga','conad','coop','carrefour','supermercato','ristorante','pizzeria'],trasporti:['atm','benzina','autostrada','trenitalia','italo','taxi','uber','telepass'],bollette:['enel','eni gas','tim ','vodafone','wind','iliad','bolletta','fastweb'],casa:['affitto','condominio','ikea','leroy merlin','mutuo']};
-var INCOME_KW={stipendio:['stipendio','salario','retribuzione'],rimborso:['rimborso','storno','accredito'],investimenti:['dividendo','interessi','investimento']};
+var EXPENSE_KW={
+  cibo:['esselunga','conad','coop','carrefour','lidl','eurospin','pam','crai','md ','penny','bennet','supermercat','aliment','macelleria','panetteria','forno','ristorant','pizzeri','trattoria','osteria','bar ','caffè','mcdonald','burger','sushi','glovo','deliveroo','just eat','uber eats','gastronom','ortofrutta','pescheria','food'],
+  trasporti:['atm','benzin','carburant','distributore','q8','eni station','ip ','tamoil','esso','shell','agip','autostrad','telepass','trenitalia','italo','trenord','taxi','uber','free now','bolt','car sharing','enjoy','flixbus','parchegg','park','autobus','metro','pedagg','rc auto','revisione','meccanico','gommista'],
+  bollette:['enel','servizio elettrico','a2a','hera','iren','acea','eni gas','edison','sorgenia','tim ','telecom','vodafone','wind','windtre','iliad','fastweb','sky ','netflix','spotify','disney','amazon prime','dazn','bolletta','canone','rai','acqua','gas ','luce','energia','internet','fibra','abbonament'],
+  casa:['affitto','condominio','ikea','leroy merlin','brico','mutuo','arredo','mobili','ferramenta','idraulic','elettricist','imbianchino','pulizie','colf','badante','tari','imu','tende'],
+  salute:['farmaci','parafarmac','ospedale','clinica','dottore','medico','dentista','analisi','laborator','ottica','occhiali','fisioterap','veterinar','ticket sanit','visita'],
+  svago:['cinema','teatro','concerto','palestra','fitness','piscina','spotify','netflix','steam','playstation','xbox','nintendo','libr','feltrinelli','mondadori','museo','discoteca','pub ','hotel','booking','airbnb','ryanair','easyjet','volo','viagg','vacanz'],
+  shopping:['amazon','zalando','zara','h&m','hm ','decathlon','unieuro','mediaworld','euronics','apple store','nike','adidas','shein','aliexpress','ebay','abbigliament','scarpe','profum','sephora','douglas','negozio','shop']
+};
+var INCOME_KW={
+  stipendio:['stipendio','salario','retribuzione','emolument','busta paga','cedolino','mensilità','tredicesima','netto competenze'],
+  rimborso:['rimborso','storno','reso','refund','cashback','ristorno'],
+  investimenti:['dividendo','interess','investiment','cedola','plusvalenz','trading','rendiment','coupon'],
+  regalo:['regalo','bonifico da','dono','mancia','strenna']
+};
 
 var STORAGE_KEY='expense-tracker-state-v3';
 var STORAGE_KEY_V2='expense-tracker-state-v2';
@@ -523,7 +547,7 @@ var STORAGE_KEY_V2='expense-tracker-state-v2';
    STATE
 ================================================================ */
 var state=null;
-var ui={activeTab:'home',viewMonth:null,viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense',recurringFilter:'all'};
+var ui={activeTab:'home',viewMonth:null,viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense',recurringFilter:'all',editingCatId:null,editingTagId:null};
 
 function uid(p){return (p||'id')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
 
@@ -542,6 +566,9 @@ function ensureV3Fields(s){
   s.recurring=s.recurring||[];
   s.transactions.forEach(function(t){t.tags=t.tags||[];t.type=t.type||'expense';if(t.merchant===undefined)t.merchant='';});
   s.transfers.forEach(function(t){t.tags=t.tags||[];});
+  if(s.notifAutomation===undefined)s.notifAutomation=false;
+  if(s.hideBalances===undefined)s.hideBalances=false;
+  if(s.categories)s.categories.forEach(function(c){if(c.archived===undefined)c.archived=false;});
   ensurePayPalSetup(s);
   return s;
 }
@@ -568,7 +595,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -1040,7 +1067,7 @@ function stopSync(keepConfig){
 
 /* ================================================================
    REGISTRAZIONE AUTOMATICA DA NOTIFICHE
-   Un'app di automazione sul telefono (es. MacroDroid su Android)
+   Un'app di automazione sul telefono (su Android)
    inoltra il testo delle notifiche bancarie a Firestore, in una
    "casella" identificata da un token segreto. L'app la ascolta in
    tempo reale, estrae importo/descrizione/categoria e propone il
@@ -1161,7 +1188,7 @@ function ignoreInboxItem(itemId){
 /* ---- Ponte nativo (app Android via Capacitor) ----
    Quando l'app gira dentro il contenitore nativo Android, il plugin
    SpeseNotifiche legge le notifiche direttamente sul dispositivo e le
-   consegna qui, senza passare da MacroDroid né dal cloud. Le notifiche
+   consegna qui direttamente. Le notifiche
    senza un importo riconoscibile vengono scartate in silenzio (il
    listener nativo riceve le notifiche di tutte le app, non solo la
    banca, quindi mostrare quelle non valide creerebbe solo rumore). */
@@ -1328,6 +1355,13 @@ function tagFg(i){return (isDarkTheme()?TAG_FG_DARK:TAG_FG_LIGHT)[((i%8)+8)%8];}
 function catsByType(type){return state.categories.filter(function(c){return c.type===type;});}
 
 function fmt(n){return new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n||0);}
+/* Come fmt(), ma se l'utente ha attivato l'occhio "nascondi saldi" mostra
+   dei pallini al posto della cifra. Usato SOLO per i saldi dei conti e per
+   il patrimonio, non per i singoli movimenti. */
+function fmtBal(n){return state.hideBalances?'••••':fmt(n);}
+function balHidden(){return !!state.hideBalances;}
+function eyeOnSVG(){return '<svg class="eye-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';}
+function eyeOffSVG(){return '<svg class="eye-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-2.1 2.9M6.6 6.6A13.3 13.3 0 0 0 2 11s3.5 7 10 7a9 9 0 0 0 4.5-1.2"/><path d="m2 2 20 20"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function yesterdayISO(){var d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function isToday(iso){return iso===todayISO();}
@@ -1365,7 +1399,48 @@ function parseDateFlexible(str){
 function splitCSV(line,d){var out=[],cur='',inQ=false;for(var i=0;i<line.length;i++){var c=line[i];if(inQ){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}else cur+=c;}else{if(c==='"')inQ=true;else if(c===d){out.push(cur);cur='';}else cur+=c;}}out.push(cur);return out.map(function(s){return s.trim();});}
 function detectDelim(h){var s=(h.match(/;/g)||[]).length,c=(h.match(/,/g)||[]).length,t=(h.match(/\t/g)||[]).length;if(t>s&&t>c)return '\t';return s>=c?';':',';}
 function guessColMap(headers){var lo=headers.map(function(h){return h.toLowerCase();});function fi(kw){for(var i=0;i<lo.length;i++)if(kw.some(function(k){return lo[i].indexOf(k)>-1}))return i;return -1;}return{date:fi(['data','date']),description:fi(['descrizione','causale','description','memo','dettag']),amount:fi(['importo','amount','valore'])};}
-function guessCat(desc,type){var d=(desc||'').toLowerCase(),map=type==='income'?INCOME_KW:EXPENSE_KW;for(var cat in map){var ws=map[cat];for(var i=0;i<ws.length;i++)if(d.indexOf(ws[i])>-1)return cat;}return type==='income'?'altro_entrata':'altro';}
+/* Riconoscimento automatico della categoria da una descrizione.
+   Ordine: 1) IMPARA dai movimenti che l'utente ha già categorizzato
+   (se una descrizione simile esiste, usa la stessa categoria); 2) dizionario
+   di parole chiave; 3) categoria "Altro". Restituisce sempre un ID che
+   esiste davvero fra le categorie del tipo giusto. */
+function normDesc(s){return String(s||'').toLowerCase().replace(/[0-9]+/g,' ').replace(/[^a-zàèéìòù ]+/g,' ').replace(/\s+/g,' ').trim();}
+function descTokens(s){return normDesc(s).split(' ').filter(function(w){return w.length>=4;});}
+function fallbackCatId(type){
+  var altId=type==='income'?'altro_entrata':'altro';
+  if(state.categories.some(function(c){return c.id===altId;}))return altId;
+  var any=state.categories.filter(function(c){return c.type===type;});
+  return any.length?any[any.length-1].id:altId;
+}
+function learnedCat(desc,type){
+  var toks=descTokens(desc);
+  if(!toks.length)return null;
+  var score={};
+  state.transactions.forEach(function(t){
+    if(t.type!==type||!t.categoryId)return;
+    var text=normDesc((t.merchant||'')+' '+(t.note||''));
+    if(!text)return;
+    var hit=0;
+    for(var i=0;i<toks.length;i++)if(text.indexOf(toks[i])>-1)hit++;
+    if(hit)score[t.categoryId]=(score[t.categoryId]||0)+hit;
+  });
+  var best=null,bestV=0;
+  for(var id in score)if(score[id]>bestV){bestV=score[id];best=id;}
+  if(best&&state.categories.some(function(c){return c.id===best&&c.type===type;}))return best;
+  return null;
+}
+function guessCat(desc,type){
+  var learned=learnedCat(desc,type);
+  if(learned)return learned;
+  var d=(desc||'').toLowerCase();
+  var map=type==='income'?INCOME_KW:EXPENSE_KW;
+  for(var cat in map){
+    if(!state.categories.some(function(c){return c.id===cat&&c.type===type;}))continue;
+    var ws=map[cat];
+    for(var i=0;i<ws.length;i++)if(d.indexOf(ws[i])>-1)return cat;
+  }
+  return fallbackCatId(type);
+}
 
 /* ================================================================
    QUERIES
@@ -1588,8 +1663,9 @@ function homeHTML(){
   var d=dashboardData(),mk=d.mk;
   var deltaHTML='';
   if(d.prevExp>0){var dp=(d.totals.expense-d.prevExp)/d.prevExp*100,up=dp>=0;deltaHTML='<span class="hero-delta">'+(up?'▲':'▼')+' '+Math.abs(dp).toFixed(0)+'% spese vs '+monthShortLabel(shiftMonth(mk,-1))+'</span>';}
-  var hero='<section class="hero-card"><div class="hero-label">Patrimonio complessivo</div><div class="hero-value">'+(d.totalBal<0?'−':'')+fmt(Math.abs(d.totalBal))+'</div><div class="hero-sub"><span>'+formatMonthLabel(mk)+'</span>'+deltaHTML+'</div></section>';
-  var accSlides='<div class="carousel">'+state.accounts.map(function(a){var b=accBalance(a.id);return'<div class="acc-slide" data-goto="accounts"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="acc-slide-name">'+esc(a.name)+'</div><div class="acc-slide-bal '+(b>=0?'saldo-pos':'saldo-neg')+'">'+(b>=0?'':'−')+fmt(Math.abs(b))+'</div><div class="acc-slide-sub">Speso: '+fmt(accMonthExp(a.id))+'</div></div>';}).join('')+'</div>';
+  var eyeIco=balHidden()?eyeOffSVG():eyeOnSVG();
+  var hero='<section class="hero-card"><button class="eye-btn" id="toggleBalEye" aria-label="Mostra o nascondi i saldi">'+eyeIco+'</button><div class="hero-label">Patrimonio complessivo</div><div class="hero-value">'+(balHidden()?'••••':((d.totalBal<0?'−':'')+fmt(Math.abs(d.totalBal))))+'</div><div class="hero-sub"><span>'+formatMonthLabel(mk)+'</span>'+deltaHTML+'</div></section>';
+  var accSlides='<div class="carousel">'+state.accounts.map(function(a){var b=accBalance(a.id);return'<div class="acc-slide" data-goto="accounts"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="acc-slide-name">'+esc(a.name)+'</div><div class="acc-slide-bal '+(b>=0?'saldo-pos':'saldo-neg')+'">'+(balHidden()?'••••':((b>=0?'':'−')+fmt(Math.abs(b)))+'')+'</div><div class="acc-slide-sub">Speso: '+fmt(accMonthExp(a.id))+'</div></div>';}).join('')+'</div>';
   var extras='';
   if(state.transactions.length){
     var today=new Date(),dayN=today.getDate(),dim=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
@@ -1602,6 +1678,7 @@ function homeHTML(){
   }
   return '<div class="view">'+
     pendingInboxHTML()+
+    recurringDueBannerHTML()+
     hero+accSlides+
     recurringSummaryHTML()+
     extras+
@@ -1665,6 +1742,9 @@ function wireHome(){
   document.querySelectorAll('[data-open-budget]').forEach(function(b){b.onclick=openBudgetSheet;});
   document.querySelectorAll('[data-inbox-reg]').forEach(function(b){b.onclick=function(){registerInboxItem(b.dataset.inboxReg);};});
   document.querySelectorAll('[data-inbox-ign]').forEach(function(b){b.onclick=function(){ignoreInboxItem(b.dataset.inboxIgn);};});
+  var eyeBtn=document.getElementById('toggleBalEye');if(eyeBtn)eyeBtn.onclick=function(e){e.stopPropagation();state.hideBalances=!state.hideBalances;saveState();renderActiveTab();};
+  document.querySelectorAll('[data-rec-pay]').forEach(function(b){b.onclick=function(e){e.stopPropagation();payRecurring(b.dataset.recPay);};});
+  var enNotif=document.getElementById('enableRecNotif');if(enNotif)enNotif.onclick=function(){requestRecNotifPermission();};
   wireEntryRows(document.getElementById('content'));
   wireDashChart();
 }
@@ -1733,17 +1813,60 @@ function budgetSliderMax(limit,spent){
   var base=Math.max(limit||0,spent||0,100);
   return Math.max(200,Math.ceil(base*1.6/50)*50);
 }
+function catUsageCount(id){
+  var n=0;
+  state.transactions.forEach(function(t){if(t.categoryId===id)n++;});
+  state.recurring.forEach(function(r){if(r.categoryId===id)n++;});
+  return n;
+}
+function tagUsageCount(id){
+  var n=0;
+  state.transactions.forEach(function(t){if(t.tags&&t.tags.indexOf(id)>-1)n++;});
+  state.transfers.forEach(function(t){if(t.tags&&t.tags.indexOf(id)>-1)n++;});
+  return n;
+}
+function catManageRowHTML(c){
+  if(ui.editingCatId===c.id){
+    return '<div class="card cat-manage-row editing" data-cat-row="'+c.id+'">'+
+      '<input class="emoji-input" id="editCatEmoji" maxlength="2" value="'+esc(c.emoji)+'">'+
+      '<input class="text-input" id="editCatName" value="'+esc(c.name)+'" style="flex:1;">'+
+      '<button class="btn-primary-sm" data-cat-save="'+c.id+'">OK</button>'+
+      '<button class="icon-btn" data-cat-canceledit="1">✕</button></div>';
+  }
+  return '<div class="card cat-manage-row" data-cat-row="'+c.id+'">'+
+    '<span class="cat-bubble" style="background:'+colorHex(c.color)+'22;">'+esc(c.emoji)+'</span>'+
+    '<span style="flex:1;">'+esc(c.name)+'</span>'+
+    '<button class="icon-btn" data-cat-edit="'+c.id+'" aria-label="Modifica">✏️</button>'+
+    '<button class="icon-btn-danger" data-cat-del="'+c.id+'" aria-label="Elimina">🗑</button></div>';
+}
 function budgetSheetBodyHTML(){
   var incomeCats=catsByType('income');
+  var expCats=catsByType('expense');
   return '<p class="hint">Budget mensili calcolati su tutti i conti — '+formatMonthLabel(currentMonthKey())+'. Trascina lo slider o scrivi l\'importo esatto.</p>'+
-    '<section style="display:flex;flex-direction:column;gap:10px;">'+catsByType('expense').map(function(c){
+    '<section style="display:flex;flex-direction:column;gap:10px;">'+expCats.map(function(c){
       var sp=totalOf(filteredTx(currentMonthKey(),'all',c.id,'expense')),lm=state.budgets[c.id]||0,pct=lm>0?Math.min(sp/lm*100,100):0;
       var bar=lm>0?(sp/lm>=1?'var(--red)':sp/lm>=0.8?'var(--amber)':'var(--accent)'):'var(--track)';
       var mx=budgetSliderMax(lm,sp),val=Math.min(lm,mx);
       return'<div class="card budget-card" data-budget-id="'+c.id+'"><div class="budget-top"><div class="cat-bubble" style="background:'+colorHex(c.color)+'22;">'+esc(c.emoji)+'</div><div class="budget-name">'+esc(c.name)+'</div><div class="budget-figures">'+(lm>0?fmt(sp)+' / '+fmt(lm):fmt(sp))+'</div></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:'+bar+';"></div></div><div class="budget-slider-row"><input type="range" class="slider" min="0" max="'+mx+'" step="10" value="'+val+'" style="--slider-pct:'+(mx>0?(val/mx*100).toFixed(1):0)+'%;" data-budget-slider="'+c.id+'" aria-label="Limite mensile '+esc(c.name)+'"><input type="number" inputmode="decimal" min="0" step="1" data-budget-cat="'+c.id+'" value="'+(state.budgets[c.id]||'')+'" placeholder="Nessuno" aria-label="Limite mensile '+esc(c.name)+' in euro"></div></div>';
     }).join('')+'</section>'+
-    '<section class="card"><h3 style="margin:0 0 10px;font-size:14.5px;">Categorie di entrata</h3><div class="chip-row wrap">'+(incomeCats.length?incomeCats.map(function(c){return'<span class="chip static"><span class="dot" style="background:'+colorHex(c.color)+'"></span>'+esc(c.emoji)+' '+esc(c.name)+'</span>';}).join(''):'<p class="empty-note">Nessuna categoria.</p>')+'</div></section>'+
-    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Nuova categoria</h3><div class="segmented small"><button class="'+(ui.newCatType==='expense'?'active':'')+'" data-newcat-type="expense">Di spesa</button><button class="'+(ui.newCatType==='income'?'active mode-income':'')+'" data-newcat-type="income">Di entrata</button></div><div class="new-cat-row"><input id="newCatEmoji" class="emoji-input" maxlength="2" placeholder="🙂"><input id="newCatName" class="text-input" placeholder="Nome categoria"><button class="btn-primary-sm" id="addCatBtn">Aggiungi</button></div></section>';
+    '<section class="card" style="display:flex;flex-direction:column;gap:8px;"><h3 style="margin:0;font-size:14.5px;">Gestisci categorie di spesa</h3>'+(expCats.length?expCats.map(catManageRowHTML).join(''):'<p class="empty-note">Nessuna categoria.</p>')+'</section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:8px;"><h3 style="margin:0;font-size:14.5px;">Gestisci categorie di entrata</h3>'+(incomeCats.length?incomeCats.map(catManageRowHTML).join(''):'<p class="empty-note">Nessuna categoria.</p>')+'</section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Nuova categoria</h3><div class="segmented small"><button class="'+(ui.newCatType==='expense'?'active':'')+'" data-newcat-type="expense">Di spesa</button><button class="'+(ui.newCatType==='income'?'active mode-income':'')+'" data-newcat-type="income">Di entrata</button></div><div class="new-cat-row"><input id="newCatEmoji" class="emoji-input" maxlength="2" placeholder="🙂"><input id="newCatName" class="text-input" placeholder="Nome categoria"><button class="btn-primary-sm" id="addCatBtn">Aggiungi</button></div></section>'+
+    '<section class="card" style="display:flex;flex-direction:column;gap:8px;"><h3 style="margin:0;font-size:14.5px;">Gestisci tag</h3>'+(state.tags.length?state.tags.map(tagManageRowHTML).join(''):'<p class="empty-note">Nessun tag: li crei quando aggiungi un movimento.</p>')+'</section>';
+}
+function tagManageRowHTML(t){
+  if(ui.editingTagId===t.id){
+    return '<div class="card cat-manage-row editing" data-tag-row="'+t.id+'">'+
+      '<span class="dot" style="background:'+colorHex(t.color)+'"></span>'+
+      '<input class="text-input" id="editTagName" value="'+esc(t.name)+'" style="flex:1;">'+
+      '<button class="btn-primary-sm" data-tag-save="'+t.id+'">OK</button>'+
+      '<button class="icon-btn" data-tag-canceledit="1">✕</button></div>';
+  }
+  return '<div class="card cat-manage-row" data-tag-row="'+t.id+'">'+
+    '<span class="dot" style="background:'+colorHex(t.color)+'"></span>'+
+    '<span style="flex:1;">'+esc(t.name)+'</span>'+
+    '<button class="icon-btn" data-tag-edit="'+t.id+'" aria-label="Modifica">✏️</button>'+
+    '<button class="icon-btn-danger" data-tag-del="'+t.id+'" aria-label="Elimina">🗑</button></div>';
 }
 function openBudgetSheet(){
   function sheetHTML(){
@@ -1751,6 +1874,7 @@ function openBudgetSheet(){
   }
   function render(){
     var wrap=document.querySelector('#modal-root .sheet-wrap');
+    if(!wrap){openModal('<div class="sheet"></div>');wrap=document.querySelector('#modal-root .sheet-wrap');}
     if(!wrap)return;
     wrap.innerHTML=sheetHTML();
     wire();
@@ -1801,6 +1925,51 @@ function openBudgetSheet(){
       state.categories.push({id:uid('cat'),name:name,emoji:emoji,color:state.categories.length%8,type:ui.newCatType,custom:true});
       saveState();showToast('Categoria aggiunta');render();
     };
+    /* --- gestione categorie: modifica / elimina --- */
+    document.querySelectorAll('[data-cat-edit]').forEach(function(b){b.onclick=function(){ui.editingCatId=b.dataset.catEdit;ui.editingTagId=null;render();};});
+    document.querySelectorAll('[data-cat-canceledit]').forEach(function(b){b.onclick=function(){ui.editingCatId=null;render();};});
+    document.querySelectorAll('[data-cat-save]').forEach(function(b){b.onclick=function(){
+      var c=catById(b.dataset.catSave);
+      var nm=(document.getElementById('editCatName').value||'').trim();
+      var em=(document.getElementById('editCatEmoji').value||'').trim();
+      if(!nm){showToast('Il nome non può essere vuoto');return;}
+      c.name=nm;if(em)c.emoji=em;
+      ui.editingCatId=null;saveState();showToast('Categoria aggiornata');render();
+    };});
+    document.querySelectorAll('[data-cat-del]').forEach(function(b){b.onclick=function(){
+      var id=b.dataset.catDel,c=catById(id),n=catUsageCount(id);
+      if(state.categories.filter(function(x){return x.type===c.type;}).length<=1){showToast('Deve restare almeno una categoria di questo tipo');return;}
+      var others=state.categories.filter(function(x){return x.type===c.type&&x.id!==id;});
+      var target=others[0];
+      var warn=n===0?'Nessun movimento usa questa categoria.':(n+' movimenti/ricorrenti passeranno a "'+target.emoji+' '+target.name+'".');
+      confirmDialog('Eliminare la categoria "'+c.emoji+' '+c.name+'"? '+warn,function(){
+        state.transactions.forEach(function(t){if(t.categoryId===id)t.categoryId=target.id;});
+        state.recurring.forEach(function(r){if(r.categoryId===id)r.categoryId=target.id;});
+        delete state.budgets[id];
+        state.categories=state.categories.filter(function(x){return x.id!==id;});
+        ui.editingCatId=null;saveState();showToast('Categoria eliminata');render();
+      },'Elimina');
+    };});
+    /* --- gestione tag: modifica / elimina --- */
+    document.querySelectorAll('[data-tag-edit]').forEach(function(b){b.onclick=function(){ui.editingTagId=b.dataset.tagEdit;ui.editingCatId=null;render();};});
+    document.querySelectorAll('[data-tag-canceledit]').forEach(function(b){b.onclick=function(){ui.editingTagId=null;render();};});
+    document.querySelectorAll('[data-tag-save]').forEach(function(b){b.onclick=function(){
+      var t=tagById(b.dataset.tagSave);
+      var nm=(document.getElementById('editTagName').value||'').trim();
+      if(!nm){showToast('Il nome non può essere vuoto');return;}
+      t.name=nm;ui.editingTagId=null;saveState();showToast('Tag aggiornato');render();
+    };});
+    document.querySelectorAll('[data-tag-del]').forEach(function(b){b.onclick=function(){
+      var id=b.dataset.tagDel,t=tagById(id),n=tagUsageCount(id);
+      var warn=n===0?'Nessun movimento usa questo tag.':('Verrà tolto da '+n+' movimenti (i movimenti restano).');
+      confirmDialog('Eliminare il tag "'+t.name+'"? '+warn,function(){
+        state.transactions.forEach(function(x){if(x.tags)x.tags=x.tags.filter(function(g){return g!==id;});});
+        state.transfers.forEach(function(x){if(x.tags)x.tags=x.tags.filter(function(g){return g!==id;});});
+        state.tags=state.tags.filter(function(x){return x.id!==id;});
+        if(ui.tagFilter===id)ui.tagFilter=null;
+        ui.editingTagId=null;saveState();showToast('Tag eliminato');render();
+      },'Elimina');
+    };});
   }
   openModal('<div class="sheet"></div>');
   render();
@@ -1927,6 +2096,13 @@ function isIOSStandalone(){
     return ios&&standalone;
   }catch(e){return false;}
 }
+function isIOS(){
+  try{
+    if(/iPad|iPhone|iPod/.test(navigator.userAgent))return true;
+    // iPad con iPadOS si presenta come Mac ma ha il touch
+    return navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1;
+  }catch(e){return false;}
+}
 function openLinkPasswordModal(){
   var m={busy:false,err:'',ok:false};
   function html(){
@@ -2010,8 +2186,9 @@ function accountsHTML(){
   return '<div class="view">'+
     '<section style="display:flex;flex-direction:column;gap:10px;">'+state.accounts.map(function(a){
       var bal=accBalance(a.id),exp=accMonthExp(a.id),canDel=state.accounts.length>1;
-      return'<div class="card account-card"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="account-name-row"><input class="account-name" data-account-id="'+a.id+'" value="'+esc(a.name)+'"><span class="account-sub">Speso questo mese: '+fmt(exp)+'</span></div><div class="account-balance '+(bal>=0?'saldo-pos':'saldo-neg')+'">'+(bal>=0?'':'−')+fmt(Math.abs(bal))+'</div>'+(canDel?'<button class="icon-btn-danger" data-del-account="'+a.id+'">🗑</button>':'')+'</div>';
+      return'<div class="card account-card"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="account-name-row"><input class="account-name" data-account-id="'+a.id+'" value="'+esc(a.name)+'"><span class="account-sub">Saldo totale · speso questo mese: '+fmt(exp)+'</span></div><div class="account-balance '+(bal>=0?'saldo-pos':'saldo-neg')+'">'+(balHidden()?'••••':((bal>=0?'':'−')+fmt(Math.abs(bal))))+'</div>'+(canDel?'<button class="icon-btn-danger" data-del-account="'+a.id+'">🗑</button>':'')+'</div>';
     }).join('')+'</section>'+
+    '<label class="toggle-row card" style="margin:0;"><span>'+(balHidden()?eyeOffSVG():eyeOnSVG())+' Nascondi i saldi</span><input type="checkbox" id="hideBalToggle" '+(balHidden()?'checked':'')+'></label>'+
     (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="Nome conto" autofocus><button class="btn-primary-sm" id="confirmNewAcc">Crea</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">+ Nuovo conto</button>')+
     syncStatusCardHTML()+
     '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
@@ -2021,21 +2198,28 @@ function accountsHTML(){
   '</div>';
 }
 function notifCardHTML(){
-  if(sync.status!=='connected'||!state.inboxToken)return '';
+  /* La registrazione automatica delle spese ha senso solo su iPhone
+     (tramite l'automazione Comandi Rapidi che apre registra.html).
+     La mostriamo solo lì, e solo se l'utente attiva la spunta apposta. */
+  if(!isIOS())return '';
+  var on=!!state.notifAutomation;
+  var head='<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+    '<label class="toggle-row"><span>🔔 Voglio automatizzare la registrazione</span><input type="checkbox" id="notifAutomToggle" '+(on?'checked':'')+'></label>';
+  if(!on)return head+'<p class="hint">Attiva per configurare l\'automazione dei pagamenti Apple Pay tramite l\'app Comandi Rapidi.</p></section>';
+  if(sync.status!=='connected'||!state.inboxToken)
+    return head+'<p class="hint">Per usare l\'automazione collega prima la sincronizzazione cloud qui sopra: serve a ricevere i pagamenti registrati dall\'automazione.</p></section>';
   var url=inboxEndpointURL();
-  var body='{"fields":{"title":{"stringValue":"{not_title}"},"text":{"stringValue":"{notification}"}}}';
-  return '<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
-    '<h3 style="margin:0;font-size:14.5px;">🔔 Registrazione da notifiche</h3>'+
-    '<p class="hint">Su Android, un\'app di automazione (es. MacroDroid) può inoltrare qui le notifiche della tua banca: l\'app le trasforma in movimenti da confermare con un tap. Le istruzioni complete sono in GUIDA-NOTIFICHE.md nel repository. Su iPhone non è possibile leggere le notifiche di altre app.</p>'+
-    '<div class="field-group"><label class="field-label">Indirizzo da usare in MacroDroid (HTTP POST)</label>'+
+  var regBase=location.href.replace(/[^\/]*$/,'')+'registra.html';
+  return head+
+    '<p class="hint">L\'automazione (app <strong>Comandi Rapidi</strong>) apre questo indirizzo quando paghi con Apple Pay, e il pagamento arriva qui. Le istruzioni passo-passo sono nella guida nel repository.</p>'+
+    '<div class="field-group"><label class="field-label">Indirizzo della pagina di registrazione</label>'+
+      '<input class="text-input" style="font-family:monospace;font-size:10.5px;" readonly value="'+esc(regBase)+'" id="notifRegField">'+
+      '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifRegField">Copia indirizzo pagina</button></div>'+
+    '<div class="field-group"><label class="field-label">Indirizzo tecnico (per configurazioni avanzate)</label>'+
       '<input class="text-input" style="font-family:monospace;font-size:10.5px;" readonly value="'+esc(url)+'" id="notifUrlField">'+
-      '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifUrlField">Copia indirizzo</button></div>'+
-    '<div class="field-group"><label class="field-label">Corpo della richiesta (Content type: application/json)</label>'+
-      '<input class="text-input" style="font-family:monospace;font-size:10.5px;" readonly value="'+esc(body)+'" id="notifBodyField">'+
-      '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifBodyField">Copia corpo</button></div>'+
+      '<button class="btn-secondary" style="padding:8px;font-size:12.5px;" data-copy-target="notifUrlField">Copia indirizzo tecnico</button></div>'+
     '<label class="toggle-row"><span>Registra automaticamente senza conferma</span><input type="checkbox" id="autoRegisterToggle" '+(state.autoRegister?'checked':'')+'></label>'+
-    (state.autoRegister?'<p class="hint">⚠️ Le notifiche riconosciute verranno registrate subito, senza revisione. Il riconoscimento automatico può sbagliare importo o categoria.</p>':'')+
-    '<p class="hint">💸 <strong>Pagamenti PayPal:</strong> su iPhone l\'app non può leggere le email/notifiche di PayPal. Registra il pagamento a mano scegliendo il conto <strong>PayPal</strong> e compilando <strong>Esercente</strong> (la persona) e <strong>Nota</strong> (il messaggio del pagamento).</p>'+
+    (state.autoRegister?'<p class="hint">⚠️ I pagamenti riconosciuti verranno registrati subito, senza revisione.</p>':'')+
   '</section>';
 }
 function wireAccounts(){
@@ -2084,6 +2268,10 @@ function wireAccounts(){
   });
   var autoTog=document.getElementById('autoRegisterToggle');
   if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();renderActiveTab();};
+  var notifTog=document.getElementById('notifAutomToggle');
+  if(notifTog)notifTog.onchange=function(){state.notifAutomation=notifTog.checked;saveState();renderActiveTab();};
+  var hideTog=document.getElementById('hideBalToggle');
+  if(hideTog)hideTog.onchange=function(){state.hideBalances=hideTog.checked;saveState();renderActiveTab();};
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
     var warn=sync.pendingPush&&!isOnline()?' ⚠️ Ci sono modifiche non ancora sincronizzate: collegati a internet e premi «Sincronizza» prima di uscire, altrimenti le perdi.':'';
     confirmDialog('Uscire dall\'account '+(sync.email||'')+'? I dati restano al sicuro nel cloud, ma vengono rimossi da questo dispositivo: non saranno più visibili finché non rientri. Potrai poi accedere con un altro account.'+warn,function(){
@@ -2167,14 +2355,14 @@ function openEntrySheet(opts){
         '<div class="swap-hint">⇅ sposta il saldo tra conti senza influire sul bilancio</div>'+
         '<div class="field-group"><label class="field-label">A</label><div class="chip-row" id="toChips">'+accChips(entry.toAccountId,'sel-to')+'</div></div>'+
         dateRowHTML()+tagSectionHTML()+
-        '<div class="field-group"><label class="field-label">Nota (opzionale)</label><input type="text" id="entryNote" class="text-input" value="'+esc(entry.note)+'" placeholder="Es. Accantonamento risparmi"></div>'+
+        '<div class="field-group"><label class="field-label">Nota (opzionale)</label><input type="text" id="entryNote" class="text-input" value="'+esc(entry.note)+'" placeholder="Es. nota del movimento"></div>'+
         delBtn+'<button class="btn-primary full-width sticky-save" id="saveEntryBtn" disabled>'+saveLabel()+'</button>';
     }
     return '<div class="field-group"><label class="field-label">Conto</label><div class="chip-row" id="accountChips">'+accChips(entry.accountId,'sel-account')+'</div></div>'+
       catSectionHTML()+
       dateRowHTML()+tagSectionHTML()+
-      '<div class="field-group"><label class="field-label">Esercente (opzionale)</label><input type="text" id="entryMerchant" class="text-input" value="'+esc(entry.merchant)+'" placeholder="Es. Marco Piras / Esselunga"></div>'+
-      '<div class="field-group"><label class="field-label">Nota (opzionale)</label><input type="text" id="entryNote" class="text-input" value="'+esc(entry.note)+'" placeholder="Es. Spesa al supermercato"></div>'+
+      '<div class="field-group"><label class="field-label">Esercente (opzionale)</label><input type="text" id="entryMerchant" class="text-input" value="'+esc(entry.merchant)+'" placeholder="Es. negozio o persona"></div>'+
+      '<div class="field-group"><label class="field-label">Nota (opzionale)</label><input type="text" id="entryNote" class="text-input" value="'+esc(entry.note)+'" placeholder="Es. dettaglio del movimento"></div>'+
       delBtn+'<button class="btn-primary full-width sticky-save" id="saveEntryBtn" disabled>'+saveLabel()+'</button>';
   }
 
@@ -3584,7 +3772,7 @@ function openImportModal(){
     var cnt=imp.parsed.filter(function(r){return r.include;}).length;
     var inc=imp.parsed.filter(function(r){return r.include&&r.type==='income';}).length;
     return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Controlla e importa</h3>'+
-      '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'" ('+inc+' entrate, '+(cnt-inc)+' spese). Tocca <strong>S/E</strong> per invertire una riga.</p>'+
+      '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'" ('+inc+' entrate, '+(cnt-inc)+' spese). Le categorie sono assegnate in automatico dalla descrizione — puoi cambiarle qui, e tocca <strong>S/E</strong> per invertire spesa/entrata.</p>'+
       '<div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){
         return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'>'+
           '<span class="imp-date">'+formatShortDate(r.date)+'</span>'+
@@ -3763,6 +3951,89 @@ function payRecurring(id){
   renderActiveTab();
 }
 
+/* ================================================================
+   PROMEMORIA RICORRENTI
+   Avvisa quando un pagamento ricorrente arriva a scadenza, così lo si
+   può registrare. Due canali: una notifica di sistema (se l'utente ha
+   dato il permesso) e comunque un banner dentro l'app. Il controllo gira
+   all'avvio e quando l'app torna in primo piano; ogni scadenza avvisa
+   una volta sola al giorno (memorizzato per non ripetere). */
+var RECNOTIF_KEY='expense-tracker-recnotif-v1';
+function recNotifLog(){
+  try{var r=window.localStorage.getItem(RECNOTIF_KEY);return r?JSON.parse(r):{};}catch(e){return {};}
+}
+function recNotifSave(log){try{window.localStorage.setItem(RECNOTIF_KEY,JSON.stringify(log));}catch(e){}}
+function dueRecurringToday(){
+  return state.recurring.filter(function(r){return r.status!=='paused'&&daysUntil(r.nextDate)<=0;});
+}
+function notifSupported(){try{return 'Notification' in window;}catch(e){return false;}}
+function notifEnabled(){return notifSupported()&&Notification.permission==='granted';}
+function requestRecNotifPermission(cb){
+  if(!notifSupported()){showToast('Le notifiche non sono disponibili in questo browser');if(cb)cb(false);return;}
+  if(Notification.permission==='granted'){if(cb)cb(true);return;}
+  if(Notification.permission==='denied'){showToast('Le notifiche sono bloccate: attivale dalle impostazioni del telefono per questa app');if(cb)cb(false);return;}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){showToast('Notifiche attivate');checkRecurringDue(true);}
+    else showToast('Notifiche non attivate');
+    if(cb)cb(p==='granted');
+    renderActiveTab();
+  }).catch(function(){if(cb)cb(false);});
+}
+function fireRecNotification(due){
+  if(!notifEnabled())return;
+  try{
+    var title=due.length===1?'Pagamento ricorrente in scadenza':due.length+' pagamenti ricorrenti in scadenza';
+    var body=due.slice(0,4).map(function(r){return (r.type==='income'?'↓ ':'↑ ')+r.name+' · '+fmt(r.amount);}).join('\n');
+    if(due.length>4)body+='\n…e altri '+(due.length-4);
+    var opts={body:body,tag:'ricorrenti'};
+    var reg=(navigator.serviceWorker&&navigator.serviceWorker.controller&&navigator.serviceWorker.getRegistration)?true:false;
+    var shown=false;
+    function fallback(){if(shown)return;shown=true;try{new Notification(title,opts);}catch(e){}}
+    if(!usingClaudeStorage&&navigator.serviceWorker&&navigator.serviceWorker.getRegistration){
+      var t=setTimeout(fallback,600);
+      navigator.serviceWorker.getRegistration().then(function(r){
+        if(shown)return;
+        if(r&&r.showNotification){shown=true;clearTimeout(t);try{r.showNotification(title,Object.assign({icon:'icon-192.png',badge:'icon-192.png'},opts));}catch(e){fallback();}}
+        else{clearTimeout(t);fallback();}
+      }).catch(function(){clearTimeout(t);fallback();});
+    }else{
+      fallback();
+    }
+  }catch(e){}
+}
+function checkRecurringDue(force){
+  var due=dueRecurringToday();
+  if(!due.length)return;
+  var today=todayISO(),log=recNotifLog();
+  var fresh=due.filter(function(r){return log[r.id]!==today;});
+  if(fresh.length||force){
+    fireRecNotification(due);
+    due.forEach(function(r){log[r.id]=today;});
+    recNotifSave(log);
+  }
+  if(ui.activeTab==='home')renderActiveTab();
+}
+function initRecurringReminders(){
+  setTimeout(function(){checkRecurringDue(false);},1500);
+  document.addEventListener('visibilitychange',function(){
+    if(!document.hidden)checkRecurringDue(false);
+  });
+}
+/* Banner in-app: sempre visibile in Home quando c'è qualcosa in scadenza,
+   anche se le notifiche di sistema sono spente. */
+function recurringDueBannerHTML(){
+  var due=dueRecurringToday();
+  if(!due.length)return '';
+  var head=due.length===1?'1 pagamento ricorrente da registrare':due.length+' pagamenti ricorrenti da registrare';
+  var rows=due.slice(0,4).map(function(r){
+    var c=catById(r.categoryId);
+    return '<div class="due-rec-row"><span class="due-rec-name">'+esc(c.emoji)+' '+esc(r.name)+' · '+fmt(r.amount)+'</span><button class="btn-primary-sm" data-rec-pay="'+r.id+'">Registra</button></div>';
+  }).join('');
+  var more=due.length>4?'<button class="link-btn" data-goto="recurring">Vedi tutti ('+due.length+')</button>':'';
+  var askNotif=(notifSupported()&&Notification.permission==='default')?'<button class="link-btn" id="enableRecNotif">🔔 Avvisami con una notifica</button>':'';
+  return '<section class="card due-rec-card"><div class="section-title-row" style="margin-bottom:6px;"><h3>⏰ '+head+'</h3>'+more+'</div>'+rows+(askNotif?'<div style="text-align:center;margin-top:4px;">'+askNotif+'</div>':'')+'</section>';
+}
+
 function recurringSummaryHTML(){
   if(!state.recurring.length)return '';
   var active=state.recurring.filter(function(r){return r.status!=='paused';});
@@ -3858,7 +4129,7 @@ function openRecurringSheet(opts){
   function bodyHTML(){
     var delBtn=m.isEdit?'<button class="btn-danger full-width" id="rcDelBtn">Elimina ricorrente</button>':'';
     var payBtn=m.isEdit&&m.status!=='paused'?'<button class="btn-secondary full-width" id="rcPayNow">Segna come pagato ora</button>':'';
-    return '<div class="field-group"><label class="field-label">Nome</label><input type="text" id="rcName" class="text-input" value="'+esc(m.name)+'" placeholder="Es. Netflix, IMU, Palestra"></div>'+
+    return '<div class="field-group"><label class="field-label">Nome</label><input type="text" id="rcName" class="text-input" value="'+esc(m.name)+'" placeholder="Es. abbonamento, bolletta, rata"></div>'+
       '<div class="segmented"><button class="'+(m.type==='expense'?'active':'')+'" data-rc-type="expense">Spesa</button><button class="'+(m.type==='income'?'active mode-income':'')+'" data-rc-type="income">Entrata</button></div>'+
       '<div class="field-group"><label class="field-label">Importo</label><div class="amount-field"><span class="amount-cur">€</span><input type="text" inputmode="decimal" id="rcAmount" class="text-input amount-input" value="'+esc(m.amountStr)+'" placeholder="0,00"></div></div>'+
       catChips()+accChips()+cadChips()+
@@ -4073,6 +4344,7 @@ async function init(){
   initConnectivityWatch();
   initSyncFromSavedConfig();
   initNativeNotificationBridge();
+  initRecurringReminders();
 }
 
 init();
