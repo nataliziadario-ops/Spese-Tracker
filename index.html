@@ -147,6 +147,14 @@ html[data-theme="dark"] #app[data-amb="accounts"]{--amb1:#5F4A14;--amb2:#715D1E;
 .goal-hist-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline);font-size:13px;color:var(--ink-soft);}
 .goal-hist-row:last-child{border-bottom:none;}
 .goal-form-row{display:flex;gap:10px;}
+.goal-mini{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;padding:9px 0;text-align:left;cursor:pointer;border-bottom:1px solid var(--hairline);}
+.goal-mini:last-child{border-bottom:none;}
+.goal-mini-emoji{font-size:20px;flex-shrink:0;}
+.goal-mini-body{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;}
+.goal-mini-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.goal-mini-name{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.goal-mini-amt{font-size:11.5px;color:var(--ink-soft);flex-shrink:0;}
+.goal-mini-pct{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--ink-soft);flex-shrink:0;}
 .goal-edit{border-top:1px solid var(--hairline);padding-top:10px;}
 .goal-edit summary{font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;padding:4px 0 10px;}
 .goal-edit>*+*{margin-top:10px;}
@@ -662,7 +670,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -807,7 +815,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v17';
+var APP_VERSION='v18';
 /* Config Firebase del progetto, incorporata nell'app: la sincronizzazione
    non chiede più di incollare l'oggetto firebaseConfig a mano.
    Nota: la config web di Firebase non è un segreto (sta in ogni client);
@@ -1798,6 +1806,7 @@ function homeHTML(){
     recurringDueBannerHTML()+
     hero+accSlides+
     recurringSummaryHTML()+
+    goalsSummaryHTML()+
     extras+
     '<div class="segmented" style="margin-bottom:-4px;"><button class="'+(ui.homeView==='monthly'?'active':'')+'" data-home-view="monthly">Mensile</button><button class="'+(ui.homeView==='annual'?'active':'')+'" data-home-view="annual">Annuale</button></div>'+
     (ui.homeView==='annual'?annualViewHTML():monthlyViewHTML(isCurrent))+
@@ -1864,6 +1873,7 @@ function wireHome(){
   document.querySelectorAll('[data-goto]').forEach(function(el){el.onclick=function(){gotoTab(el.dataset.goto);};});
   document.querySelectorAll('[data-rec-open]').forEach(function(b){b.onclick=function(e){e.stopPropagation();openRecurringSheet({id:b.dataset.recOpen});};});
   document.querySelectorAll('[data-open-budget]').forEach(function(b){b.onclick=openBudgetSheet;});
+  document.querySelectorAll('[data-goal-open]').forEach(function(b){b.onclick=function(e){e.stopPropagation();openGoalSheet(b.dataset.goalOpen);};});
   document.querySelectorAll('[data-inbox-reg]').forEach(function(b){b.onclick=function(){registerInboxItem(b.dataset.inboxReg);};});
   document.querySelectorAll('[data-inbox-ign]').forEach(function(b){b.onclick=function(){ignoreInboxItem(b.dataset.inboxIgn);};});
   var eyeBtn=document.getElementById('toggleBalEye');if(eyeBtn)eyeBtn.onclick=function(e){e.stopPropagation();state.hideBalances=!state.hideBalances;saveState();renderActiveTab();};
@@ -2476,6 +2486,25 @@ function accountsHTML(){
 /* ================================================================
    SALVADANAI TEMATICI
 ================================================================ */
+/* Card compatta dei salvadanai per la dashboard in Home. */
+function goalsSummaryHTML(){
+  var goals=state.goals||[];
+  if(!goals.length)return '';
+  var rows=goals.slice().sort(function(a,b){
+    var pa=a.target>0?goalSaved(a)/a.target:0,pb=b.target>0?goalSaved(b)/b.target:0;
+    return pb-pa;
+  }).slice(0,4).map(function(g){
+    var saved=goalSaved(g),pct=g.target>0?Math.min(saved/g.target*100,100):0,done=g.target>0&&saved>=g.target;
+    return '<button class="goal-mini" data-goal-open="'+g.id+'">'+
+      '<span class="goal-mini-emoji">'+esc(g.emoji||'🎯')+'</span>'+
+      '<span class="goal-mini-body"><span class="goal-mini-top"><span class="goal-mini-name">'+esc(g.name)+'</span><span class="goal-mini-amt">'+(done?'✓':(balHidden()?'••••':fmt(saved))+' / '+fmt(g.target))+'</span></span>'+
+      '<span class="goal-bar"><span class="goal-fill" style="width:'+pct.toFixed(1)+'%;background:'+colorHex(g.color)+';"></span></span></span>'+
+      '<span class="goal-mini-pct'+(done?' saldo-pos':'')+'">'+pct.toFixed(0)+'%</span>'+
+    '</button>';
+  }).join('');
+  return '<section><div class="section-title-row"><h3>Salvadanai</h3><button class="link-btn" data-goto="accounts">Vedi tutti</button></div>'+
+    '<div class="card" style="display:flex;flex-direction:column;gap:4px;padding:8px 14px;">'+rows+'</div></section>';
+}
 function goalsSectionHTML(){
   var goals=state.goals||[];
   var cards=goals.map(function(g){
@@ -2555,6 +2584,7 @@ function openGoalSheet(goalId){
       var name=m.name.trim(),target=parseAmt(m.targetStr);
       if(!name){m.err='Dai un nome all\'obiettivo.';render();return;}
       if(!(target>0)){m.err='Indica un traguardo maggiore di zero.';render();return;}
+      state.goals=state.goals||[];
       state.goals.push({id:uid('goal'),name:name,emoji:(m.emoji.trim()||'🎯'),color:m.color,target:target,createdAt:Date.now(),history:[]});
       saveState();closeModal();showToast('Salvadanaio creato');renderActiveTab();
     };
