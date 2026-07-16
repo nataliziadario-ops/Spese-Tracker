@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Spese — Tracker</title>
+<title>Spendy</title>
 <meta name="description" content="Traccia spese, entrate e trasferimenti tra conti — semplice e veloce da telefono.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#146356">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Spese">
+<meta name="apple-mobile-web-app-title" content="Spendy">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -147,14 +147,16 @@ html[data-theme="dark"] #app[data-amb="accounts"]{--amb1:#5F4A14;--amb2:#715D1E;
 .goal-hist-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline);font-size:13px;color:var(--ink-soft);}
 .goal-hist-row:last-child{border-bottom:none;}
 .goal-form-row{display:flex;gap:10px;}
-.goal-mini{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;padding:9px 0;text-align:left;cursor:pointer;border-bottom:1px solid var(--hairline);}
-.goal-mini:last-child{border-bottom:none;}
-.goal-mini-emoji{font-size:20px;flex-shrink:0;}
-.goal-mini-body{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;}
-.goal-mini-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
-.goal-mini-name{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.goal-mini-amt{font-size:11.5px;color:var(--ink-soft);flex-shrink:0;}
-.goal-mini-pct{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--ink-soft);flex-shrink:0;}
+.goal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.goal-tile{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius-lg);padding:16px 12px 14px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform 0.15s var(--ease-out),box-shadow 0.15s var(--ease-out);}
+.goal-tile:active{transform:scale(0.97);}
+.goal-tile-ring{position:relative;width:64px;height:64px;}
+.goal-ring{width:64px;height:64px;display:block;}
+.goal-ring-txt{font-family:var(--font-display);font-weight:700;font-size:14px;fill:var(--ink-soft);}
+.goal-tile-emoji{position:absolute;top:-6px;right:-6px;font-size:19px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.2));}
+.goal-tile-name{font-size:13.5px;font-weight:650;color:var(--ink);text-align:center;line-height:1.25;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.goal-tile-amt{font-size:12px;font-weight:600;color:var(--ink);text-align:center;}
+.goal-tile-amt span{color:var(--ink-faint);font-weight:500;}
 .goal-edit{border-top:1px solid var(--hairline);padding-top:10px;}
 .goal-edit summary{font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;padding:4px 0 10px;}
 .goal-edit>*+*{margin-top:10px;}
@@ -513,7 +515,7 @@ main#content{overscroll-behavior-y:contain;position:relative;}
   <div id="splash"><div class="spinner"></div><p style="color:var(--ink-soft);font-size:14px;margin:0;">Caricamento…</p></div>
   <div id="shell" class="hidden">
     <header class="topbar">
-      <span class="brand"><span class="brand-mark" aria-hidden="true">€</span>Spese</span>
+      <span class="brand"><span class="brand-mark" aria-hidden="true">S</span>Spendy</span>
       <div class="topbar-actions">
         <button class="search-fab" id="openInfo" aria-label="Guida all'app"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></button>
         <button class="search-fab" id="openSearch" aria-label="Cerca"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg></button>
@@ -815,7 +817,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v18';
+var APP_VERSION='v20';
 /* Config Firebase del progetto, incorporata nell'app: la sincronizzazione
    non chiede più di incollare l'oggetto firebaseConfig a mano.
    Nota: la config web di Firebase non è un segreto (sta in ogni client);
@@ -1804,37 +1806,40 @@ function homeHTML(){
   return '<div class="view">'+
     pendingInboxHTML()+
     recurringDueBannerHTML()+
+    /* 1 · Patrimonio complessivo — 2 · Spaccato singoli conti */
     hero+accSlides+
-    recurringSummaryHTML()+
-    goalsSummaryHTML()+
-    extras+
+    /* 3 · Dashboard: mensile/annuale con entrate·uscite e grafico a torta */
     '<div class="segmented" style="margin-bottom:-4px;"><button class="'+(ui.homeView==='monthly'?'active':'')+'" data-home-view="monthly">Mensile</button><button class="'+(ui.homeView==='annual'?'active':'')+'" data-home-view="annual">Annuale</button></div>'+
     (ui.homeView==='annual'?annualViewHTML():monthlyViewHTML(isCurrent))+
+    /* 4 · Salvadanai */
+    goalsSummaryHTML()+
+    /* 5 · Grafico ultimi 6 mesi con le medie */
+    extras+
+    /* 6 · Prossimi pagamenti */
+    recurringSummaryHTML()+
+    /* 7 · Movimenti recenti */
+    recentMovementsHTML()+
   '</div>';
+}
+/* Blocco "Movimenti recenti", staccato dalla dashboard così da poterlo
+   collocare in fondo alla Home (punto 7). */
+function recentMovementsHTML(){
+  var rows=recentEntries(5);
+  return '<section><div class="section-title-row"><h3>Movimenti recenti</h3><button class="link-btn" data-goto="history">Vedi tutti</button></div><div class="card" style="padding:4px 14px;">'+(rows.length?rows.map(entryRowHTML).join(''):'<p class="empty-note">Tocca + per aggiungere il primo movimento.</p>')+'</div></section>';
 }
 
 function monthlyViewHTML(isCurrent){
   var totals=periodTotals(ui.viewMonth,ui.accountFilter);
   var bdList=filteredTx(ui.viewMonth,ui.accountFilter,'all',ui.breakdownType);
   var bd=breakdown(bdList);
-  var filterLabel=ui.accountFilter==='all'?'tutti i conti':esc(accById(ui.accountFilter).name);
   var alerts=state.categories.filter(function(c){return c.type==='expense'&&state.budgets[c.id]>0;}).map(function(c){var sp=totalOf(filteredTx(currentMonthKey(),'all',c.id,'expense')),lm=state.budgets[c.id];return{cat:c,spent:sp,limit:lm,pct:sp/lm*100};}).filter(function(a){return a.pct>=80;}).sort(function(a,b){return b.pct-a.pct;});
   var alertsHTML=alerts.length?'<section style="display:flex;flex-direction:column;gap:8px;">'+alerts.map(function(a){var over=a.pct>=100;return'<button class="alert-card '+(over?'over':'warn')+'" data-open-budget style="width:100%;text-align:left;">'+(over?'⚠️':'🔶')+' '+esc(a.cat.emoji)+' '+esc(a.cat.name)+' '+(over?'ha superato il budget':'si avvicina al limite')+'<span class="alert-amt">'+fmt(a.spent)+' / '+fmt(a.limit)+'</span></button>';}).join('')+'</section>':'';
   return (
     '<section class="month-nav"><button class="icon-btn" id="prevMonth">‹</button><span class="nav-label">'+formatMonthLabel(ui.viewMonth)+'</span><button class="icon-btn" id="nextMonth" '+(isCurrent?'disabled':'')+'>›</button></section>'+
     '<div class="chip-row">'+accFilterChipsHTML()+'</div>'+
     '<section class="stat-row"><div class="card stat-tile"><div class="stat-label">Entrate</div><div class="stat-value income">+'+fmt(totals.income)+'</div></div><div class="card stat-tile"><div class="stat-label">Uscite</div><div class="stat-value">−'+fmt(totals.expense)+'</div></div></section>'+
-    (function(){
-      var lifeBal=ui.accountFilter==='all'?state.accounts.reduce(function(sm,a){return sm+accBalance(a.id);},0):accBalance(ui.accountFilter);
-      var lifeLabel=ui.accountFilter==='all'?'Patrimonio complessivo':'Saldo totale · '+esc(accById(ui.accountFilter).name);
-      return '<section class="card balance-recap" id="balanceRecap" role="button" tabindex="0" aria-label="Vedi i saldi dei conti per periodo">'+
-        '<div class="recap-row"><span class="recap-label">Bilancio di '+formatMonthLabel(ui.viewMonth)+' <span class="recap-scope">('+filterLabel+')</span></span><strong class="'+(totals.net>=0?'saldo-pos':'saldo-neg')+'">'+(totals.net>=0?'+':'−')+fmt(Math.abs(totals.net))+'</strong></div>'+
-        '<div class="recap-row"><span class="recap-label">'+lifeLabel+' <span class="recap-scope">(di sempre)</span></span><strong class="'+(lifeBal>=0?'saldo-pos':'saldo-neg')+'">'+(balHidden()?'••••':((lifeBal>=0?'':'−')+fmt(Math.abs(lifeBal))))+'</strong></div>'+
-      '</section>';
-    })()+
     '<section class="card"><div class="segmented small" style="margin-bottom:4px;"><button class="'+(ui.breakdownType==='expense'?'active':'')+'" data-breakdown="expense">Spese</button><button class="'+(ui.breakdownType==='income'?'active mode-income':'')+'" data-breakdown="income">Entrate</button></div><div class="donut-section">'+donutSVG(bd)+(bd.length?'<ul class="legend">'+bd.map(function(b){var c=catById(b.catId);return'<li class="legend-item"><span class="dot" style="background:'+colorHex(c.color)+'"></span><span class="legend-name">'+esc(c.emoji)+' '+esc(c.name)+'</span><span class="legend-amount">'+fmt(b.total)+'</span><span class="legend-pct">'+b.pct.toFixed(0)+'%</span></li>';}).join('')+'</ul>':'<p class="empty-note" style="flex:1;">Nessun movimento.</p>')+'</div></section>'+
-    alertsHTML+
-    '<section><div class="section-title-row"><h3>Movimenti recenti</h3><button class="link-btn" data-goto="history">Vedi tutti</button></div><div class="card" style="padding:4px 14px;">'+( recentEntries(5).length?recentEntries(5).map(entryRowHTML).join(''):'<p class="empty-note">Tocca + per aggiungere il primo movimento.</p>')+'</div></section>'
+    alertsHTML
   );
 }
 
@@ -2149,7 +2154,7 @@ function openProfileSheet(){
         '<button class="menu-row" id="menuData"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-.4-9A6 6 0 0 0 5.3 12 3.5 3.5 0 0 0 6 19z"/><path d="M12 12v6"/><path d="m9.5 15 2.5-3 2.5 3"/></svg></span><span>Export e sincronizzazione<span class="menu-sub">Cloud, importazione ed esportazione dati</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuInfo"><span class="menu-ico" style="background:var(--amber-soft);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></span><span>Guida all\'app<span class="menu-sub">Come funzionano le sezioni</span></span>'+chev()+'</button>'+
       '</div>'+
-      '<p class="profile-footer">Spese — Tracker · versione installata: <strong>'+APP_VERSION+'</strong><br>i tuoi dati restano sul dispositivo</p>'+
+      '<p class="profile-footer">Spendy · versione installata: <strong>'+APP_VERSION+'</strong><br>i tuoi dati restano sul dispositivo</p>'+
     '</div>';
   }
   function render(){
@@ -2242,7 +2247,7 @@ function openInfoSheet(){
     {k:'history',t:'Storico',d:'Tutti i movimenti, mese per mese. Filtra per conto, tipo (spese, entrate, trasferimenti), categoria o etichetta. Tocca un movimento per modificarlo o eliminarlo.'},
     {k:'add',t:'Il tasto +',d:'Registra in pochi secondi una spesa, un\'entrata o un trasferimento tra conti. Puoi creare una <strong>nuova categoria al volo</strong> senza uscire dal modulo, aggiungere etichette e note.'},
     {k:'recurring',t:'Ricorrenti',d:'Abbonamenti, bollette, affitto: l\'app tiene d\'occhio le scadenze e ti avvisa. Con «Segna pagato» il movimento reale viene creato sul conto e la scadenza avanza da sola.'},
-    {k:'accounts',t:'Conti e Salvadanai',d:'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con barra di avanzamento — versare qui non tocca i saldi dei conti.'},
+    {k:'accounts',t:'Conti e Salvadanai',d:'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.'},
     {k:'budget',t:'Budget mensili',d:'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi. Qui gestisci anche categorie ed etichette.'},
     {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'}
   ];
@@ -2250,7 +2255,7 @@ function openInfoSheet(){
   function sheetHTML(){
     return '<div class="sheet">'+
       '<div class="sheet-handle"></div>'+
-      '<h3 style="margin:4px 0 0;">Come funziona Spese</h3>'+
+      '<h3 style="margin:4px 0 0;">Come funziona Spendy</h3>'+
       '<p class="hint" style="margin:0;">Tocca una sezione per scoprirla.</p>'+
       sections.map(function(s,i){
         var open=i===openIdx;
@@ -2259,7 +2264,7 @@ function openInfoSheet(){
           (open?'<div class="info-body">'+infoIllus(s.k)+'<p>'+s.d+'</p></div>':'')+
         '</div>';
       }).join('')+
-      '<p class="profile-footer" style="margin-top:2px;">Spese — Tracker · versione '+APP_VERSION+'</p>'+
+      '<p class="profile-footer" style="margin-top:2px;">Spendy · versione '+APP_VERSION+'</p>'+
     '</div>';
   }
   function render(){
@@ -2486,24 +2491,31 @@ function accountsHTML(){
 /* ================================================================
    SALVADANAI TEMATICI
 ================================================================ */
-/* Card compatta dei salvadanai per la dashboard in Home. */
+/* Salvadanai in Home: riquadri con anello di progresso, due per riga. */
+function goalRingSVG(pct,color,done){
+  var r=26,c=2*Math.PI*r,off=c*(1-Math.min(pct,100)/100);
+  return '<svg class="goal-ring" viewBox="0 0 64 64" aria-hidden="true">'+
+    '<circle cx="32" cy="32" r="'+r+'" fill="none" stroke="var(--track)" stroke-width="7"/>'+
+    '<circle cx="32" cy="32" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 32 32)"/>'+
+    '<text x="32" y="'+(done?36:37)+'" text-anchor="middle" class="goal-ring-txt">'+(done?'✓':pct.toFixed(0)+'%')+'</text>'+
+  '</svg>';
+}
 function goalsSummaryHTML(){
   var goals=state.goals||[];
   if(!goals.length)return '';
-  var rows=goals.slice().sort(function(a,b){
+  var cards=goals.slice().sort(function(a,b){
     var pa=a.target>0?goalSaved(a)/a.target:0,pb=b.target>0?goalSaved(b)/b.target:0;
     return pb-pa;
-  }).slice(0,4).map(function(g){
+  }).map(function(g){
     var saved=goalSaved(g),pct=g.target>0?Math.min(saved/g.target*100,100):0,done=g.target>0&&saved>=g.target;
-    return '<button class="goal-mini" data-goal-open="'+g.id+'">'+
-      '<span class="goal-mini-emoji">'+esc(g.emoji||'🎯')+'</span>'+
-      '<span class="goal-mini-body"><span class="goal-mini-top"><span class="goal-mini-name">'+esc(g.name)+'</span><span class="goal-mini-amt">'+(done?'✓':(balHidden()?'••••':fmt(saved))+' / '+fmt(g.target))+'</span></span>'+
-      '<span class="goal-bar"><span class="goal-fill" style="width:'+pct.toFixed(1)+'%;background:'+colorHex(g.color)+';"></span></span></span>'+
-      '<span class="goal-mini-pct'+(done?' saldo-pos':'')+'">'+pct.toFixed(0)+'%</span>'+
+    return '<button class="goal-tile" data-goal-open="'+g.id+'">'+
+      '<div class="goal-tile-ring">'+goalRingSVG(pct,colorHex(g.color),done)+'<span class="goal-tile-emoji">'+esc(g.emoji||'🎯')+'</span></div>'+
+      '<div class="goal-tile-name">'+esc(g.name)+'</div>'+
+      '<div class="goal-tile-amt">'+(balHidden()?'••••':fmt(saved))+' <span>/ '+fmt(g.target)+'</span></div>'+
     '</button>';
   }).join('');
   return '<section><div class="section-title-row"><h3>Salvadanai</h3><button class="link-btn" data-goto="accounts">Vedi tutti</button></div>'+
-    '<div class="card" style="display:flex;flex-direction:column;gap:4px;padding:8px 14px;">'+rows+'</div></section>';
+    '<div class="goal-grid">'+cards+'</div></section>';
 }
 function goalsSectionHTML(){
   var goals=state.goals||[];
@@ -3854,7 +3866,7 @@ function exportPDF(scope){
     'Entrate: '+inc.toFixed(2).replace('.',',')+' €     Spese: '+exp.toFixed(2).replace('.',',')+' €     Saldo del periodo: '+(inc-exp).toFixed(2).replace('.',',')+' €',
     'Movimenti esportati: '+rows.length
   ];
-  var blob=pdfBlob('Spese — '+exportScopeLabel(scope),'Esportato il '+formatShortDate(todayISO())+' · '+rows.length+' movimenti',cols,body,summary);
+  var blob=pdfBlob('Spendy — '+exportScopeLabel(scope),'Esportato il '+formatShortDate(todayISO())+' · '+rows.length+' movimenti',cols,body,summary);
   return {blob:blob,name:exportFileBase(scope)+'.pdf',mime:'application/pdf',count:rows.length};
 }
 

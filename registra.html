@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Registrazione pagamento — Spese</title>
+<title>Registrazione pagamento — Spendy</title>
 <style>
   :root{
     --bg:#EDEFEA;--surface:#FFFFFF;--border:#E1E4DE;--ink:#1B1F1C;--ink-soft:#6B7268;
@@ -31,10 +31,10 @@
   <div class="spinner" id="spinner"></div>
   <h1 id="title">Registrazione in corso…</h1>
   <div class="detail" id="detail"></div>
-  <p id="sub">Invio del pagamento all'app Spese.</p>
+  <p id="sub">Invio del pagamento a Spendy.</p>
   <div class="msg" id="msg"></div>
   <button id="retryBtn" style="display:none;">Riprova</button>
-  <a class="btn secondary" href="index.html" id="openApp" style="display:none;">Apri l'app Spese</a>
+  <a class="btn secondary" href="index.html" id="openApp" style="display:none;">Apri Spendy</a>
 </div>
 
 <script>
@@ -107,7 +107,7 @@
     spinner.style.display='none';
     icon.textContent='✅';
     title.textContent='Registrato!';
-    sub.textContent='Il movimento è stato inviato all\'app Spese. Puoi chiudere questa pagina.';
+    sub.textContent='Il movimento è stato inviato a Spendy. Puoi chiudere questa pagina.';
     msg.className='msg ok';
     msg.textContent=text;
     openApp.style.display='block';

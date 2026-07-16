@@ -1,12 +1,12 @@
 {
-  "name": "Spese — Tracker",
-  "short_name": "Spese",
+  "name": "Spendy",
+  "short_name": "Spendy",
   "description": "Traccia spese, entrate e trasferimenti tra conti — semplice e veloce da telefono.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#EDEFEA",
+  "background_color": "#F6F7F4",
   "theme_color": "#146356",
   "lang": "it",
   "icons": [
