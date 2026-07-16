@@ -115,6 +115,48 @@ html[data-theme="dark"] #app{--amb1:#125844;--amb2:#15685C;--amb3:#0F4350;}
 html[data-theme="dark"] #app[data-amb="history"]{--amb1:#173E63;--amb2:#1E5178;--amb3:#13334B;}
 html[data-theme="dark"] #app[data-amb="recurring"]{--amb1:#3D2C68;--amb2:#4D357D;--amb3:#2C2659;}
 html[data-theme="dark"] #app[data-amb="accounts"]{--amb1:#5F4A14;--amb2:#715D1E;--amb3:#415220;}
+/* ---------- Recap saldi in Home ---------- */
+.balance-recap{display:flex;flex-direction:column;gap:10px;padding:14px 16px;cursor:pointer;}
+.recap-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:13.5px;}
+.recap-label{color:var(--ink-soft);font-weight:550;}
+.recap-scope{color:var(--ink-faint);font-weight:500;font-size:12px;}
+.hero-tappable{cursor:pointer;}
+.hero-tap-hint{font-size:11px;opacity:0.55;font-weight:600;}
+/* ---------- Foglio saldi per periodo ---------- */
+.sheet-title-row{display:flex;align-items:center;justify-content:space-between;}
+.bal-row{display:flex;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid var(--hairline);font-size:14px;}
+.bal-row:last-child{border-bottom:none;}
+.bal-name{flex:1;display:flex;flex-direction:column;gap:2px;color:var(--ink);font-weight:550;}
+.bal-flow{font-size:11.5px;font-weight:600;}
+.bal-total{border-top:1.5px solid var(--border);font-weight:700;}
+.bal-range-row{display:flex;gap:10px;}
+.bal-range-row .field-group{flex:1;margin:0;}
+/* ---------- Salvadanai ---------- */
+.goal-card{display:flex;align-items:center;gap:12px;text-align:left;width:100%;cursor:pointer;}
+.goal-emoji{font-size:26px;flex-shrink:0;}
+.goal-emoji.lg{font-size:34px;}
+.goal-body{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;}
+.goal-name{font-weight:650;font-size:14.5px;color:var(--ink);}
+.goal-done{color:var(--accent);font-size:12px;font-weight:700;}
+.goal-bar{display:block;height:8px;border-radius:999px;background:var(--track);overflow:hidden;}
+.goal-bar.big{height:12px;margin:2px 0 4px;}
+.goal-fill{display:block;height:100%;border-radius:999px;transition:width 0.5s var(--ease-out);}
+.goal-sub{font-size:12px;color:var(--ink-soft);}
+.goal-pct{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink-soft);flex-shrink:0;}
+.goal-head{display:flex;align-items:center;gap:12px;margin:4px 0 2px;}
+.goal-hist-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline);font-size:13px;color:var(--ink-soft);}
+.goal-hist-row:last-child{border-bottom:none;}
+.goal-form-row{display:flex;gap:10px;}
+.goal-edit{border-top:1px solid var(--hairline);padding-top:10px;}
+.goal-edit summary{font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;padding:4px 0 10px;}
+.goal-edit>*+*{margin-top:10px;}
+/* ---------- Guida all'app ---------- */
+.info-card{border:1px solid var(--hairline);border-radius:var(--radius-md);background:var(--surface);overflow:hidden;}
+.info-head{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;padding:13px 15px;font-size:14.5px;font-weight:650;color:var(--ink);cursor:pointer;}
+.info-chev{color:var(--ink-faint);font-size:13px;}
+.info-body{padding:0 15px 14px;}
+.info-body p{margin:10px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-soft);}
+.info-illus{width:100%;height:auto;display:block;border-radius:12px;}
 .topbar{padding:calc(16px + env(safe-area-inset-top)) 20px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .brand{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-0.015em;display:flex;align-items:center;gap:10px;}
 .brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(150deg,var(--accent-hi),var(--accent) 55%,var(--accent-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 3px 8px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,0.22);}
@@ -465,6 +507,7 @@ main#content{overscroll-behavior-y:contain;position:relative;}
     <header class="topbar">
       <span class="brand"><span class="brand-mark" aria-hidden="true">€</span>Spese</span>
       <div class="topbar-actions">
+        <button class="search-fab" id="openInfo" aria-label="Guida all'app"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></button>
         <button class="search-fab" id="openSearch" aria-label="Cerca"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg></button>
         <button class="avatar-fab" id="openProfile" aria-label="Profilo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.5-3.4 4.2-5 7.5-5s6 1.6 7.5 5"/></svg></button>
       </div>
@@ -577,7 +620,7 @@ function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
     categories:DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);}).concat(DEFAULT_INCOME_CATS.map(function(c){return Object.assign({},c);})),
-    transactions:[],transfers:[],budgets:{},tags:[],recurring:[]
+    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[]
   };
 }
 
@@ -586,6 +629,8 @@ function ensureV3Fields(s){
   s.transactions=s.transactions||[];
   s.transfers=s.transfers||[];
   s.recurring=s.recurring||[];
+  s.goals=s.goals||[];
+  s.goals.forEach(function(g){g.history=g.history||[];if(g.emoji===undefined)g.emoji='🎯';if(g.color===undefined)g.color=0;});
   s.transactions.forEach(function(t){t.tags=t.tags||[];t.type=t.type||'expense';if(t.merchant===undefined)t.merchant='';});
   s.transfers.forEach(function(t){t.tags=t.tags||[];});
   if(s.notifAutomation===undefined)s.notifAutomation=false;
@@ -762,6 +807,19 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
+var APP_VERSION='v17';
+/* Config Firebase del progetto, incorporata nell'app: la sincronizzazione
+   non chiede più di incollare l'oggetto firebaseConfig a mano.
+   Nota: la config web di Firebase non è un segreto (sta in ogni client);
+   la sicurezza è garantita dalle regole di Firestore. */
+var DEFAULT_FIREBASE_CONFIG={
+  apiKey:"AIzaSyDg9u8AmoeAfwkzrtlJV0DCGrt9M7g_Ljc",
+  authDomain:"app-spese-database.firebaseapp.com",
+  projectId:"app-spese-database",
+  storageBucket:"app-spese-database.firebasestorage.app",
+  messagingSenderId:"963457320900",
+  appId:"1:963457320900:web:7526ce5ccabbe6bafd0691"
+};
 var SYNC_META_KEY='expense-tracker-sync-meta-v1';
 var sync={
   status:'unconfigured', // unconfigured | configured | connecting | connected | error
@@ -812,8 +870,13 @@ function lastSyncLabel(){
 function loadSyncConfig(){
   try{
     var raw=window.localStorage.getItem(SYNC_CONFIG_KEY);
-    return raw?JSON.parse(raw):null;
-  }catch(e){return null;}
+    var cfg=raw?JSON.parse(raw):null;
+    /* Config pre-impostata: se non c'è nulla di salvato (o manca la parte
+       Firebase) si usa quella incorporata — niente più incolla a mano. */
+    if(!cfg)return{firebaseConfig:DEFAULT_FIREBASE_CONFIG};
+    if(!cfg.firebaseConfig)cfg.firebaseConfig=DEFAULT_FIREBASE_CONFIG;
+    return cfg;
+  }catch(e){return{firebaseConfig:DEFAULT_FIREBASE_CONFIG};}
 }
 function saveSyncConfig(cfg){
   try{window.localStorage.setItem(SYNC_CONFIG_KEY,JSON.stringify(cfg));return true;}
@@ -880,7 +943,7 @@ function loadFirebaseSDK(){
       var s=document.createElement('script');
       s.src=urls[i];
       s.onload=function(){loadNext(i+1);};
-      s.onerror=function(){reject(new Error('Impossibile caricare Firebase SDK'));};
+      s.onerror=function(){sync.sdkLoadPromise=null;reject(new Error('Impossibile caricare Firebase SDK'));};
       document.head.appendChild(s);
     }
     loadNext(0);
@@ -1284,7 +1347,20 @@ async function initSyncFromSavedConfig(){
       });
     }
   }catch(e){
-    sync.status='error';sync.errorMsg='Impossibile inizializzare Firebase. Controlla la configurazione.';
+    /* Se siamo semplicemente offline (o gstatic non raggiungibile) non è un
+       errore di configurazione: si resta "configurata ma non connessa" e al
+       prossimo tentativo l'SDK viene ricaricato. Se però c'era una sessione
+       valida, si continua a lavorare offline dentro l'account. */
+    var sessOff=loadSession();
+    if(sessOff&&sessOff.uid){
+      sync.uid=sessOff.uid;sync.email=sessOff.email;
+      if(activeUid!==sessOff.uid)await switchUserState(sessOff.uid);
+      sync.offlineSession=true;sync.status='connected';
+    }else if(!isOnline()){
+      sync.status='configured';
+    }else{
+      sync.status='error';sync.errorMsg='Impossibile inizializzare Firebase. Riprova tra poco.';
+    }
     renderActiveTab();
   }
 }
@@ -1494,6 +1570,23 @@ function accBalance(accId){
   return b;
 }
 function accMonthExp(accId){return totalOf(filteredTx(currentMonthKey(),accId,'all','expense'));}
+/* Saldo di un conto fino a una certa data inclusa (ISO 'YYYY-MM-DD'). */
+function accBalanceAt(accId,dateISO){
+  var b=0;
+  state.transactions.forEach(function(t){if(t.accountId!==accId||t.date>dateISO)return;b+=t.type==='income'?t.amount:-t.amount;});
+  state.transfers.forEach(function(tr){if(tr.date>dateISO)return;if(tr.fromAccountId===accId)b-=tr.amount;if(tr.toAccountId===accId)b+=tr.amount;});
+  return b;
+}
+/* Variazione netta di un conto in un intervallo di date (estremi inclusi). */
+function accFlowBetween(accId,fromISO,toISO){
+  var b=0;
+  state.transactions.forEach(function(t){if(t.accountId!==accId||t.date<fromISO||t.date>toISO)return;b+=t.type==='income'?t.amount:-t.amount;});
+  state.transfers.forEach(function(tr){if(tr.date<fromISO||tr.date>toISO)return;if(tr.fromAccountId===accId)b-=tr.amount;if(tr.toAccountId===accId)b+=tr.amount;});
+  return b;
+}
+/* Salvadanai: quanto è stato messo da parte (somma dei versamenti/prelievi). */
+function goalById(id){return (state.goals||[]).find(function(g){return g.id===id;});}
+function goalSaved(g){return (g.history||[]).reduce(function(s,h){return s+h.amount;},0);}
 function annualData(year,accFilter){
   var incM=new Array(12).fill(0),expM=new Array(12).fill(0),catExp={},catInc={};
   state.transactions.forEach(function(t){
@@ -1688,7 +1781,7 @@ function homeHTML(){
   var deltaHTML='';
   if(d.prevExp>0){var dp=(d.totals.expense-d.prevExp)/d.prevExp*100,up=dp>=0;deltaHTML='<span class="hero-delta">'+(up?'▲':'▼')+' '+Math.abs(dp).toFixed(0)+'% spese vs '+monthShortLabel(shiftMonth(mk,-1))+'</span>';}
   var eyeIco=balHidden()?eyeOffSVG():eyeOnSVG();
-  var hero='<section class="hero-card"><button class="eye-btn" id="toggleBalEye" aria-label="Mostra o nascondi i saldi">'+eyeIco+'</button><div class="hero-label">Patrimonio complessivo</div><div class="hero-value">'+(balHidden()?'••••':((d.totalBal<0?'−':'')+fmt(Math.abs(d.totalBal))))+'</div><div class="hero-sub"><span>'+formatMonthLabel(mk)+'</span>'+deltaHTML+'</div></section>';
+  var hero='<section class="hero-card hero-tappable" id="heroCard" role="button" tabindex="0" aria-label="Patrimonio complessivo — tocca per i saldi dei conti per periodo"><button class="eye-btn" id="toggleBalEye" aria-label="Mostra o nascondi i saldi">'+eyeIco+'</button><div class="hero-label">Patrimonio complessivo</div><div class="hero-value">'+(balHidden()?'••••':((d.totalBal<0?'−':'')+fmt(Math.abs(d.totalBal))))+'</div><div class="hero-sub"><span>'+formatMonthLabel(mk)+'</span>'+deltaHTML+'<span class="hero-tap-hint">Tocca per il dettaglio ›</span></div></section>';
   var accSlides='<div class="carousel">'+state.accounts.map(function(a){var b=accBalance(a.id);return'<div class="acc-slide" data-goto="accounts"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="acc-slide-name">'+esc(a.name)+'</div><div class="acc-slide-bal '+(b>=0?'saldo-pos':'saldo-neg')+'">'+(balHidden()?'••••':((b>=0?'':'−')+fmt(Math.abs(b)))+'')+'</div><div class="acc-slide-sub">Speso: '+fmt(accMonthExp(a.id))+'</div></div>';}).join('')+'</div>';
   var extras='';
   if(state.transactions.length){
@@ -1722,7 +1815,14 @@ function monthlyViewHTML(isCurrent){
     '<section class="month-nav"><button class="icon-btn" id="prevMonth">‹</button><span class="nav-label">'+formatMonthLabel(ui.viewMonth)+'</span><button class="icon-btn" id="nextMonth" '+(isCurrent?'disabled':'')+'>›</button></section>'+
     '<div class="chip-row">'+accFilterChipsHTML()+'</div>'+
     '<section class="stat-row"><div class="card stat-tile"><div class="stat-label">Entrate</div><div class="stat-value income">+'+fmt(totals.income)+'</div></div><div class="card stat-tile"><div class="stat-label">Uscite</div><div class="stat-value">−'+fmt(totals.expense)+'</div></div></section>'+
-    '<div class="saldo-line">Saldo '+filterLabel+': <strong class="'+(totals.net>=0?'saldo-pos':'saldo-neg')+'">'+(totals.net>=0?'+':'−')+fmt(Math.abs(totals.net))+'</strong></div>'+
+    (function(){
+      var lifeBal=ui.accountFilter==='all'?state.accounts.reduce(function(sm,a){return sm+accBalance(a.id);},0):accBalance(ui.accountFilter);
+      var lifeLabel=ui.accountFilter==='all'?'Patrimonio complessivo':'Saldo totale · '+esc(accById(ui.accountFilter).name);
+      return '<section class="card balance-recap" id="balanceRecap" role="button" tabindex="0" aria-label="Vedi i saldi dei conti per periodo">'+
+        '<div class="recap-row"><span class="recap-label">Bilancio di '+formatMonthLabel(ui.viewMonth)+' <span class="recap-scope">('+filterLabel+')</span></span><strong class="'+(totals.net>=0?'saldo-pos':'saldo-neg')+'">'+(totals.net>=0?'+':'−')+fmt(Math.abs(totals.net))+'</strong></div>'+
+        '<div class="recap-row"><span class="recap-label">'+lifeLabel+' <span class="recap-scope">(di sempre)</span></span><strong class="'+(lifeBal>=0?'saldo-pos':'saldo-neg')+'">'+(balHidden()?'••••':((lifeBal>=0?'':'−')+fmt(Math.abs(lifeBal))))+'</strong></div>'+
+      '</section>';
+    })()+
     '<section class="card"><div class="segmented small" style="margin-bottom:4px;"><button class="'+(ui.breakdownType==='expense'?'active':'')+'" data-breakdown="expense">Spese</button><button class="'+(ui.breakdownType==='income'?'active mode-income':'')+'" data-breakdown="income">Entrate</button></div><div class="donut-section">'+donutSVG(bd)+(bd.length?'<ul class="legend">'+bd.map(function(b){var c=catById(b.catId);return'<li class="legend-item"><span class="dot" style="background:'+colorHex(c.color)+'"></span><span class="legend-name">'+esc(c.emoji)+' '+esc(c.name)+'</span><span class="legend-amount">'+fmt(b.total)+'</span><span class="legend-pct">'+b.pct.toFixed(0)+'%</span></li>';}).join('')+'</ul>':'<p class="empty-note" style="flex:1;">Nessun movimento.</p>')+'</div></section>'+
     alertsHTML+
     '<section><div class="section-title-row"><h3>Movimenti recenti</h3><button class="link-btn" data-goto="history">Vedi tutti</button></div><div class="card" style="padding:4px 14px;">'+( recentEntries(5).length?recentEntries(5).map(entryRowHTML).join(''):'<p class="empty-note">Tocca + per aggiungere il primo movimento.</p>')+'</div></section>'
@@ -1767,6 +1867,8 @@ function wireHome(){
   document.querySelectorAll('[data-inbox-reg]').forEach(function(b){b.onclick=function(){registerInboxItem(b.dataset.inboxReg);};});
   document.querySelectorAll('[data-inbox-ign]').forEach(function(b){b.onclick=function(){ignoreInboxItem(b.dataset.inboxIgn);};});
   var eyeBtn=document.getElementById('toggleBalEye');if(eyeBtn)eyeBtn.onclick=function(e){e.stopPropagation();state.hideBalances=!state.hideBalances;saveState();renderActiveTab();};
+  var heroC=document.getElementById('heroCard');if(heroC)heroC.onclick=function(){openBalancesSheet();};
+  var recap=document.getElementById('balanceRecap');if(recap)recap.onclick=function(){openBalancesSheet();};
   document.querySelectorAll('[data-rec-pay]').forEach(function(b){b.onclick=function(e){e.stopPropagation();payRecurring(b.dataset.recPay);};});
   var enNotif=document.getElementById('enableRecNotif');if(enNotif)enNotif.onclick=function(){requestRecNotifPermission();};
   wireEntryRows(document.getElementById('content'));
@@ -2033,10 +2135,11 @@ function openProfileSheet(){
         '<button class="'+(pref==='auto'?'active':'')+'" data-theme-pref="auto">Automatico</button>'+
       '</div><p class="hint">Con "Automatico" l\'app segue il tema del telefono.</p></div>'+
       '<div class="menu-list">'+
-        '<button class="menu-row" id="menuBudget"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><span>Budget mensili<span class="menu-sub">Limiti di spesa per categoria</span></span>'+chev()+'</button>'+
-        '<button class="menu-row" id="menuAccounts"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7H5a2 2 0 0 1-2-2 2 2 0 0 1 2-2h13v4"/><path d="M3 5v13a3 3 0 0 0 3 3h15V7"/><path d="M17 13.5h.01"/></svg></span><span>Conti e sincronizzazione<span class="menu-sub">Saldi, cloud, importazione CSV</span></span>'+chev()+'</button>'+
+        '<button class="menu-row" id="menuBudget"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><span>Budget mensili<span class="menu-sub">Limiti di spesa, categorie ed etichette</span></span>'+chev()+'</button>'+
+        '<button class="menu-row" id="menuData"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-.4-9A6 6 0 0 0 5.3 12 3.5 3.5 0 0 0 6 19z"/><path d="M12 12v6"/><path d="m9.5 15 2.5-3 2.5 3"/></svg></span><span>Export e sincronizzazione<span class="menu-sub">Cloud, importazione ed esportazione dati</span></span>'+chev()+'</button>'+
+        '<button class="menu-row" id="menuInfo"><span class="menu-ico" style="background:var(--amber-soft);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></span><span>Guida all\'app<span class="menu-sub">Come funzionano le sezioni</span></span>'+chev()+'</button>'+
       '</div>'+
-      '<p class="profile-footer">Spese — Tracker · i tuoi dati restano sul dispositivo</p>'+
+      '<p class="profile-footer">Spese — Tracker · versione installata: <strong>'+APP_VERSION+'</strong><br>i tuoi dati restano sul dispositivo</p>'+
     '</div>';
   }
   function render(){
@@ -2062,8 +2165,102 @@ function openProfileSheet(){
       b.onclick=function(){setThemePref(b.dataset.themePref);render();};
     });
     var mb=document.getElementById('menuBudget');if(mb)mb.onclick=openBudgetSheet;
-    var ma=document.getElementById('menuAccounts');
-    if(ma)ma.onclick=function(){closeModal();var oi=TAB_ORDER.indexOf(ui.activeTab);ui.activeTab='accounts';renderActiveTab(TAB_ORDER.indexOf('accounts')>oi?'left':'right');};
+    var md=document.getElementById('menuData');if(md)md.onclick=openDataSheet;
+    var mi=document.getElementById('menuInfo');if(mi)mi.onclick=openInfoSheet;
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
+
+/* ================================================================
+   EXPORT E SINCRONIZZAZIONE (dal Profilo)
+================================================================ */
+function openDataSheet(){
+  function sheetHTML(){
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">Export e sincronizzazione</h3>'+
+      syncStatusCardHTML()+
+      '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
+      '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">Salva i movimenti in un file da conservare, aprire in Excel o inviare.</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
+      notifCardHTML()+
+      '<div style="text-align:center;"><button class="reset-link" id="resetBtn">Reimposta tutti i dati</button></div>'+
+    '</div>';
+  }
+  function render(){
+    var w=document.querySelector('#modal-root .sheet-wrap');
+    if(!w)return;
+    w.innerHTML=sheetHTML();
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    wireDataCards(render);
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
+
+/* ================================================================
+   GUIDA ALL'APP (icona info)
+================================================================ */
+function infoIllus(kind){
+  /* Piccole illustrazioni SVG decorative, coerenti col tema. */
+  var A='var(--accent)',AH='var(--accent-hi)',R='var(--red)',T='var(--transfer)',F='var(--ink-faint)',S='var(--surface)',TR='var(--track)';
+  var defs='<defs><linearGradient id="igr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+AH+'" stop-opacity="0.25"/><stop offset="1" stop-color="'+T+'" stop-opacity="0.18"/></linearGradient></defs>';
+  var bg='<rect x="0" y="0" width="300" height="86" rx="14" fill="url(#igr)"/>';
+  var s='<svg viewBox="0 0 300 86" class="info-illus" aria-hidden="true">'+defs+bg;
+  if(kind==='home'){
+    s+='<rect x="18" y="16" width="120" height="54" rx="10" fill="'+S+'"/><rect x="28" y="26" width="52" height="7" rx="3.5" fill="'+F+'" opacity="0.5"/><rect x="28" y="40" width="84" height="12" rx="6" fill="'+A+'"/><rect x="28" y="58" width="40" height="5" rx="2.5" fill="'+F+'" opacity="0.35"/>';
+    var xs=[160,182,204,226,248,270],hs=[22,34,16,40,28,36];
+    for(var i=0;i<6;i++){s+='<rect x="'+xs[i]+'" y="'+(68-hs[i])+'" width="9" height="'+hs[i]+'" rx="3" fill="'+A+'" opacity="0.85"/><rect x="'+(xs[i]+11)+'" y="'+(68-hs[i]*0.6)+'" width="9" height="'+(hs[i]*0.6)+'" rx="3" fill="'+R+'" opacity="0.8"/>';}
+  }else if(kind==='history'){
+    for(var j=0;j<3;j++){var y=14+j*22;s+='<rect x="24" y="'+y+'" width="252" height="16" rx="8" fill="'+S+'"/><circle cx="36" cy="'+(y+8)+'" r="6" fill="'+(j===1?R:A)+'" opacity="0.85"/><rect x="48" y="'+(y+5)+'" width="'+(90-j*14)+'" height="6" rx="3" fill="'+F+'" opacity="0.5"/><rect x="'+(232+j*4)+'" y="'+(y+5)+'" width="'+(34-j*4)+'" height="6" rx="3" fill="'+(j===1?R:A)+'" opacity="0.75"/>';}
+  }else if(kind==='add'){
+    s+='<circle cx="150" cy="43" r="26" fill="'+A+'"/><path d="M150 30v26M137 43h26" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="94" cy="43" r="13" fill="'+S+'"/><text x="94" y="49" text-anchor="middle" font-size="16">🧾</text><circle cx="206" cy="43" r="13" fill="'+S+'"/><text x="206" y="49" text-anchor="middle" font-size="16">💶</text>';
+  }else if(kind==='recurring'){
+    s+='<circle cx="150" cy="43" r="27" fill="none" stroke="'+A+'" stroke-width="5" stroke-dasharray="120 50" stroke-linecap="round" transform="rotate(-45 150 43)"/><path d="M168 18l10 4-6 9z" fill="'+A+'"/><text x="150" y="51" text-anchor="middle" font-size="22">📅</text>';
+  }else if(kind==='accounts'){
+    s+='<rect x="52" y="20" width="92" height="48" rx="10" fill="'+S+'"/><rect x="52" y="20" width="92" height="14" rx="7" fill="'+T+'" opacity="0.7"/><circle cx="128" cy="52" r="7" fill="'+A+'" opacity="0.8"/><text x="196" y="56" text-anchor="middle" font-size="34">🐷</text><rect x="164" y="66" width="66" height="8" rx="4" fill="'+TR+'"/><rect x="164" y="66" width="42" height="8" rx="4" fill="'+A+'"/>';
+  }else if(kind==='budget'){
+    s+='<circle cx="82" cy="43" r="24" fill="none" stroke="'+TR+'" stroke-width="11"/><circle cx="82" cy="43" r="24" fill="none" stroke="'+A+'" stroke-width="11" stroke-dasharray="98 53" transform="rotate(-90 82 43)" stroke-linecap="butt"/><circle cx="82" cy="43" r="24" fill="none" stroke="'+R+'" stroke-width="11" stroke-dasharray="30 121" stroke-dashoffset="-98" transform="rotate(-90 82 43)"/><rect x="128" y="22" width="110" height="7" rx="3.5" fill="'+F+'" opacity="0.45"/><rect x="128" y="38" width="148" height="9" rx="4.5" fill="'+TR+'"/><rect x="128" y="38" width="100" height="9" rx="4.5" fill="'+A+'"/><rect x="128" y="56" width="148" height="9" rx="4.5" fill="'+TR+'"/><rect x="128" y="56" width="132" height="9" rx="4.5" fill="'+R+'" opacity="0.85"/>';
+  }else if(kind==='data'){
+    s+='<path d="M118 52a20 20 0 1 1 6-39 24 24 0 0 1 46 6h4a17 17 0 0 1 0 33z" fill="'+S+'" stroke="'+T+'" stroke-width="2.5"/><path d="M138 60v14M132 68l6 7 6-7" stroke="'+A+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M158 74V60M152 66l6-7 6 7" stroke="'+T+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  return s+'</svg>';
+}
+function openInfoSheet(){
+  var sections=[
+    {k:'home',t:'Home',d:'Il colpo d\'occhio: il <strong>patrimonio complessivo</strong> (toccalo per i saldi di ogni conto, anche a una data o in un intervallo), i conti, la media giornaliera, la previsione del mese e il grafico degli ultimi 6 mesi. Sotto, il riepilogo mensile o annuale con il dettaglio per categoria. L\'occhio 👁 nasconde le cifre quando qualcuno guarda lo schermo.'},
+    {k:'history',t:'Storico',d:'Tutti i movimenti, mese per mese. Filtra per conto, tipo (spese, entrate, trasferimenti), categoria o etichetta. Tocca un movimento per modificarlo o eliminarlo.'},
+    {k:'add',t:'Il tasto +',d:'Registra in pochi secondi una spesa, un\'entrata o un trasferimento tra conti. Puoi creare una <strong>nuova categoria al volo</strong> senza uscire dal modulo, aggiungere etichette e note.'},
+    {k:'recurring',t:'Ricorrenti',d:'Abbonamenti, bollette, affitto: l\'app tiene d\'occhio le scadenze e ti avvisa. Con «Segna pagato» il movimento reale viene creato sul conto e la scadenza avanza da sola.'},
+    {k:'accounts',t:'Conti e Salvadanai',d:'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con barra di avanzamento — versare qui non tocca i saldi dei conti.'},
+    {k:'budget',t:'Budget mensili',d:'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi. Qui gestisci anche categorie ed etichette.'},
+    {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'}
+  ];
+  var openIdx=0;
+  function sheetHTML(){
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">Come funziona Spese</h3>'+
+      '<p class="hint" style="margin:0;">Tocca una sezione per scoprirla.</p>'+
+      sections.map(function(s,i){
+        var open=i===openIdx;
+        return '<div class="info-card'+(open?' open':'')+'" data-info-idx="'+i+'">'+
+          '<button class="info-head"><span class="info-title">'+s.t+'</span><span class="info-chev">'+(open?'▾':'▸')+'</span></button>'+
+          (open?'<div class="info-body">'+infoIllus(s.k)+'<p>'+s.d+'</p></div>':'')+
+        '</div>';
+      }).join('')+
+      '<p class="profile-footer" style="margin-top:2px;">Spese — Tracker · versione '+APP_VERSION+'</p>'+
+    '</div>';
+  }
+  function render(){
+    var w=document.querySelector('#modal-root .sheet-wrap');
+    if(!w)return;
+    w.innerHTML=sheetHTML();
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    document.querySelectorAll('[data-info-idx]').forEach(function(c){
+      var h=c.querySelector('.info-head');
+      if(h)h.onclick=function(){var i=+c.dataset.infoIdx;openIdx=openIdx===i?-1:i;render();};
+    });
   }
   openModal('<div class="sheet"></div>');
   render();
@@ -2105,6 +2302,65 @@ function dashboardData(){
 /* dashboardHTML/wireDashboard rimossi: la Home combinata (homeHTML)
    ora ingloba dashboard + riepilogo. Restano attivi gli helper
    dashboardData / sixMonthChartSVG usati dalla Home. */
+
+/* ================================================================
+   SALDI PER PERIODO (tocca "Patrimonio complessivo")
+================================================================ */
+function openBalancesSheet(){
+  var today=todayISO();
+  var m={mode:'always',day:today,from:firstOfMonthISO(),to:today};
+  function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function firstOfMonthISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
+  function balCell(v){return balHidden()?'••••':((v>=0?'':'−')+fmt(Math.abs(v)));}
+  function rowsHTML(){
+    var rows='',tot=0,tot2=0;
+    state.accounts.forEach(function(a){
+      var main,sub='';
+      if(m.mode==='always'){main=accBalance(a.id);}
+      else if(m.mode==='day'){main=accBalanceAt(a.id,m.day);}
+      else{
+        var flow=accFlowBetween(a.id,m.from,m.to),endBal=accBalanceAt(a.id,m.to);
+        main=endBal;tot2+=flow;
+        sub='<span class="bal-flow '+(flow>=0?'saldo-pos':'saldo-neg')+'">'+(flow>=0?'+':'−')+(balHidden()?'••••':fmt(Math.abs(flow)))+' nel periodo</span>';
+      }
+      tot+=main;
+      rows+='<div class="bal-row"><span class="dot" style="background:'+colorHex(a.color)+'"></span><span class="bal-name">'+esc(a.name)+sub+'</span><strong class="'+(main>=0?'saldo-pos':'saldo-neg')+'">'+balCell(main)+'</strong></div>';
+    });
+    var totLbl=m.mode==='range'?'Totale a fine periodo':'Totale';
+    rows+='<div class="bal-row bal-total"><span class="bal-name">'+totLbl+'</span><strong class="'+(tot>=0?'saldo-pos':'saldo-neg')+'">'+balCell(tot)+'</strong></div>';
+    if(m.mode==='range')rows+='<div class="bal-row bal-total"><span class="bal-name">Variazione nel periodo</span><strong class="'+(tot2>=0?'saldo-pos':'saldo-neg')+'">'+(tot2>=0?'+':'−')+(balHidden()?'••••':fmt(Math.abs(tot2)))+'</strong></div>';
+    return rows;
+  }
+  function subHint(){
+    if(m.mode==='always')return 'Saldo attuale di ogni conto, dall\'inizio.';
+    if(m.mode==='day')return 'Com\'erano i saldi alla fine del giorno scelto.';
+    return 'Saldo a fine periodo e quanto è cambiato tra le due date.';
+  }
+  function sheetHTML(){
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<div class="sheet-title-row"><h3 style="margin:0;">Saldi dei conti</h3><button class="icon-btn" id="balEye" aria-label="Mostra o nascondi i saldi">'+(balHidden()?eyeOffSVG():eyeOnSVG())+'</button></div>'+
+      '<div class="segmented small"><button class="'+(m.mode==='always'?'active':'')+'" data-bal-mode="always">Sempre</button><button class="'+(m.mode==='day'?'active':'')+'" data-bal-mode="day">Giorno</button><button class="'+(m.mode==='range'?'active':'')+'" data-bal-mode="range">Intervallo</button></div>'+
+      '<p class="hint" style="margin:2px 0 0;">'+subHint()+'</p>'+
+      (m.mode==='day'?'<div class="field-group"><label class="field-label">Giorno</label><input type="date" class="text-input" id="balDay" value="'+m.day+'" max="'+today+'"></div>':'')+
+      (m.mode==='range'?'<div class="bal-range-row"><div class="field-group"><label class="field-label">Dal</label><input type="date" class="text-input" id="balFrom" value="'+m.from+'" max="'+today+'"></div><div class="field-group"><label class="field-label">Al</label><input type="date" class="text-input" id="balTo" value="'+m.to+'" max="'+today+'"></div></div>':'')+
+      '<div class="card" style="padding:6px 14px;">'+rowsHTML()+'</div>'+
+    '</div>';
+  }
+  function render(){
+    var w=document.querySelector('#modal-root .sheet-wrap');
+    if(!w)return;
+    w.innerHTML=sheetHTML();
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    document.querySelectorAll('[data-bal-mode]').forEach(function(b){b.onclick=function(){m.mode=b.dataset.balMode;render();};});
+    var de=document.getElementById('balDay');if(de)de.onchange=function(){if(de.value)m.day=de.value;render();};
+    var fe=document.getElementById('balFrom');if(fe)fe.onchange=function(){if(fe.value)m.from=fe.value;if(m.from>m.to)m.to=m.from;render();};
+    var te=document.getElementById('balTo');if(te)te.onchange=function(){if(te.value)m.to=te.value;if(m.to<m.from)m.from=m.to;render();};
+    var eye=document.getElementById('balEye');if(eye)eye.onclick=function(){state.hideBalances=!state.hideBalances;saveState();render();};
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
 
 /* ================================================================
    ACCOUNTS VIEW
@@ -2214,12 +2470,124 @@ function accountsHTML(){
     }).join('')+'</section>'+
     '<label class="toggle-row card" style="margin:0;"><span>'+(balHidden()?eyeOffSVG():eyeOnSVG())+' Nascondi i saldi</span><input type="checkbox" id="hideBalToggle" '+(balHidden()?'checked':'')+'></label>'+
     (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="Nome conto" autofocus><button class="btn-primary-sm" id="confirmNewAcc">Crea</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">+ Nuovo conto</button>')+
-    syncStatusCardHTML()+
-    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
-    '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">Salva i movimenti in un file da conservare, aprire in Excel o inviare.</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
-    notifCardHTML()+
-    '<div style="text-align:center;"><button class="reset-link" id="resetBtn">Reimposta tutti i dati</button></div>'+
+    goalsSectionHTML()+
   '</div>';
+}
+/* ================================================================
+   SALVADANAI TEMATICI
+================================================================ */
+function goalsSectionHTML(){
+  var goals=state.goals||[];
+  var cards=goals.map(function(g){
+    var saved=goalSaved(g),pct=g.target>0?Math.min(saved/g.target*100,100):0,done=g.target>0&&saved>=g.target;
+    var left=Math.max(g.target-saved,0);
+    return '<button class="card goal-card" data-goal-open="'+g.id+'">'+
+      '<span class="goal-emoji">'+esc(g.emoji||'🎯')+'</span>'+
+      '<span class="goal-body"><span class="goal-name">'+esc(g.name)+(done?' <span class="goal-done">✓ Raggiunto!</span>':'')+'</span>'+
+      '<span class="goal-bar"><span class="goal-fill" style="width:'+pct.toFixed(1)+'%;background:'+colorHex(g.color)+';"></span></span>'+
+      '<span class="goal-sub">'+(balHidden()?'••••':fmt(saved))+' di '+fmt(g.target)+(done?'':' · mancano '+(balHidden()?'••••':fmt(left)))+'</span></span>'+
+      '<span class="goal-pct">'+pct.toFixed(0)+'%</span>'+
+    '</button>';
+  }).join('');
+  return '<section style="display:flex;flex-direction:column;gap:10px;">'+
+    '<div class="section-title-row" style="margin-top:6px;"><h3>Salvadanai</h3></div>'+
+    (goals.length?cards:'<p class="empty-note" style="text-align:left;">Metti da parte per un obiettivo: un viaggio, un acquisto, un fondo di emergenza.</p>')+
+    '<button class="btn-secondary full-width" id="addGoalBtn">🐷 + Nuovo salvadanaio</button>'+
+    '<p class="hint" style="margin-top:-4px;">I salvadanai sono "buste" virtuali: versare o prelevare qui non modifica i saldi dei conti.</p>'+
+  '</section>';
+}
+function openGoalSheet(goalId){
+  var g=goalId?goalById(goalId):null;
+  var m={
+    isNew:!g,
+    name:g?g.name:'',emoji:g?(g.emoji||'🎯'):'🎯',color:g?g.color:(state.goals.length%8),
+    targetStr:g&&g.target?String(g.target).replace('.',','):'',
+    moveStr:'',moveMode:'in',err:''
+  };
+  function parseAmt(s){var v=parseFloat(String(s||'').replace(/\./g,'').replace(',','.'));return isFinite(v)?Math.round(v*100)/100:NaN;}
+  function colorChips(){var out='';for(var i=0;i<8;i++)out+='<button class="color-dot'+(m.color===i?' active':'')+'" data-goal-color="'+i+'" style="background:'+colorHex(i)+'" aria-label="Colore '+(i+1)+'"></button>';return out;}
+  function formHTML(){
+    return '<div class="field-group"><label class="field-label">Nome dell\'obiettivo</label><input class="text-input" id="goalName" maxlength="40" placeholder="Es. Viaggio in Giappone" value="'+esc(m.name)+'"></div>'+
+      '<div class="goal-form-row"><div class="field-group" style="flex:0 0 84px;"><label class="field-label">Emoji</label><input class="text-input" id="goalEmoji" maxlength="4" style="text-align:center;font-size:20px;" value="'+esc(m.emoji)+'"></div>'+
+      '<div class="field-group" style="flex:1;"><label class="field-label">Traguardo (€)</label><input class="text-input" id="goalTarget" inputmode="decimal" placeholder="Es. 1500" value="'+esc(m.targetStr)+'"></div></div>'+
+      '<div class="field-group"><label class="field-label">Colore</label><div class="color-dots-row">'+colorChips()+'</div></div>';
+  }
+  function sheetHTML(){
+    if(m.isNew){
+      return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;">Nuovo salvadanaio</h3>'+formHTML()+
+        (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
+        '<button class="btn-primary full-width" id="goalCreate">Crea salvadanaio</button>'+
+        '<button class="btn-secondary full-width" id="goalCancel">Annulla</button></div>';
+    }
+    var saved=goalSaved(g),pct=g.target>0?Math.min(saved/g.target*100,100):0,done=g.target>0&&saved>=g.target;
+    var hist=(g.history||[]).slice().sort(function(a,b){return b.date<a.date?-1:(b.date>a.date?1:0);}).slice(0,20);
+    var histHTML=hist.length?hist.map(function(h){
+      return '<div class="goal-hist-row"><span>'+formatShortDate(h.date)+(h.note?' · '+esc(h.note):'')+'</span><strong class="'+(h.amount>=0?'saldo-pos':'saldo-neg')+'">'+(h.amount>=0?'+':'−')+fmt(Math.abs(h.amount))+'</strong></div>';
+    }).join(''):'<p class="empty-note">Ancora nessun versamento.</p>';
+    return '<div class="sheet"><div class="sheet-handle"></div>'+
+      '<div class="goal-head"><span class="goal-emoji lg">'+esc(g.emoji||'🎯')+'</span><div><h3 style="margin:0;">'+esc(g.name)+'</h3><span class="goal-sub">'+(balHidden()?'••••':fmt(saved))+' di '+fmt(g.target)+' · '+pct.toFixed(0)+'%'+(done?' · ✓ Raggiunto!':'')+'</span></div></div>'+
+      '<span class="goal-bar big"><span class="goal-fill" style="width:'+pct.toFixed(1)+'%;background:'+colorHex(g.color)+';"></span></span>'+
+      '<div class="field-group"><label class="field-label">Versa o preleva</label>'+
+        '<div class="segmented small" style="margin-bottom:8px;"><button class="'+(m.moveMode==='in'?'active mode-income':'')+'" data-goal-move="in">Versa</button><button class="'+(m.moveMode==='out'?'active':'')+'" data-goal-move="out">Preleva</button></div>'+
+        '<div style="display:flex;gap:8px;"><input class="text-input" id="goalMoveAmt" inputmode="decimal" placeholder="Importo €" value="'+esc(m.moveStr)+'" style="flex:1;"><button class="btn-primary-sm" id="goalMoveGo">'+(m.moveMode==='in'?'Versa':'Preleva')+'</button></div></div>'+
+      (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
+      '<div class="section-title-row"><h3>Ultimi movimenti</h3></div><div class="card" style="padding:4px 14px;">'+histHTML+'</div>'+
+      '<details class="goal-edit"><summary>Modifica salvadanaio</summary>'+formHTML()+
+        '<button class="btn-primary full-width" id="goalSaveEdit">Salva modifiche</button>'+
+        '<button class="btn-danger full-width" id="goalDelete">Elimina salvadanaio</button></details>'+
+    '</div>';
+  }
+  function readForm(){
+    var ne=document.getElementById('goalName'),ee=document.getElementById('goalEmoji'),te=document.getElementById('goalTarget');
+    if(ne)m.name=ne.value;if(ee)m.emoji=ee.value;if(te)m.targetStr=te.value;
+  }
+  function render(){
+    var w=document.querySelector('#modal-root .sheet-wrap');
+    if(!w)return;
+    w.innerHTML=sheetHTML();
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    var cc=document.getElementById('goalCancel');if(cc)cc.onclick=closeModal;
+    document.querySelectorAll('[data-goal-color]').forEach(function(b){b.onclick=function(){readForm();m.color=+b.dataset.goalColor;render();};});
+    document.querySelectorAll('[data-goal-move]').forEach(function(b){b.onclick=function(){var ae=document.getElementById('goalMoveAmt');if(ae)m.moveStr=ae.value;m.moveMode=b.dataset.goalMove;m.err='';render();};});
+    var cr=document.getElementById('goalCreate');
+    if(cr)cr.onclick=function(){
+      readForm();
+      var name=m.name.trim(),target=parseAmt(m.targetStr);
+      if(!name){m.err='Dai un nome all\'obiettivo.';render();return;}
+      if(!(target>0)){m.err='Indica un traguardo maggiore di zero.';render();return;}
+      state.goals.push({id:uid('goal'),name:name,emoji:(m.emoji.trim()||'🎯'),color:m.color,target:target,createdAt:Date.now(),history:[]});
+      saveState();closeModal();showToast('Salvadanaio creato');renderActiveTab();
+    };
+    var mg=document.getElementById('goalMoveGo');
+    if(mg)mg.onclick=function(){
+      var ae=document.getElementById('goalMoveAmt');
+      var amt=parseAmt(ae?ae.value:'');
+      if(!(amt>0)){m.err='Inserisci un importo maggiore di zero.';render();return;}
+      var saved=goalSaved(g);
+      if(m.moveMode==='out'&&amt>saved){m.err='Nel salvadanaio ci sono solo '+fmt(saved)+'.';render();return;}
+      g.history.push({id:uid('gh'),date:(function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(),amount:m.moveMode==='in'?amt:-amt});
+      m.moveStr='';m.err='';
+      saveState();showToast(m.moveMode==='in'?'Versato nel salvadanaio':'Prelevato dal salvadanaio');render();renderActiveTab();
+    };
+    var se=document.getElementById('goalSaveEdit');
+    if(se)se.onclick=function(){
+      readForm();
+      var name=m.name.trim(),target=parseAmt(m.targetStr);
+      if(!name){m.err='Il nome non può essere vuoto.';render();return;}
+      if(!(target>0)){m.err='Indica un traguardo maggiore di zero.';render();return;}
+      g.name=name;g.emoji=m.emoji.trim()||'🎯';g.color=m.color;g.target=target;
+      saveState();showToast('Salvadanaio aggiornato');render();renderActiveTab();
+    };
+    var de=document.getElementById('goalDelete');
+    if(de)de.onclick=function(){
+      confirmDialog('Eliminare il salvadanaio "'+g.name+'"? I soldi messi da parte qui sono solo un promemoria: i saldi dei conti non cambiano.',function(){
+        state.goals=state.goals.filter(function(x){return x.id!==g.id;});
+        saveState();closeModal();showToast('Salvadanaio eliminato');renderActiveTab();
+      },'Elimina');
+    };
+  }
+  openModal('<div class="sheet"></div>');
+  render();
 }
 function notifCardHTML(){
   /* La registrazione automatica delle spese ha senso solo su iPhone
@@ -2264,6 +2632,17 @@ function wireAccounts(){
   });
   var addB=document.getElementById('addAccBtn');if(addB)addB.onclick=function(){ui.addingAccount=true;renderActiveTab();};
   var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast('Dai un nome al conto');return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast('Conto creato');renderActiveTab();};
+  document.querySelectorAll('[data-goal-open]').forEach(function(b){b.onclick=function(){openGoalSheet(b.dataset.goalOpen);};});
+  var agB=document.getElementById('addGoalBtn');if(agB)agB.onclick=function(){openGoalSheet(null);};
+  var hideTog=document.getElementById('hideBalToggle');
+  if(hideTog)hideTog.onchange=function(){state.hideBalances=hideTog.checked;saveState();renderActiveTab();};
+}
+
+/* Cablaggio delle card dati (sincronizzazione, import, export, automazione,
+   reset). Usato dal foglio "Export e sincronizzazione" nel Profilo.
+   `rerender` ridisegna il contenitore in cui vivono le card. */
+function wireDataCards(rerender){
+  rerender=rerender||function(){renderActiveTab();};
   var syncBtn=document.getElementById('openSyncBtn');if(syncBtn)syncBtn.onclick=openSyncModal;
   var syncNowBtn=document.getElementById('syncNowBtn');if(syncNowBtn)syncNowBtn.onclick=syncNow;
   var lpBtn=document.getElementById('linkPwdBtn');if(lpBtn)lpBtn.onclick=openLinkPasswordModal;
@@ -2275,7 +2654,7 @@ function wireAccounts(){
     var res=await connectSyncWithGoogle(cfg.firebaseConfig);
     if(res.ok&&!res.redirect)showToast('Sincronizzazione connessa');
     else if(!res.ok)showToast(res.error||'Accesso non riuscito');
-    renderActiveTab();
+    rerender();
   };
   document.querySelectorAll('[data-copy-target]').forEach(function(btn){
     btn.onclick=function(){
@@ -2291,23 +2670,22 @@ function wireAccounts(){
     };
   });
   var autoTog=document.getElementById('autoRegisterToggle');
-  if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();renderActiveTab();};
+  if(autoTog)autoTog.onchange=function(){state.autoRegister=autoTog.checked;saveState();rerender();};
   var notifTog=document.getElementById('notifAutomToggle');
-  if(notifTog)notifTog.onchange=function(){state.notifAutomation=notifTog.checked;saveState();renderActiveTab();};
-  var hideTog=document.getElementById('hideBalToggle');
-  if(hideTog)hideTog.onchange=function(){state.hideBalances=hideTog.checked;saveState();renderActiveTab();};
+  if(notifTog)notifTog.onchange=function(){state.notifAutomation=notifTog.checked;saveState();rerender();};
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
     var warn=sync.pendingPush&&!isOnline()?' ⚠️ Ci sono modifiche non ancora sincronizzate: collegati a internet e premi «Sincronizza» prima di uscire, altrimenti le perdi.':'';
     confirmDialog('Uscire dall\'account '+(sync.email||'')+'? I dati restano al sicuro nel cloud, ma vengono rimossi da questo dispositivo: non saranno più visibili finché non rientri. Potrai poi accedere con un altro account.'+warn,function(){
       signOutFromCloud().then(function(){showToast('Uscito dall\'account');});
     },'Esci');
   };
-  document.getElementById('openImportBtn').onclick=openImportModal;
+  var impBtn=document.getElementById('openImportBtn');if(impBtn)impBtn.onclick=openImportModal;
   var expBtn=document.getElementById('openExportBtn');if(expBtn)expBtn.onclick=openExportModal;
-  document.getElementById('resetBtn').onclick=function(){
+  var rstBtn=document.getElementById('resetBtn');
+  if(rstBtn)rstBtn.onclick=function(){
     confirmDialog('Eliminare definitivamente tutti i dati? Questa azione non si può annullare.',function(){
       state=ensureV3Fields(defaultState());ui={activeTab:'accounts',viewMonth:currentMonthKey(),viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense'};
-      saveState();showToast('Dati reimpostati');renderActiveTab();
+      saveState();showToast('Dati reimpostati');closeModal();renderActiveTab();
     },'Elimina tutto');
   };
 }
@@ -4355,6 +4733,7 @@ async function init(){
   };});
   document.getElementById('fabAdd').onclick=function(){openEntrySheet({mode:lastUsedMode});};
   document.getElementById('openSearch').onclick=openSearchOverlay;
+  document.getElementById('openInfo').onclick=openInfoSheet;
   document.getElementById('openProfile').onclick=openProfileSheet;
   initSwipeTabs();
   initPullToRefresh();
