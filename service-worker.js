@@ -2,10 +2,11 @@
 // così si apre anche offline e si installa correttamente come PWA.
 // Cambia CACHE_NAME quando aggiorni index.html per forzare il refresh
 // della cache sui dispositivi già installati.
-var CACHE_NAME = 'spese-tracker-v20';
+var CACHE_NAME = 'spese-tracker-v22';
 var FILES_TO_CACHE = [
   './index.html',
   './registra.html',
+  './native-bridge.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
