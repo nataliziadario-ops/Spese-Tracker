@@ -1,0 +1,15 @@
+{
+  "name": "spendy",
+  "version": "21.0.0",
+  "description": "Spendy - guscio Capacitor (web + Android + iOS, codice unico in www/)",
+  "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/cli": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
+    "@capacitor/ios": "^8.4.2"
+  },
+  "private": true,
+  "scripts": {
+    "sync": "cap sync"
+  }
+}

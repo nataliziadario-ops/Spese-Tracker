@@ -1,0 +1,15 @@
+{
+  "appId": "io.github.nataliziadario.spendy",
+  "appName": "Spendy",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  }
+}
