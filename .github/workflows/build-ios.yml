@@ -1,0 +1,83 @@
+# Compila automaticamente l'app iOS (iPhone) di PROVA nel cloud di GitHub,
+# usando un computer Mac messo a disposizione da GitHub (i Mac servono
+# OBBLIGATORIAMENTE per costruire app iPhone: non si può fare su Linux/Windows).
+#
+# Il risultato è un file "Spendy-unsigned.ipa" NON FIRMATO. Da solo NON si
+# installa: iOS pretende che ogni app sia "firmata" con un ID Apple. La firma
+# la mette il TUO iPhone tramite SideStore (gratis, con il tuo ID Apple).
+# Vedi GUIDA-IOS.md per i passi con le figure.
+#
+# Come si usa: dopo ogni caricamento su questo ramo, vai su
+# GitHub -> scheda "Actions" -> apri l'esecuzione piu' recente -> in fondo,
+# sezione "Artifacts", scarica "spendy-unsigned-ipa".
+#
+# NOTA: questo .ipa e' solo per i test (Fase 1-3). L'app firmata per lo store
+# (TestFlight/App Store) si fara' nella Fase 4, quando serviranno l'account
+# Apple Developer e le sue chiavi.
+name: Build iOS (non firmato, per SideStore)
+
+on:
+  push:
+    branches: [ "Capacitor-Fase-1" ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    # Runner Mac di GitHub: indispensabile per compilare app iPhone.
+    runs-on: macos-latest
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@v5
+
+      - name: Prepara Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installa Capacitor
+        run: npm ci
+
+      - name: Genera il guscio iOS se non e' nel repository
+        run: |
+          if [ ! -d ios ]; then npx cap add ios; fi
+
+      - name: Copia la web app nel guscio iOS (e installa i Pod)
+        run: npx cap sync ios
+
+      - name: Compila l'app iPhone SENZA firma
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            clean build
+
+      - name: Impacchetta in un file .ipa (non firmato)
+        working-directory: ios/App
+        run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/App.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "Compilazione non riuscita: App.app non trovata."
+            exit 1
+          fi
+          rm -rf Payload Spendy-unsigned.ipa
+          mkdir -p Payload
+          cp -R "$APP_PATH" "Payload/App.app"
+          zip -qry Spendy-unsigned.ipa Payload
+          echo "Creato Spendy-unsigned.ipa"
+          ls -lh Spendy-unsigned.ipa
+
+      - name: Pubblica l'.ipa come artefatto scaricabile
+        uses: actions/upload-artifact@v5
+        with:
+          name: spendy-unsigned-ipa
+          path: ios/App/Spendy-unsigned.ipa
+          retention-days: 30
