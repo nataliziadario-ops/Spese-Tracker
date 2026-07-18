@@ -48,12 +48,23 @@ jobs:
       - name: Compila l'app iPhone SENZA firma
         working-directory: ios/App
         run: |
-          xcodebuild \
-            -workspace App.xcworkspace \
+          # Capacitor 8 crea un progetto "Swift Package Manager": esiste
+          # App.xcodeproj ma NON App.xcworkspace. Le versioni vecchie
+          # (CocoaPods) creavano invece il workspace. Scegliamo da soli
+          # quello giusto, cosi' funziona in entrambi i casi.
+          if [ -d "App.xcworkspace" ]; then
+            echo "Rilevato progetto CocoaPods (workspace)."
+            TARGET="-workspace App.xcworkspace"
+          else
+            echo "Rilevato progetto Swift Package Manager (Capacitor 8)."
+            TARGET="-project App.xcodeproj"
+          fi
+          xcodebuild $TARGET \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build \
+            -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
