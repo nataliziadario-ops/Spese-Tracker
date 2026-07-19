@@ -13,7 +13,7 @@ name: Pubblica il sito (GitHub Pages) da www
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "defaul" ]
     paths:
       - 'www/**'
   workflow_dispatch: {}
