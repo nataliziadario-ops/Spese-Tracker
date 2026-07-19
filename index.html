@@ -82,7 +82,7 @@ button{font-family:inherit;cursor:pointer;touch-action:manipulation;transition:t
 input,select,textarea{font-family:inherit;transition:border-color .16s ease,box-shadow .18s ease;}
 ::selection{background:var(--accent-soft);}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
-#app{max-width:480px;margin:0 auto;height:100vh;height:100dvh;overflow:hidden;background:var(--app-bg);position:relative;display:flex;flex-direction:column;}
+#app{position:fixed;inset:0;max-width:480px;margin:0 auto;overflow:hidden;background:var(--app-bg);display:flex;flex-direction:column;}
 @media(min-width:520px){
   body{background:radial-gradient(1100px 700px at 50% -8%,var(--app-bg) 0%,var(--bg) 60%,var(--bg) 100%);background-attachment:fixed;}
   #app{box-shadow:0 0 0 1px var(--hairline),0 0 70px rgba(23,27,24,0.13);}
@@ -93,7 +93,7 @@ input,select,textarea{font-family:inherit;transition:border-color .16s ease,box-
 .spinner{width:32px;height:32px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--accent);animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 /* ---------- Shell / topbar ---------- */
-#shell{display:flex;flex-direction:column;height:100%;min-height:0;position:relative;z-index:1;}
+#shell{position:absolute;inset:0;display:flex;flex-direction:column;z-index:1;}
 #shell.hidden{display:none;}
 /* ---------- Sfondo ambientale (aurore) ---------- */
 #ambient{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;opacity:0.65;}
@@ -174,7 +174,7 @@ html[data-theme="dark"] #app[data-amb="accounts"]{--amb1:#5F4A14;--amb2:#715D1E;
 .search-fab{background:var(--surface);border:1px solid var(--hairline);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);box-shadow:var(--shadow-xs);}
 .search-fab:active{transform:scale(0.94);color:var(--ink);}
 main#content{flex:1;min-height:0;padding:8px 16px 132px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.view{display:flex;flex-direction:column;gap:18px;animation:fadein .3s var(--ease-out);}
+.view{display:flex;flex-direction:column;gap:18px;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 /* ---------- Bottom nav (pillola flottante) ---------- */
 .bottomnav{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));max-width:452px;margin:0 auto;background:var(--nav-bg);-webkit-backdrop-filter:blur(22px) saturate(1.7);backdrop-filter:blur(22px) saturate(1.7);border:1px solid var(--hairline);border-radius:30px;display:flex;align-items:flex-start;justify-content:space-between;padding:7px 8px 8px;z-index:20;box-shadow:var(--shadow-lg);}
@@ -317,6 +317,9 @@ main#content{flex:1;min-height:0;padding:8px 16px 132px;overflow-y:auto;-webkit-
 @keyframes fadein2{from{opacity:0;}to{opacity:1;}}
 .sheet-wrap{position:absolute;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;}
 .sheet{width:100%;max-height:92vh;overflow-y:auto;background:var(--app-bg);border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;animation:slideup .38s var(--ease-spring);box-shadow:0 -12px 40px rgba(23,27,24,0.18);}
+.link-btn{background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;padding:2px 0;text-align:center;width:100%;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.link-btn:active{opacity:0.6;}
+.info-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:9px;margin:0 -2px;padding:0 2px 2px;}
 @keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .sheet-handle{width:38px;height:4.5px;background:var(--handle);border-radius:99px;margin:4px auto 0;flex-shrink:0;}
 /* ---------- Ticket importo ---------- */
@@ -463,10 +466,10 @@ input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none;displ
 #ptr.refreshing .ptr-wheel svg{animation:spin .7s linear infinite;}
 #ptr.hiding .ptr-wheel{transition:transform .3s var(--ease-out),opacity .25s ease;transform:translateY(-40px);opacity:0;}
 /* ---------- Cambio scheda con slide ---------- */
-.view.enter-left{animation:slideL .28s var(--ease-out);}
-.view.enter-right{animation:slideR .28s var(--ease-out);}
-@keyframes slideL{from{opacity:0;transform:translateX(26px);}to{opacity:1;transform:none;}}
-@keyframes slideR{from{opacity:0;transform:translateX(-26px);}to{opacity:1;transform:none;}}
+.view.enter-left{animation:slideL .22s var(--ease-out);}
+.view.enter-right{animation:slideR .22s var(--ease-out);}
+@keyframes slideL{from{transform:translateX(18px);}to{transform:none;}}
+@keyframes slideR{from{transform:translateX(-18px);}to{transform:none;}}
 main#content{overscroll-behavior-y:contain;position:relative;}
 /* ---------- Skeleton ---------- */
 .skeleton{border-radius:var(--radius-lg);background:linear-gradient(100deg,var(--inset) 40%,var(--surface-2) 50%,var(--inset) 60%);background-size:200% 100%;animation:shimmer 1.2s ease-in-out infinite;}
@@ -818,7 +821,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v20';
+var APP_VERSION='v21';
 /* Config Firebase del progetto, incorporata nell'app: la sincronizzazione
    non chiede più di incollare l'oggetto firebaseConfig a mano.
    Nota: la config web di Firebase non è un segreto (sta in ogni client);
@@ -843,6 +846,7 @@ var sync={
   unsubscribeInbox:null,
   pendingInbox:[],
   lastPushedJSON:null,
+  recentPushes:[],     // ultime scritture NOSTRE: per non mostrare il toast quando l'eco torna indietro
   sdkLoadPromise:null,
   pendingPush:false,   // ci sono modifiche locali non ancora salite nel cloud
   lastSyncAt:0,        // ultima sincronizzazione riuscita (ms)
@@ -966,12 +970,22 @@ function syncDocRef(uid){
   return sync.db.collection('syncedState').doc(uid);
 }
 
+function rememberOwnPush(json){
+  if(!sync.recentPushes)sync.recentPushes=[];
+  sync.recentPushes.push(json);
+  if(sync.recentPushes.length>8)sync.recentPushes.shift();
+}
 async function rawPushStateToCloud(){
   if(!sync.db||!sync.uid)return false;
+  var json=JSON.stringify(state);
+  // Segna SUBITO (prima della scrittura) che questa versione è nostra:
+  // il listener riceve l'eco della nostra stessa modifica quasi all'istante,
+  // spesso prima che il .set() sia confermato dal server. Riconoscendola qui
+  // evitiamo il toast "Dati aggiornati da un altro dispositivo" per le nostre modifiche.
+  sync.lastPushedJSON=json;
+  rememberOwnPush(json);
   try{
-    var json=JSON.stringify(state);
     await syncDocRef(sync.uid).set({data:json,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:sync.email||'device'});
-    sync.lastPushedJSON=json;
     markPendingPush(false);
     return true;
   }catch(e){
@@ -1004,6 +1018,7 @@ function attachSnapshotListener(){
     var remote=snap.data();
     if(!remote||!remote.data)return;
     if(remote.data===sync.lastPushedJSON)return; // eco della nostra stessa scrittura
+    if(sync.recentPushes&&sync.recentPushes.indexOf(remote.data)>-1){sync.lastPushedJSON=remote.data;return;} // eco di una nostra scrittura recente
     try{
       var parsed=JSON.parse(remote.data);
       var remoteAt=parsed.updatedAt||0,localAt=(state&&state.updatedAt)||0;
@@ -1451,6 +1466,28 @@ async function connectSyncWithCredentials(firebaseConfig,email,password,mode){
   }
 }
 
+/* Invia l'email per reimpostare la password a chi ha dimenticato le credenziali.
+   Non serve essere già connessi: inizializza Firebase con la config e chiede
+   a Firebase Auth di spedire il link di reset all'indirizzo indicato. */
+async function sendPasswordReset(firebaseConfig,email){
+  try{
+    await loadFirebaseSDK();
+    sync.firebaseApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(firebaseConfig);
+    sync.auth=firebase.auth();
+    await sync.auth.sendPasswordResetEmail(email);
+    return {ok:true};
+  }catch(e){
+    var msg='Non è stato possibile inviare l\'email. Riprova.';
+    if(e&&e.code){
+      if(e.code==='auth/invalid-email')msg='Email non valida.';
+      else if(e.code==='auth/user-not-found')msg='Nessun account registrato con questa email.';
+      else if(e.code==='auth/network-request-failed')msg='Connessione di rete non disponibile.';
+      else if(e.code==='auth/too-many-requests')msg='Troppi tentativi: attendi qualche minuto e riprova.';
+    }
+    return {ok:false,error:msg};
+  }
+}
+
 /* ================================================================
    HELPERS
 ================================================================ */
@@ -1682,6 +1719,12 @@ function confirmDialog(msg,onOk,okLabel){
 var TAB_ORDER=['home','history','recurring','accounts'];
 function renderActiveTab(dir){
   var c=document.getElementById('content');
+  // Se stiamo solo ridisegnando la stessa scheda (es. cambio mese, modifica di
+  // un movimento) manteniamo la posizione di scorrimento invece di tornare in
+  // cima. Azzeriamo lo scroll solo quando si cambia scheda o si scorre lateralmente.
+  var prevScroll=c?c.scrollTop:0;
+  var isSwipe=(dir==='left'||dir==='right');
+  var sameTab=(ui._renderedTab===ui.activeTab);
   if(ui.activeTab==='home'){c.innerHTML=homeHTML();wireHome();}
   else if(ui.activeTab==='history'){c.innerHTML=historyHTML();wireHistory();}
   else if(ui.activeTab==='recurring'){c.innerHTML=recurringHTML();wireRecurring();}
@@ -1691,7 +1734,8 @@ function renderActiveTab(dir){
     var v=c.querySelector('.view');
     if(v)v.classList.add(dir==='left'?'enter-left':'enter-right');
   }
-  c.scrollTop=0;
+  if(sameTab&&!isSwipe)c.scrollTop=prevScroll; else c.scrollTop=0;
+  ui._renderedTab=ui.activeTab;
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===ui.activeTab);});
   var appEl=document.getElementById('app');
   if(appEl&&appEl.getAttribute('data-amb')!==ui.activeTab)appEl.setAttribute('data-amb',ui.activeTab);
@@ -2258,6 +2302,7 @@ function openInfoSheet(){
       '<div class="sheet-handle"></div>'+
       '<h3 style="margin:4px 0 0;">Come funziona Spendy</h3>'+
       '<p class="hint" style="margin:0;">Tocca una sezione per scoprirla.</p>'+
+      '<div class="info-scroll">'+
       sections.map(function(s,i){
         var open=i===openIdx;
         return '<div class="info-card'+(open?' open':'')+'" data-info-idx="'+i+'">'+
@@ -2265,6 +2310,7 @@ function openInfoSheet(){
           (open?'<div class="info-body">'+infoIllus(s.k)+'<p>'+s.d+'</p></div>':'')+
         '</div>';
       }).join('')+
+      '</div>'+
       '<p class="profile-footer" style="margin-top:2px;">Spendy · versione '+APP_VERSION+'</p>'+
     '</div>';
   }
@@ -2973,6 +3019,7 @@ function openSyncModal(){
     email:cfg&&cfg.email?cfg.email:'',
     password:'',
     errorMsg:null,
+    notice:null,
     busy:false
   };
 
@@ -3001,7 +3048,9 @@ function openSyncModal(){
       '<p class="hint">'+(m.mode==='signup'?'Crea le credenziali la prima volta, da questo dispositivo. Userai le stesse email e password per accedere dagli altri dispositivi.':'Usa le stesse email e password create sul primo dispositivo.')+'</p>'+
       '<div class="field-group"><label class="field-label">Email</label><input type="email" class="text-input" id="syncEmail" value="'+esc(m.email)+'" autocomplete="email"></div>'+
       '<div class="field-group"><label class="field-label">Password</label><input type="password" class="text-input" id="syncPassword" autocomplete="'+(m.mode==='signup'?'new-password':'current-password')+'" placeholder="'+(m.mode==='signup'?'Almeno 6 caratteri':'')+'"></div>'+
+      (m.mode==='login'?'<button type="button" class="link-btn" id="syncForgot" '+(m.busy?'disabled':'')+'>Ho dimenticato la password</button>':'')+
       (m.errorMsg?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.errorMsg)+'</p>':'')+
+      (m.notice?'<p class="hint" style="color:var(--accent);">✅ '+esc(m.notice)+'</p>':'')+
       '<button class="btn-primary full-width" id="syncSubmit" '+(m.busy?'disabled':'')+'>'+(m.busy?'Connessione…':(m.mode==='signup'?'Crea account e connetti':'Accedi'))+'</button>'+
       '<button class="btn-secondary full-width" id="syncBack2">Indietro</button>'+
     '</div>';
@@ -3019,8 +3068,19 @@ function openSyncModal(){
         m.parsedConfig=parsed;m.configText=raw;m.errorMsg=null;m.step=2;renderStep();
       };
     }else{
-      document.querySelectorAll('[data-sync-mode]').forEach(function(b){b.onclick=function(){m.mode=b.dataset.syncMode;m.errorMsg=null;renderStep();};});
+      document.querySelectorAll('[data-sync-mode]').forEach(function(b){b.onclick=function(){m.mode=b.dataset.syncMode;m.errorMsg=null;m.notice=null;renderStep();};});
       document.getElementById('syncBack2').onclick=function(){m.step=1;renderStep();};
+      var fp=document.getElementById('syncForgot');
+      if(fp)fp.onclick=async function(){
+        var email=document.getElementById('syncEmail').value.trim();
+        if(!email){m.errorMsg='Scrivi prima la tua email qui sopra, poi tocca «Ho dimenticato la password».';m.notice=null;renderStep();return;}
+        m.email=email;m.busy=true;m.errorMsg=null;m.notice=null;renderStep();
+        var res=await sendPasswordReset(m.parsedConfig,email);
+        m.busy=false;
+        if(res.ok){m.notice='Ti abbiamo inviato un\'email per reimpostare la password ('+email+'). Controlla anche lo spam.';}
+        else{m.errorMsg=res.error;}
+        renderStep();
+      };
       document.getElementById('syncGoogle').onclick=async function(){
         m.busy=true;m.errorMsg=null;renderStep();
         var res=await connectSyncWithGoogle(m.parsedConfig);
