@@ -1,6 +1,6 @@
 # Configurare Firebase per la sincronizzazione
 
-Questa guida ti serve una sola volta, per creare il "database cloud" gratuito che farà sincronizzare i tuoi dati tra telefono e PC. Richiede circa 5 minuti.
+Questa guida ti serve una sola volta, per creare il "database cloud" gratuito che farà sincronizzare i tuoi dati tra telefono e PC. Richiede circa 5 minuti..
 
 ## 1. Crea il progetto Firebase
 
