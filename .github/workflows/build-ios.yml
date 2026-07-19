@@ -1,29 +1,28 @@
 # Compila automaticamente l'app iOS (iPhone) di PROVA nel cloud di GitHub,
-# usando un computer Mac messo a disposizione da GitHub (i Mac servono
-# OBBLIGATORIAMENTE per costruire app iPhone: non si può fare su Linux/Windows).
+# usando un Mac messo a disposizione da GitHub (obbligatorio per iOS).
 #
-# Il risultato è un file "Spendy-unsigned.ipa" NON FIRMATO. Da solo NON si
-# installa: iOS pretende che ogni app sia "firmata" con un ID Apple. La firma
-# la mette il TUO iPhone tramite SideStore (gratis, con il tuo ID Apple).
-# Vedi GUIDA-IOS.md per i passi con le figure.
+# QUANDO PARTE: ad ogni caricamento — SU QUALSIASI RAMO — che tocca l'app
+# (la cartella www/ o la configurazione). Cosi' l'IPA viene sempre costruito
+# dal ramo su cui stai lavorando, anche se ne crei uno nuovo.
 #
-# Come si usa: dopo ogni caricamento su questo ramo, vai su
-# GitHub -> scheda "Actions" -> apri l'esecuzione piu' recente -> in fondo,
-# sezione "Artifacts", scarica "spendy-unsigned-ipa".
+# RISULTATO: "Spendy-unsigned.ipa" NON FIRMATO. Da solo NON si installa: la
+# firma la mette il TUO iPhone con SideStore (gratis, col tuo ID Apple).
 #
-# NOTA: questo .ipa e' solo per i test (Fase 1-3). L'app firmata per lo store
-# (TestFlight/App Store) si fara' nella Fase 4, quando serviranno l'account
-# Apple Developer e le sue chiavi.
+# DOVE PRENDERLO: GitHub -> "Actions" -> esecuzione piu' recente -> "Artifacts"
+# -> "spendy-unsigned-ipa".
 name: Build iOS (non firmato, per SideStore)
 
 on:
   push:
-    branches: [ "Capacitor-Fase-1" ]
+    paths:
+      - 'www/**'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch: {}
 
 jobs:
   build:
-    # Runner Mac di GitHub: indispensabile per compilare app iPhone.
     runs-on: macos-latest
     steps:
       - name: Scarica il codice
@@ -48,10 +47,6 @@ jobs:
       - name: Compila l'app iPhone SENZA firma
         working-directory: ios/App
         run: |
-          # Capacitor 8 crea un progetto "Swift Package Manager": esiste
-          # App.xcodeproj ma NON App.xcworkspace. Le versioni vecchie
-          # (CocoaPods) creavano invece il workspace. Scegliamo da soli
-          # quello giusto, cosi' funziona in entrambi i casi.
           if [ -d "App.xcworkspace" ]; then
             echo "Rilevato progetto CocoaPods (workspace)."
             TARGET="-workspace App.xcworkspace"

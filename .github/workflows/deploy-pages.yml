@@ -1,0 +1,50 @@
+# Pubblica il SITO (GitHub Pages) prendendo i file dalla cartella www/.
+# Cosi' la cartella www/ diventa l'UNICA sorgente: da lei nascono sito,
+# APK e IPA. Niente piu' copie doppie nella radice del repository.
+#
+# QUANDO PARTE: quando carichi aggiornamenti dell'app (cartella www/) sul
+# ramo di PRODUZIONE del sito, cioe' "master". Un ramo di prova NON tocca
+# il sito pubblico. Se un domani cambi ramo principale, modifica solo il
+# nome del ramo qui sotto (riga "branches").
+#
+# NB: perche' funzioni, in GitHub -> Settings -> Pages -> "Source" deve
+# essere impostato su "GitHub Actions" (una volta sola).
+name: Pubblica il sito (GitHub Pages) da www
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'www/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@v5
+
+      - name: Prepara GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Impacchetta la cartella www come sito
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+
+      - name: Pubblica su GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,16 +1,24 @@
 # Compila automaticamente l'APK Android di PROVA (debug) nel cloud di GitHub.
-# Non serve Android Studio: dopo ogni caricamento su questo ramo, vai su
-# GitHub → scheda "Actions" → apri l'esecuzione più recente → scarica
-# l'artefatto "spendy-debug-apk" e installalo su un telefono Android
-# (serve abilitare "Origini sconosciute" sul telefono).
+# Non serve Android Studio.
 #
-# NOTA: questo APK è solo per i test (Fase 1-3). L'APK firmato per il
-# Play Store si farà nella Fase 4.
+# QUANDO PARTE: ad ogni caricamento — SU QUALSIASI RAMO — che tocca l'app
+# (la cartella www/ o la configurazione). Cosi' l'APK viene sempre costruito
+# dal ramo su cui stai lavorando, anche se ne crei uno nuovo.
+#
+# DOVE PRENDERLO: GitHub -> scheda "Actions" -> apri l'esecuzione piu' recente
+# -> sezione "Artifacts" -> scarica "spendy-debug-apk" e installalo sul telefono
+# (serve abilitare "Origini sconosciute").
+#
+# NOTA: APK solo per i test (Fase 1-3). Quello firmato per il Play Store: Fase 4.
 name: Build APK Android (debug)
 
 on:
   push:
-    branches: [ "Capacitor-Fase-1" ]
+    paths:
+      - 'www/**'
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch: {}
 
 jobs:
