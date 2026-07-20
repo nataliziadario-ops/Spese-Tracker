@@ -1611,6 +1611,9 @@ Object.assign(TR.fr,{
 'Collegamento…':'Liaison…',
 'Collega la password':'Lier le mot de passe'
 });
+Object.assign(TR.en,{'Accedi con Apple':'Sign in with Apple'});
+Object.assign(TR.es,{'Accedi con Apple':'Acceder con Apple'});
+Object.assign(TR.fr,{'Accedi con Apple':'Se connecter avec Apple'});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -1799,7 +1802,11 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v25';
+var APP_VERSION='v26';
+/* Login con Apple: resta DISATTIVATO finché non ci sono un account Apple
+   Developer a pagamento e build iOS firmate (senza, Apple blocca il login).
+   Il codice è già completo: basta mettere true quando tutto è pronto. */
+var APPLE_LOGIN_ENABLED=false;
 /* Config Firebase del progetto, incorporata nell'app: la sincronizzazione
    non chiede più di incollare l'oggetto firebaseConfig a mano.
    Nota: la config web di Firebase non è un segreto (sta in ogni client);
@@ -2121,6 +2128,9 @@ async function signOutFromCloud(){
   if(sync.unsubscribeInbox){sync.unsubscribeInbox();sync.unsubscribeInbox=null;}
   sync.pendingInbox=[];
   if(sync.auth){try{await sync.auth.signOut();}catch(e){}}
+  /* Nell'app nativa pulisce anche la sessione del plugin, così al prossimo
+     accesso Google/Apple ripropone la scelta dell'account (sul web non fa nulla). */
+  if(window.NativeBridge&&NativeBridge.signOutNative){try{await NativeBridge.signOutNative();}catch(e){}}
   if(uid)await storageRemove(stateKeyFor(uid));
   clearSession();
   activeUid=null;
@@ -2382,6 +2392,30 @@ async function connectSyncWithGoogle(firebaseConfig){
     sync.auth=firebase.auth();
     sync.db=firebase.firestore();
     saveSyncConfig({firebaseConfig:firebaseConfig,email:(loadSyncConfig()||{}).email||null});
+    try{await sync.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(ep){}
+    /* App Android/iOS: dentro l'app il metodo web di Google viene bloccato.
+       Usiamo il login NATIVO del plugin, che ci ridà solo la credenziale
+       (idToken); poi Firebase JS entra con signInWithCredential, così la
+       sessione e la sincronizzazione restano identiche. Sul web questo blocco
+       viene saltato (NativeBridge.isNative()===false) e si usa il pop-up. */
+    if(window.NativeBridge&&NativeBridge.isNative()){
+      try{
+        var gnat=await NativeBridge.signInWithGoogle();
+        if(gnat&&gnat.idToken){
+          var gcred=firebase.auth.GoogleAuthProvider.credential(gnat.idToken,gnat.accessToken||null);
+          var gout=await sync.auth.signInWithCredential(gcred);
+          saveSyncConfig({firebaseConfig:firebaseConfig,email:gout.user.email});
+          await startSync(gout.user.uid,gout.user.email);
+          return {ok:true};
+        }
+        /* gnat null = plugin non presente in questa build: si prosegue col web */
+      }catch(enat){
+        sync.status='configured';renderActiveTab();
+        var cn=enat&&enat.code;
+        if(cn==='auth/cancelled'||(enat&&/cancel|annull/i.test(enat.message||'')))return {ok:false,error:'Accesso annullato.'};
+        return {ok:false,error:(enat&&enat.message)?tr('Accesso con Google non riuscito: ')+enat.message:'Accesso con Google non riuscito.'};
+      }
+    }
     var provider=new firebase.auth.GoogleAuthProvider();
     /* Chiede sempre quale account Google usare: senza questo, dopo una
        disconnessione si rientrerebbe in automatico sempre con lo stesso. */
@@ -2412,6 +2446,42 @@ async function connectSyncWithGoogle(firebaseConfig){
     else if(e&&e.code==='auth/network-request-failed')msg=tr('Connessione di rete non disponibile.');
     else if(e&&e.message)msg=tr('Accesso con Google non riuscito: ')+e.message;
     return {ok:false,error:msg};
+  }
+}
+
+/* Accesso con Apple (nativo). Come per Google: il plugin fa accedere e ci
+   ridà la credenziale, poi Firebase JS entra con signInWithCredential.
+   NB: funziona solo su iPhone con app FIRMATA e provider "apple.com" attivo
+   in Firebase (serve un account Apple Developer a pagamento). Finché il flag
+   APPLE_LOGIN_ENABLED è false, questo percorso non viene nemmeno mostrato. */
+async function connectSyncWithApple(firebaseConfig){
+  sync.status='connecting';renderActiveTab();
+  try{
+    await loadFirebaseSDK();
+    sync.firebaseApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(firebaseConfig);
+    sync.auth=firebase.auth();
+    sync.db=firebase.firestore();
+    saveSyncConfig({firebaseConfig:firebaseConfig,email:(loadSyncConfig()||{}).email||null});
+    try{await sync.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(ep){}
+    if(window.NativeBridge&&NativeBridge.isNative()){
+      var anat=await NativeBridge.signInWithApple();
+      if(anat&&anat.idToken){
+        var aprov=new firebase.auth.OAuthProvider('apple.com');
+        var acred=aprov.credential({idToken:anat.idToken,rawNonce:anat.nonce||undefined});
+        var aout=await sync.auth.signInWithCredential(acred);
+        saveSyncConfig({firebaseConfig:firebaseConfig,email:aout.user.email||null});
+        await startSync(aout.user.uid,aout.user.email||null);
+        return {ok:true};
+      }
+    }
+    sync.status='configured';renderActiveTab();
+    return {ok:false,error:'Login con Apple non ancora disponibile su questo dispositivo.'};
+  }catch(e){
+    sync.status='configured';renderActiveTab();
+    var cc=e&&e.code;
+    if(cc==='auth/cancelled'||(e&&/cancel|annull/i.test(e.message||'')))return {ok:false,error:'Accesso annullato.'};
+    if(cc==='auth/operation-not-allowed')return {ok:false,error:'Il provider Apple non è attivo: abilitalo in Firebase → Authentication → Sign-in method.'};
+    return {ok:false,error:(e&&e.message)?'Accesso con Apple non riuscito: '+e.message:'Accesso con Apple non riuscito.'};
   }
 }
 
@@ -3641,7 +3711,8 @@ function syncStatusCardHTML(){
     body='<p class="hint">'+tr('Collega Firebase per avere spese, entrate e conti sincronizzati automaticamente tra telefono e PC.')+'</p><button class="btn-primary full-width" id="openSyncBtn">'+tr('☁️ Configura sincronizzazione')+'</button>';
   }else if(sync.status==='configured'){
     body='<button class="btn-primary full-width" id="googleSyncBtn">'+tr('Accedi con Google')+'</button>'+
-      (isIOSStandalone()?'<p class="hint">Su iPhone, dentro l\'app installata, l\'accesso con Google spesso viene bloccato da Safari. Usa email e password: se il tuo account è Google, apri l\'app dal PC, accedi con Google e premi «Aggiungi una password» — resta lo stesso account.</p>':'')+
+      ((APPLE_LOGIN_ENABLED&&window.NativeBridge&&NativeBridge.isNative())?'<button class="btn-secondary full-width" id="appleSyncBtn" style="margin-top:8px;">'+tr('Accedi con Apple')+'</button>':'')+
+      ((isIOSStandalone()&&!(window.NativeBridge&&NativeBridge.isNative()))?'<p class="hint">Su iPhone, dentro l\'app installata, l\'accesso con Google spesso viene bloccato da Safari. Usa email e password: se il tuo account è Google, apri l\'app dal PC, accedi con Google e premi «Aggiungi una password» — resta lo stesso account.</p>':'')+
       '<button class="btn-secondary full-width" id="openSyncBtn">'+tr('Accedi con email e password')+'</button>';
   }else if(sync.status==='connecting'){
     body='';
@@ -3874,6 +3945,16 @@ function wireDataCards(rerender){
     if(!cfg||!cfg.firebaseConfig){openSyncModal();return;}
     gBtn.disabled=true;gBtn.textContent='Accesso in corso…';
     var res=await connectSyncWithGoogle(cfg.firebaseConfig);
+    if(res.ok&&!res.redirect)showToast('Sincronizzazione connessa');
+    else if(!res.ok)showToast(res.error||'Accesso non riuscito');
+    rerender();
+  };
+  var aBtn=document.getElementById('appleSyncBtn');
+  if(aBtn)aBtn.onclick=async function(){
+    var cfg=loadSyncConfig();
+    if(!cfg||!cfg.firebaseConfig){openSyncModal();return;}
+    aBtn.disabled=true;aBtn.textContent='Accesso in corso…';
+    var res=await connectSyncWithApple(cfg.firebaseConfig);
     if(res.ok&&!res.redirect)showToast('Sincronizzazione connessa');
     else if(!res.ok)showToast(res.error||'Accesso non riuscito');
     rerender();

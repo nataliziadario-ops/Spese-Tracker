@@ -20,6 +20,14 @@
     } catch (e) { return false; }
   }
 
+  // Plugin di login nativo (@capacitor-firebase/authentication). Esiste SOLO
+  // dentro l'app Android/iOS: sul web resta null, così si usa il metodo web.
+  function fbAuthPlugin() {
+    try {
+      return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FirebaseAuthentication) || null;
+    } catch (e) { return null; }
+  }
+
   var bridge = {
     // true solo dentro il guscio Capacitor (Android/iOS)
     isNative: function () {
@@ -49,6 +57,46 @@
     // percorso web già esistente nell'app (share {files:[file]} / download).
     shareFile: function (fileName, mimeType, blob) {
       return Promise.resolve(null);
+    },
+
+    // --- Login nativo (Fase 2) ---
+    // Regola: se NON siamo in nativo (o il plugin non c'è) restituiamo null,
+    // e l'app usa il metodo web di sempre (finestra/redirect). In nativo, il
+    // plugin apre la schermata Google/Apple del telefono e ci ridà solo la
+    // "credenziale" (idToken); poi ci pensa Firebase JS (signInWithCredential),
+    // così la sincronizzazione resta identica.
+
+    // → {idToken, accessToken} oppure null (usa il metodo web)
+    signInWithGoogle: function () {
+      if (!this.isNative()) return Promise.resolve(null);
+      var fa = fbAuthPlugin();
+      if (!fa || typeof fa.signInWithGoogle !== 'function') return Promise.resolve(null);
+      return fa.signInWithGoogle({ skipNativeAuth: true }).then(function (res) {
+        var c = (res && res.credential) || {};
+        if (!c.idToken) return null;
+        return { idToken: c.idToken, accessToken: c.accessToken || null };
+      });
+    },
+
+    // → {idToken, nonce} oppure null. Attivo solo quando il Login con Apple
+    // sarà configurato (account Apple Developer + build iOS firmata).
+    signInWithApple: function () {
+      if (!this.isNative()) return Promise.resolve(null);
+      var fa = fbAuthPlugin();
+      if (!fa || typeof fa.signInWithApple !== 'function') return Promise.resolve(null);
+      return fa.signInWithApple({ skipNativeAuth: true }).then(function (res) {
+        var c = (res && res.credential) || {};
+        if (!c.idToken) return null;
+        return { idToken: c.idToken, nonce: c.nonce || null };
+      });
+    },
+
+    // Pulisce anche la sessione del plugin nativo, oltre a quella Firebase JS.
+    // Fallback web: false (niente da pulire lato nativo).
+    signOutNative: function () {
+      var fa = fbAuthPlugin();
+      if (!this.isNative() || !fa || typeof fa.signOut !== 'function') return Promise.resolve(false);
+      return fa.signOut().then(function () { return true; }).catch(function () { return false; });
     }
   };
 
