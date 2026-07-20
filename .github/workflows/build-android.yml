@@ -20,6 +20,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'android-config/**'
+      - '.github/workflows/**'
   workflow_dispatch: {}
 
 jobs:
@@ -47,6 +48,25 @@ jobs:
       - name: Genera il guscio Android se non è nel repository
         run: |
           if [ ! -d android ]; then npx cap add android; fi
+
+      # --- Fix login Google: versioni stabili del Credential Manager ---
+      # Il plugin usa di default versioni "release candidate" difettose che
+      # causano l'errore "Your device doesn't support credential manager".
+      # Qui forziamo le versioni stabili raccomandate.
+      - name: Correggi le versioni del Credential Manager (login Google)
+        run: |
+          if [ -f android/variables.gradle ] && ! grep -q "androidxCredentialsVersion" android/variables.gradle; then
+            {
+              echo ""
+              echo "// Fix login Google (Credential Manager): versioni stabili."
+              echo "ext.androidxCredentialsVersion = '1.3.0'"
+              echo "ext.androidxCredentialsPlayServicesAuthVersion = '1.3.0'"
+              echo "ext.librariesIdentityGoogleidVersion = '1.1.1'"
+            } >> android/variables.gradle
+            echo "variables.gradle: Credential Manager forzato a 1.3.0"
+          else
+            echo "variables.gradle non trovato o gia' corretto: salto."
+          fi
 
       - name: Copia la web app nel guscio Android
         run: npx cap sync android
