@@ -10,6 +10,11 @@
 #
 # DOVE PRENDERLO: GitHub -> "Actions" -> esecuzione piu' recente -> "Artifacts"
 # -> "spendy-unsigned-ipa".
+#
+# NOTA (login nativo): da questa versione l'app include Firebase nativo per il
+# login Google/Apple. Su iOS questo aggiunge dipendenze (Firebase/GoogleSignIn)
+# e richiede iOS 15+. Il Login con Apple si attivera' solo con account Apple
+# Developer a pagamento e build FIRMATE: qui la build resta non firmata.
 name: Build iOS (non firmato, per SideStore)
 
 on:
@@ -19,6 +24,7 @@ on:
       - 'capacitor.config.json'
       - 'package.json'
       - 'package-lock.json'
+      - 'ios-config/**'
   workflow_dispatch: {}
 
 jobs:
@@ -44,6 +50,18 @@ jobs:
       - name: Copia la web app nel guscio iOS (e installa i Pod)
         run: npx cap sync ios
 
+      # Opzionale: se un giorno aggiungi GoogleService-Info.plist in ios-config/,
+      # viene copiato nel progetto. Senza, la build funziona lo stesso ma il
+      # login Google/Apple su iOS non e' attivo (per ora va bene cosi').
+      - name: (Opzionale) Collega Firebase su iOS se presente
+        run: |
+          if [ -f ios-config/GoogleService-Info.plist ]; then
+            cp ios-config/GoogleService-Info.plist ios/App/App/GoogleService-Info.plist
+            echo "GoogleService-Info.plist copiato in ios/App/App/."
+          else
+            echo "Nessun GoogleService-Info.plist: login Google/Apple su iOS non attivo (ok per ora)."
+          fi
+
       - name: Compila l'app iPhone SENZA firma
         working-directory: ios/App
         run: |
@@ -60,6 +78,7 @@ jobs:
             -sdk iphoneos \
             -derivedDataPath build \
             -destination 'generic/platform=iOS' \
+            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
@@ -81,7 +100,7 @@ jobs:
           echo "Creato Spendy-unsigned.ipa"
           ls -lh Spendy-unsigned.ipa
 
-      - name: Pubblica l'.ipa come artefatto scaricabile
+      - name: Pubblica l'IPA come artefatto scaricabile
         uses: actions/upload-artifact@v5
         with:
           name: spendy-unsigned-ipa

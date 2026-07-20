@@ -19,6 +19,7 @@ on:
       - 'capacitor.config.json'
       - 'package.json'
       - 'package-lock.json'
+      - 'android-config/**'
   workflow_dispatch: {}
 
 jobs:
@@ -49,6 +50,38 @@ jobs:
 
       - name: Copia la web app nel guscio Android
         run: npx cap sync android
+
+      # --- Login Google nativo: chiave di firma STABILE ---
+      # L'APK di debug viene firmato con questa chiave fissa, cosi' l'impronta
+      # SHA-1/SHA-256 non cambia a ogni build e resta valida in Firebase.
+      - name: Usa la chiave di firma stabile (SHA-1 fisso)
+        run: |
+          mkdir -p ~/.android
+          if [ -f android-config/debug.keystore ]; then
+            cp android-config/debug.keystore ~/.android/debug.keystore
+            echo "Chiave di debug fissa installata."
+          else
+            echo "ATTENZIONE: manca android-config/debug.keystore — l'SHA-1 cambiera' a ogni build."
+          fi
+
+      # --- Login Google nativo: collega Firebase ---
+      # Basta questo file: il modello Android di Capacitor applica da solo il
+      # plugin Google Services quando trova google-services.json nell'app.
+      - name: Collega Firebase (google-services.json)
+        run: |
+          if [ ! -f android-config/google-services.json ]; then
+            echo "############################################################"
+            echo "# MANCA il file android-config/google-services.json         #"
+            echo "# Registra l'app Android in Firebase (nome pacchetto        #"
+            echo "# io.github.nataliziadario.spendy), scarica                 #"
+            echo "# google-services.json e mettilo nel repository dentro       #"
+            echo "# la cartella android-config/. Senza, il login Google        #"
+            echo "# nell'app non puo' funzionare.                              #"
+            echo "############################################################"
+            exit 1
+          fi
+          cp android-config/google-services.json android/app/google-services.json
+          echo "Firebase collegato: google-services.json copiato in android/app/."
 
       - name: Compila l'APK di prova
         working-directory: android
