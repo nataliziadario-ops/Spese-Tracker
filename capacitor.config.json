@@ -11,5 +11,11 @@
   "server": {
     "androidScheme": "https",
     "iosScheme": "https"
+  },
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": ["google.com", "apple.com"]
+    }
   }
 }
