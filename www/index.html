@@ -162,7 +162,8 @@ html[data-theme="dark"] #app[data-amb="accounts"]{--amb1:#5F4A14;--amb2:#715D1E;
 .goal-edit summary{font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;padding:4px 0 10px;}
 .goal-edit>*+*{margin-top:10px;}
 /* ---------- Guida all'app ---------- */
-.info-card{border:1px solid var(--hairline);border-radius:var(--radius-md);background:var(--surface);overflow:hidden;}
+.info-card{border:1px solid var(--hairline);border-radius:var(--radius-md);background:var(--surface);overflow:hidden;flex-shrink:0;}
+.info-body{overflow-wrap:break-word;}
 .info-head{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;padding:13px 15px;font-size:14.5px;font-weight:650;color:var(--ink);cursor:pointer;}
 .info-chev{color:var(--ink-faint);font-size:13px;}
 .info-body{padding:0 15px 14px;}
@@ -1422,6 +1423,194 @@ var ui={activeTab:'home',viewMonth:null,viewYear:new Date().getFullYear(),homeVi
 
 function uid(p){return (p||'id')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
 
+
+/* === Traduzioni aggiuntive (scheda info, dialoghi, toast, export/import) === */
+Object.assign(TR.en,{
+'Il colpo d\'occhio: il <strong>patrimonio complessivo</strong> (toccalo per i saldi di ogni conto, anche a una data o in un intervallo), i conti, la media giornaliera, la previsione del mese e il grafico degli ultimi 6 mesi. Sotto, il riepilogo mensile o annuale con il dettaglio per categoria. L\'occhio 👁 nasconde le cifre quando qualcuno guarda lo schermo.':'The overview at a glance: your <strong>total net worth</strong> (tap it for the balance of each account, even at a given date or over a range), your accounts, the daily average, the month\'s forecast and the last-6-months chart. Below, the monthly or yearly summary with the breakdown by category. The eye 👁 hides the figures when someone is looking at your screen.',
+'Tutti i movimenti, mese per mese. Filtra per conto, tipo (spese, entrate, trasferimenti), categoria o etichetta. Tocca un movimento per modificarlo o eliminarlo.':'All your transactions, month by month. Filter by account, type (expenses, income, transfers), category or tag. Tap a transaction to edit or delete it.',
+'Registra in pochi secondi una spesa, un\'entrata o un trasferimento tra conti. Puoi creare una <strong>nuova categoria al volo</strong> senza uscire dal modulo, aggiungere etichette e note.':'Record an expense, an income or a transfer between accounts in seconds. You can create a <strong>new category on the fly</strong> without leaving the form, and add tags and notes.',
+'Abbonamenti, bollette, affitto: l\'app tiene d\'occhio le scadenze e ti avvisa. Con «Segna pagato» il movimento reale viene creato sul conto e la scadenza avanza da sola.':'Subscriptions, bills, rent: the app keeps an eye on due dates and reminds you. With “Mark as paid” the real transaction is created on the account and the due date rolls forward on its own.',
+'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.':'Your accounts with their all-time balance, renamable and colour-coded. Below, the <strong>themed savings goals</strong>: virtual envelopes for goals (a trip, a purchase) with a progress ring, also shown on Home — setting money aside here does not affect your account balances.',
+'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.':'In your Profile (the avatar at the top right) you set a spending limit per category: Home warns you when you get close or go over it.',
+'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.':'Also in your Profile, the dedicated section where you create, rename and delete categories and tags. Tap a category or a tag to see its <strong>trend chart over time</strong>: how it changed month by month and, for expense categories with a budget, a <strong>reference line</strong> that shows at a glance when you went over it.',
+'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'Also in your Profile: sign in with Google or email to keep your data <strong>synced between phone and PC</strong> (it works offline too and syncs by itself). Import your bank statement (CSV, Excel, PDF) with a row-by-row preview, and export everything to PDF, CSV or Excel.',
+'Il tasto +':'The + button',
+'Conti e Salvadanai':'Accounts & Savings goals',
+'Budget':'Budget',
+'versione':'version',
+'versione installata:':'installed version:',
+'i tuoi dati restano sul dispositivo':'your data stays on your device',
+'Connessione di rete non disponibile.':'Network connection unavailable.',
+'Accesso con Google non riuscito: ':'Google sign-in failed: ',
+'Nessun account con questa email: crealo prima dal primo dispositivo.':'No account with this email: create it first from your first device.',
+'Password troppo corta (minimo 6 caratteri).':'Password too short (minimum 6 characters).',
+'Email non valida.':'Invalid email.',
+'Troppi tentativi: attendi qualche minuto e riprova.':'Too many attempts: wait a few minutes and try again.',
+'Questa email è già registrata: prova ad accedere invece di creare un account.':'This email is already registered: try signing in instead of creating an account.',
+'Password errata.':'Wrong password.',
+'Non è stato possibile inviare l\'email. Riprova.':'The email could not be sent. Try again.',
+'Nessun account registrato con questa email.':'No account registered with this email.',
+'Movimento registrato':'Transaction saved',
+'Movimento già registrato':'Transaction already saved',
+'Registrato 1 movimento dalla notifica':'Recorded 1 transaction from the notification',
+'Registrati N movimenti dalle notifiche':'Recorded N transactions from notifications',
+'Registrato dalla notifica:':'Recorded from the notification:',
+'Nessun movimento usa questa categoria.':'No transactions use this category.',
+'movimenti/ricorrenti passeranno a':'transactions/recurring items will move to',
+'Eliminare la categoria':'Delete the category',
+'Nessun movimento usa questo tag.':'No transactions use this tag.',
+'Verrà tolto da':'It will be removed from',
+'movimenti (i movimenti restano).':'transactions (the transactions remain).',
+'Salvadanaio creato':'Savings goal created',
+'Versato nel salvadanaio':'Added to the savings goal',
+'Prelevato dal salvadanaio':'Withdrawn from the savings goal',
+'Salvadanaio aggiornato':'Savings goal updated',
+'Salvadanaio eliminato':'Savings goal deleted',
+'Eliminare il salvadanaio':'Delete the savings goal',
+'I soldi messi da parte qui sono solo un promemoria: i saldi dei conti non cambiano.':'The money set aside here is just a reminder: your account balances do not change.',
+'Ricorrente aggiornato':'Recurring item updated',
+'Ricorrente aggiunto':'Recurring item added',
+'In scadenza oggi':'Due today',
+'Nuova':'New',
+'Verrà eliminato anche il movimento collegato a questo conto.':'The transaction linked to this account will also be deleted.',
+'Verranno eliminati anche i N movimenti collegati a questo conto.':'The N transactions linked to this account will also be deleted.',
+'Nessun risultato':'No results',
+'per':'for',
+'Esporta i movimenti':'Export transactions',
+'Importa i tuoi dati':'Import your data',
+'Controlla e importa':'Review and import',
+'Esporta PDF':'Export PDF',
+'Esporta Excel (.xlsx)':'Export Excel (.xlsx)',
+'Esporta CSV':'Export CSV',
+'Non è stato possibile salvare il file.':'The file could not be saved.',
+'La password deve avere almeno 6 caratteri.':'The password must have at least 6 characters.',
+'Collegamento…':'Linking…',
+'Collega la password':'Link the password'
+});
+Object.assign(TR.es,{
+'Il colpo d\'occhio: il <strong>patrimonio complessivo</strong> (toccalo per i saldi di ogni conto, anche a una data o in un intervallo), i conti, la media giornaliera, la previsione del mese e il grafico degli ultimi 6 mesi. Sotto, il riepilogo mensile o annuale con il dettaglio per categoria. L\'occhio 👁 nasconde le cifre quando qualcuno guarda lo schermo.':'Un vistazo general: tu <strong>patrimonio total</strong> (tócalo para ver el saldo de cada cuenta, incluso en una fecha o en un intervalo), las cuentas, la media diaria, la previsión del mes y el gráfico de los últimos 6 meses. Debajo, el resumen mensual o anual con el detalle por categoría. El ojo 👁 oculta las cifras cuando alguien mira tu pantalla.',
+'Tutti i movimenti, mese per mese. Filtra per conto, tipo (spese, entrate, trasferimenti), categoria o etichetta. Tocca un movimento per modificarlo o eliminarlo.':'Todos los movimientos, mes a mes. Filtra por cuenta, tipo (gastos, ingresos, transferencias), categoría o etiqueta. Toca un movimiento para editarlo o eliminarlo.',
+'Registra in pochi secondi una spesa, un\'entrata o un trasferimento tra conti. Puoi creare una <strong>nuova categoria al volo</strong> senza uscire dal modulo, aggiungere etichette e note.':'Registra en pocos segundos un gasto, un ingreso o una transferencia entre cuentas. Puedes crear una <strong>nueva categoría al vuelo</strong> sin salir del formulario, y añadir etiquetas y notas.',
+'Abbonamenti, bollette, affitto: l\'app tiene d\'occhio le scadenze e ti avvisa. Con «Segna pagato» il movimento reale viene creato sul conto e la scadenza avanza da sola.':'Suscripciones, facturas, alquiler: la app vigila los vencimientos y te avisa. Con «Marcar como pagado» el movimiento real se crea en la cuenta y el vencimiento avanza solo.',
+'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.':'Tus cuentas con el saldo total de siempre, renombrables y con color. Debajo, las <strong>huchas temáticas</strong>: sobres virtuales para objetivos (un viaje, una compra) con anillo de progreso, que también ves en Inicio — apartar dinero aquí no afecta a los saldos de las cuentas.',
+'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.':'En el Perfil (el avatar arriba a la derecha) fijas un límite de gasto por categoría: Inicio te avisa cuando te acercas o lo superas.',
+'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.':'También en el Perfil, la sección dedicada donde creas, renombras y eliminas categorías y etiquetas. Toca una categoría o etiqueta para ver su <strong>gráfico de evolución en el tiempo</strong>: cómo cambió mes a mes y, para las categorías de gasto con presupuesto, una <strong>línea de referencia</strong> que muestra de un vistazo cuándo lo superaste.',
+'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'También en el Perfil: inicia sesión con Google o email para tener los datos <strong>sincronizados entre el teléfono y el PC</strong> (también funciona sin conexión y se sincroniza solo). Importa el extracto bancario (CSV, Excel, PDF) con vista previa línea por línea, y exporta todo a PDF, CSV o Excel.',
+'Il tasto +':'El botón +',
+'Conti e Salvadanai':'Cuentas y huchas',
+'Budget':'Presupuesto',
+'versione':'versión',
+'versione installata:':'versión instalada:',
+'i tuoi dati restano sul dispositivo':'tus datos permanecen en el dispositivo',
+'Connessione di rete non disponibile.':'Conexión de red no disponible.',
+'Accesso con Google non riuscito: ':'Error al iniciar sesión con Google: ',
+'Nessun account con questa email: crealo prima dal primo dispositivo.':'No hay cuenta con este email: créala primero desde tu primer dispositivo.',
+'Password troppo corta (minimo 6 caratteri).':'Contraseña demasiado corta (mínimo 6 caracteres).',
+'Email non valida.':'Email no válido.',
+'Troppi tentativi: attendi qualche minuto e riprova.':'Demasiados intentos: espera unos minutos e inténtalo de nuevo.',
+'Questa email è già registrata: prova ad accedere invece di creare un account.':'Este email ya está registrado: prueba a iniciar sesión en vez de crear una cuenta.',
+'Password errata.':'Contraseña incorrecta.',
+'Non è stato possibile inviare l\'email. Riprova.':'No se pudo enviar el email. Inténtalo de nuevo.',
+'Nessun account registrato con questa email.':'No hay ninguna cuenta registrada con este email.',
+'Movimento registrato':'Movimiento registrado',
+'Movimento già registrato':'Movimiento ya registrado',
+'Registrato 1 movimento dalla notifica':'Registrado 1 movimiento desde la notificación',
+'Registrati N movimenti dalle notifiche':'Registrados N movimientos desde las notificaciones',
+'Registrato dalla notifica:':'Registrado desde la notificación:',
+'Nessun movimento usa questa categoria.':'Ningún movimiento usa esta categoría.',
+'movimenti/ricorrenti passeranno a':'movimientos/recurrentes pasarán a',
+'Eliminare la categoria':'Eliminar la categoría',
+'Nessun movimento usa questo tag.':'Ningún movimiento usa esta etiqueta.',
+'Verrà tolto da':'Se quitará de',
+'movimenti (i movimenti restano).':'movimientos (los movimientos permanecen).',
+'Salvadanaio creato':'Hucha creada',
+'Versato nel salvadanaio':'Ingresado en la hucha',
+'Prelevato dal salvadanaio':'Retirado de la hucha',
+'Salvadanaio aggiornato':'Hucha actualizada',
+'Salvadanaio eliminato':'Hucha eliminada',
+'Eliminare il salvadanaio':'Eliminar la hucha',
+'I soldi messi da parte qui sono solo un promemoria: i saldi dei conti non cambiano.':'El dinero apartado aquí es solo un recordatorio: los saldos de las cuentas no cambian.',
+'Ricorrente aggiornato':'Recurrente actualizado',
+'Ricorrente aggiunto':'Recurrente añadido',
+'In scadenza oggi':'Vence hoy',
+'Nuova':'Nueva',
+'Verrà eliminato anche il movimento collegato a questo conto.':'También se eliminará el movimiento vinculado a esta cuenta.',
+'Verranno eliminati anche i N movimenti collegati a questo conto.':'También se eliminarán los N movimientos vinculados a esta cuenta.',
+'Nessun risultato':'Sin resultados',
+'per':'para',
+'Esporta i movimenti':'Exportar los movimientos',
+'Importa i tuoi dati':'Importa tus datos',
+'Controlla e importa':'Revisa e importa',
+'Esporta PDF':'Exportar PDF',
+'Esporta Excel (.xlsx)':'Exportar Excel (.xlsx)',
+'Esporta CSV':'Exportar CSV',
+'Non è stato possibile salvare il file.':'No se pudo guardar el archivo.',
+'La password deve avere almeno 6 caratteri.':'La contraseña debe tener al menos 6 caracteres.',
+'Collegamento…':'Vinculando…',
+'Collega la password':'Vincular la contraseña'
+});
+Object.assign(TR.fr,{
+'Il colpo d\'occhio: il <strong>patrimonio complessivo</strong> (toccalo per i saldi di ogni conto, anche a una data o in un intervallo), i conti, la media giornaliera, la previsione del mese e il grafico degli ultimi 6 mesi. Sotto, il riepilogo mensile o annuale con il dettaglio per categoria. L\'occhio 👁 nasconde le cifre quando qualcuno guarda lo schermo.':'Le coup d\'œil : votre <strong>patrimoine total</strong> (touchez-le pour le solde de chaque compte, même à une date ou sur une période), les comptes, la moyenne journalière, la prévision du mois et le graphique des 6 derniers mois. En dessous, le récapitulatif mensuel ou annuel avec le détail par catégorie. L\'œil 👁 masque les montants quand quelqu\'un regarde votre écran.',
+'Tutti i movimenti, mese per mese. Filtra per conto, tipo (spese, entrate, trasferimenti), categoria o etichetta. Tocca un movimento per modificarlo o eliminarlo.':'Tous les mouvements, mois par mois. Filtrez par compte, type (dépenses, revenus, transferts), catégorie ou tag. Touchez un mouvement pour le modifier ou le supprimer.',
+'Registra in pochi secondi una spesa, un\'entrata o un trasferimento tra conti. Puoi creare una <strong>nuova categoria al volo</strong> senza uscire dal modulo, aggiungere etichette e note.':'Enregistrez en quelques secondes une dépense, un revenu ou un transfert entre comptes. Vous pouvez créer une <strong>nouvelle catégorie à la volée</strong> sans quitter le formulaire, et ajouter des tags et des notes.',
+'Abbonamenti, bollette, affitto: l\'app tiene d\'occhio le scadenze e ti avvisa. Con «Segna pagato» il movimento reale viene creato sul conto e la scadenza avanza da sola.':'Abonnements, factures, loyer : l\'app surveille les échéances et vous prévient. Avec « Marquer comme payé », le mouvement réel est créé sur le compte et l\'échéance avance toute seule.',
+'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.':'Vos comptes avec leur solde total de toujours, renommables et colorés. En dessous, les <strong>cagnottes thématiques</strong> : des enveloppes virtuelles pour vos objectifs (un voyage, un achat) avec anneau de progression, visibles aussi sur l\'Accueil — mettre de l\'argent de côté ici ne touche pas aux soldes des comptes.',
+'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.':'Dans le Profil (l\'avatar en haut à droite) vous définissez une limite de dépense par catégorie : l\'Accueil vous prévient quand vous vous en approchez ou la dépassez.',
+'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.':'Toujours dans le Profil, la section dédiée où vous créez, renommez et supprimez catégories et tags. Touchez une catégorie ou un tag pour voir son <strong>graphique d\'évolution dans le temps</strong> : comment il a varié mois par mois et, pour les catégories de dépense avec un budget, une <strong>ligne de référence</strong> qui montre d\'un coup d\'œil quand vous l\'avez dépassé.',
+'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'Toujours dans le Profil : connectez-vous avec Google ou e-mail pour garder vos données <strong>synchronisées entre téléphone et PC</strong> (fonctionne aussi hors ligne et se synchronise tout seul). Importez votre relevé de compte (CSV, Excel, PDF) avec un aperçu ligne par ligne, et exportez tout en PDF, CSV ou Excel.',
+'Il tasto +':'Le bouton +',
+'Conti e Salvadanai':'Comptes et cagnottes',
+'Budget':'Budget',
+'versione':'version',
+'versione installata:':'version installée :',
+'i tuoi dati restano sul dispositivo':'vos données restent sur l\'appareil',
+'Connessione di rete non disponibile.':'Connexion réseau indisponible.',
+'Accesso con Google non riuscito: ':'Échec de la connexion Google : ',
+'Nessun account con questa email: crealo prima dal primo dispositivo.':'Aucun compte avec cet e-mail : créez-le d\'abord depuis votre premier appareil.',
+'Password troppo corta (minimo 6 caratteri).':'Mot de passe trop court (minimum 6 caractères).',
+'Email non valida.':'E-mail invalide.',
+'Troppi tentativi: attendi qualche minuto e riprova.':'Trop de tentatives : attendez quelques minutes et réessayez.',
+'Questa email è già registrata: prova ad accedere invece di creare un account.':'Cet e-mail est déjà enregistré : essayez de vous connecter au lieu de créer un compte.',
+'Password errata.':'Mot de passe incorrect.',
+'Non è stato possibile inviare l\'email. Riprova.':'L\'e-mail n\'a pas pu être envoyé. Réessayez.',
+'Nessun account registrato con questa email.':'Aucun compte enregistré avec cet e-mail.',
+'Movimento registrato':'Mouvement enregistré',
+'Movimento già registrato':'Mouvement déjà enregistré',
+'Registrato 1 movimento dalla notifica':'1 mouvement enregistré depuis la notification',
+'Registrati N movimenti dalle notifiche':'N mouvements enregistrés depuis les notifications',
+'Registrato dalla notifica:':'Enregistré depuis la notification :',
+'Nessun movimento usa questa categoria.':'Aucun mouvement n\'utilise cette catégorie.',
+'movimenti/ricorrenti passeranno a':'mouvements/récurrents passeront à',
+'Eliminare la categoria':'Supprimer la catégorie',
+'Nessun movimento usa questo tag.':'Aucun mouvement n\'utilise ce tag.',
+'Verrà tolto da':'Il sera retiré de',
+'movimenti (i movimenti restano).':'mouvements (les mouvements restent).',
+'Salvadanaio creato':'Cagnotte créée',
+'Versato nel salvadanaio':'Versé dans la cagnotte',
+'Prelevato dal salvadanaio':'Retiré de la cagnotte',
+'Salvadanaio aggiornato':'Cagnotte mise à jour',
+'Salvadanaio eliminato':'Cagnotte supprimée',
+'Eliminare il salvadanaio':'Supprimer la cagnotte',
+'I soldi messi da parte qui sono solo un promemoria: i saldi dei conti non cambiano.':'L\'argent mis de côté ici n\'est qu\'un rappel : les soldes des comptes ne changent pas.',
+'Ricorrente aggiornato':'Récurrent mis à jour',
+'Ricorrente aggiunto':'Récurrent ajouté',
+'In scadenza oggi':'À échéance aujourd\'hui',
+'Nuova':'Nouvelle',
+'Verrà eliminato anche il movimento collegato a questo conto.':'Le mouvement lié à ce compte sera également supprimé.',
+'Verranno eliminati anche i N movimenti collegati a questo conto.':'Les N mouvements liés à ce compte seront également supprimés.',
+'Nessun risultato':'Aucun résultat',
+'per':'pour',
+'Esporta i movimenti':'Exporter les mouvements',
+'Importa i tuoi dati':'Importer vos données',
+'Controlla e importa':'Vérifiez et importez',
+'Esporta PDF':'Exporter PDF',
+'Esporta Excel (.xlsx)':'Exporter Excel (.xlsx)',
+'Esporta CSV':'Exporter CSV',
+'Non è stato possibile salvare il file.':'Le fichier n\'a pas pu être enregistré.',
+'La password deve avere almeno 6 caratteri.':'Le mot de passe doit comporter au moins 6 caractères.',
+'Collegamento…':'Liaison…',
+'Collega la password':'Lier le mot de passe'
+});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -1450,16 +1639,13 @@ function ensureV3Fields(s){
    possono registrare a mano scegliendolo come conto. */
 function ensurePayPalSetup(s){
   if(!s.accounts)s.accounts=[];
-  /* Il conto PayPal si crea UNA VOLTA SOLA, alla prima apertura. Se poi
-     l'utente lo elimina, non deve tornare a ogni riavvio: il flag
-     paypalSetupDone ricorda che la creazione e' gia' avvenuta. */
-  if(s.paypalSetupDone){
-    if(s.paypalAccountId&&!s.accounts.some(function(a){return a.id===s.paypalAccountId;}))s.paypalAccountId=null;
-    return s;
-  }
+  /* NON creiamo piu' automaticamente il conto "PayPal": il primo avvio
+     (e ogni schermata prima della sincronizzazione) deve restare pulito,
+     con i soli conti realmente presenti. Se un conto PayPal esiste gia'
+     (utenti storici, o creato a mano dall'utente) lo colleghiamo; altrimenti
+     paypalAccountId resta nullo e nessun conto viene aggiunto. */
   var pp=s.accounts.filter(function(a){return /paypal/i.test(a.name);})[0];
-  if(!pp){pp={id:uid('acc'),name:'PayPal',color:2};s.accounts.push(pp);}
-  s.paypalAccountId=pp.id;
+  s.paypalAccountId=pp?pp.id:null;
   s.paypalSetupDone=true;
   return s;
 }
@@ -1613,7 +1799,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v24';
+var APP_VERSION='v25';
 /* Config Firebase del progetto, incorporata nell'app: la sincronizzazione
    non chiede più di incollare l'oggetto firebaseConfig a mano.
    Nota: la config web di Firebase non è un segreto (sta in ogni client);
@@ -2066,7 +2252,7 @@ function handleInboxItems(items){
     }
   });
   sync.pendingInbox=natives.concat(leftovers);
-  if(added){saveState();showToast(added===1?'Registrato 1 movimento dalla notifica':'Registrati '+added+' movimenti dalle notifiche');}
+  if(added){saveState();showToast(added===1?tr('Registrato 1 movimento dalla notifica'):tr('Registrati N movimenti dalle notifiche').replace('N',added));}
   renderActiveTab();
 }
 function registerInboxItem(itemId){
@@ -2078,7 +2264,7 @@ function registerInboxItem(itemId){
   saveState();
   if(!it.native)deleteInboxItem(itemId);
   sync.pendingInbox=sync.pendingInbox.filter(function(x){return x.id!==itemId;});
-  showToast(ok?'Movimento registrato':'Movimento già registrato');
+  showToast(ok?tr('Movimento registrato'):tr('Movimento già registrato'));
   renderActiveTab();
 }
 function ignoreInboxItem(itemId){
@@ -2102,7 +2288,7 @@ function handleNativeNotification(data){
   if(state.autoRegister){
     if(registerParsedNotification(p)){
       saveState();
-      showToast('Registrato dalla notifica: '+fmt(p.amount));
+      showToast(tr('Registrato dalla notifica:')+' '+fmt(p.amount));
     }
   }else{
     sync.pendingInbox.push(item);
@@ -2223,8 +2409,8 @@ async function connectSyncWithGoogle(firebaseConfig){
     var msg='Accesso con Google non riuscito.';
     if(e&&e.code==='auth/unauthorized-domain')msg='Dominio non autorizzato: aggiungi l\'indirizzo dell\'app in Firebase → Authentication → Impostazioni → Domini autorizzati.';
     else if(e&&e.code==='auth/operation-not-allowed')msg='Il provider Google non è attivo: abilitalo in Firebase → Authentication → Sign-in method.';
-    else if(e&&e.code==='auth/network-request-failed')msg='Connessione di rete non disponibile.';
-    else if(e&&e.message)msg='Accesso con Google non riuscito: '+e.message;
+    else if(e&&e.code==='auth/network-request-failed')msg=tr('Connessione di rete non disponibile.');
+    else if(e&&e.message)msg=tr('Accesso con Google non riuscito: ')+e.message;
     return {ok:false,error:msg};
   }
 }
@@ -2247,12 +2433,12 @@ async function connectSyncWithCredentials(firebaseConfig,email,password,mode){
     sync.status='configured';renderActiveTab();
     var msg='Errore di connessione.';
     if(e&&e.code){
-      if(e.code==='auth/email-already-in-use')msg='Questa email è già registrata: prova ad accedere invece di creare un account.';
-      else if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential')msg='Password errata.';
-      else if(e.code==='auth/user-not-found')msg='Nessun account con questa email: crealo prima dal primo dispositivo.';
-      else if(e.code==='auth/weak-password')msg='Password troppo corta (minimo 6 caratteri).';
-      else if(e.code==='auth/invalid-email')msg='Email non valida.';
-      else if(e.code==='auth/network-request-failed')msg='Connessione di rete non disponibile.';
+      if(e.code==='auth/email-already-in-use')msg=tr('Questa email è già registrata: prova ad accedere invece di creare un account.');
+      else if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential')msg=tr('Password errata.');
+      else if(e.code==='auth/user-not-found')msg=tr('Nessun account con questa email: crealo prima dal primo dispositivo.');
+      else if(e.code==='auth/weak-password')msg=tr('Password troppo corta (minimo 6 caratteri).');
+      else if(e.code==='auth/invalid-email')msg=tr('Email non valida.');
+      else if(e.code==='auth/network-request-failed')msg=tr('Connessione di rete non disponibile.');
     }
     return {ok:false,error:msg};
   }
@@ -2269,12 +2455,12 @@ async function sendPasswordReset(firebaseConfig,email){
     await sync.auth.sendPasswordResetEmail(email);
     return {ok:true};
   }catch(e){
-    var msg='Non è stato possibile inviare l\'email. Riprova.';
+    var msg=tr('Non è stato possibile inviare l\'email. Riprova.');
     if(e&&e.code){
-      if(e.code==='auth/invalid-email')msg='Email non valida.';
-      else if(e.code==='auth/user-not-found')msg='Nessun account registrato con questa email.';
-      else if(e.code==='auth/network-request-failed')msg='Connessione di rete non disponibile.';
-      else if(e.code==='auth/too-many-requests')msg='Troppi tentativi: attendi qualche minuto e riprova.';
+      if(e.code==='auth/invalid-email')msg=tr('Email non valida.');
+      else if(e.code==='auth/user-not-found')msg=tr('Nessun account registrato con questa email.');
+      else if(e.code==='auth/network-request-failed')msg=tr('Connessione di rete non disponibile.');
+      else if(e.code==='auth/too-many-requests')msg=tr('Troppi tentativi: attendi qualche minuto e riprova.');
     }
     return {ok:false,error:msg};
   }
@@ -2926,11 +3112,21 @@ function trendChartSVG(keys,values,budget,barHex){
   var maxData=Math.max.apply(null,[1].concat(values));
   var maxVal=(budget>0?Math.max(maxData,budget):maxData)*1.15;
   var gW=W/keys.length,bW=Math.min(30,gW*0.52),baseY=TOP+chartH,out='';
-  var budgetLine='';
+  var budgetLine='',budgetLabel='';
   if(budget>0){
     var by=baseY-(budget/maxVal*chartH);
-    budgetLine='<line x1="0" y1="'+by.toFixed(1)+'" x2="'+W+'" y2="'+by.toFixed(1)+'" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5 4"/>'+
-      '<text x="4" y="'+(by-4).toFixed(1)+'" font-size="10" fill="var(--amber)" font-weight="700">Budget '+fmtShort(budget)+'</text>';
+    /* La linea di riferimento resta sotto le barre. L'etichetta, invece, viene
+       disegnata SOPRA le barre (in coda all'SVG) con una "pillola" di sfondo,
+       così resta sempre leggibile anche quando una barra alta le passa davanti.
+       Se la linea è troppo in alto, l'etichetta scende sotto la linea. */
+    budgetLine='<line x1="0" y1="'+by.toFixed(1)+'" x2="'+W+'" y2="'+by.toFixed(1)+'" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    var blbl=tr('Budget')+' '+fmtShort(budget);
+    var bLblW=blbl.length*5.7+12;
+    var above=(by-15)>=(TOP-2);
+    var pillY=above?(by-15):(by+2);
+    var txtY=above?(by-5):(by+12);
+    budgetLabel='<g><rect x="2" y="'+pillY.toFixed(1)+'" width="'+bLblW.toFixed(1)+'" height="13.5" rx="6.75" fill="var(--surface)" opacity="0.9"/>'+
+      '<text x="7" y="'+txtY.toFixed(1)+'" font-size="10" fill="var(--amber)" font-weight="700">'+blbl+'</text></g>';
   }
   for(var i=0;i<keys.length;i++){
     var x=i*gW,cx=x+gW/2,v=values[i],bh=v/maxVal*chartH;
@@ -2939,7 +3135,7 @@ function trendChartSVG(keys,values,budget,barHex){
     if(v>0)out+='<text x="'+cx.toFixed(1)+'" y="'+Math.max(TOP-6,baseY-bh-5).toFixed(1)+'" text-anchor="middle" font-size="8.5" fill="var(--ink-soft)">'+fmtShort(v)+'</text>';
     out+='<text x="'+cx.toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="var(--ink-faint)">'+monthShortLabel(keys[i])+'</text>';
   }
-  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%"><line x1="0" y1="'+baseY+'" x2="'+W+'" y2="'+baseY+'" stroke="var(--border)" stroke-width="1"/>'+budgetLine+out+'</svg>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%"><line x1="0" y1="'+baseY+'" x2="'+W+'" y2="'+baseY+'" stroke="var(--border)" stroke-width="1"/>'+budgetLine+out+budgetLabel+'</svg>';
 }
 
 /* Scheda dedicata: elenco di categorie e tag (gestione + apertura grafico).
@@ -3037,8 +3233,8 @@ function openCatsTagsSheet(){
       var id=b.dataset.catDel,c=catById(id),n=catUsageCount(id);
       if(state.categories.filter(function(x){return x.type===c.type;}).length<=1){showToast(tr('Deve restare almeno una categoria di questo tipo'));return;}
       var others=state.categories.filter(function(x){return x.type===c.type&&x.id!==id;}),target=others[0];
-      var warn=n===0?'Nessun movimento usa questa categoria.':(n+' movimenti/ricorrenti passeranno a "'+target.emoji+' '+target.name+'".');
-      confirmDialog('Eliminare la categoria "'+c.emoji+' '+c.name+'"? '+warn,function(){
+      var warn=n===0?tr('Nessun movimento usa questa categoria.'):(n+' '+tr('movimenti/ricorrenti passeranno a')+' "'+target.emoji+' '+target.name+'".');
+      confirmDialog(tr('Eliminare la categoria')+' "'+c.emoji+' '+c.name+'"? '+warn,function(){
         state.transactions.forEach(function(t){if(t.categoryId===id)t.categoryId=target.id;});
         state.recurring.forEach(function(r){if(r.categoryId===id)r.categoryId=target.id;});
         delete state.budgets[id];
@@ -3056,7 +3252,7 @@ function openCatsTagsSheet(){
     };});
     document.querySelectorAll('[data-tag-del]').forEach(function(b){b.onclick=function(){
       var id=b.dataset.tagDel,t=tagById(id),n=tagUsageCount(id);
-      var warn=n===0?'Nessun movimento usa questo tag.':('Verrà tolto da '+n+' movimenti (i movimenti restano).');
+      var warn=n===0?tr('Nessun movimento usa questo tag.'):(tr('Verrà tolto da')+' '+n+' '+tr('movimenti (i movimenti restano).'));
       confirmDialog('Eliminare il tag "'+t.name+'"? '+warn,function(){
         state.transactions.forEach(function(x){if(x.tags)x.tags=x.tags.filter(function(g){return g!==id;});});
         state.transfers.forEach(function(x){if(x.tags)x.tags=x.tags.filter(function(g){return g!==id;});});
@@ -3128,7 +3324,7 @@ function openProfileSheet(){
         '<button class="menu-row" id="menuInfo"><span class="menu-ico" style="background:var(--amber-soft);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></span><span>'+tr('Guida all\'app')+'<span class="menu-sub">'+tr('Come funzionano le sezioni')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuLang"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg></span><span>'+tr('Lingua')+'<span class="menu-sub">'+LANG_NAMES[LANG]+'</span></span>'+chev()+'</button>'+
       '</div>'+
-      '<p class="profile-footer">Spendy · versione installata: <strong>'+APP_VERSION+'</strong><br>i tuoi dati restano sul dispositivo</p>'+
+      '<p class="profile-footer">Spendy · '+tr('versione installata:')+' <strong>'+APP_VERSION+'</strong><br>'+tr('i tuoi dati restano sul dispositivo')+'</p>'+
     '</div>';
   }
   function render(){
@@ -3243,12 +3439,12 @@ function openInfoSheet(){
       sections.map(function(s,i){
         var open=i===openIdx;
         return '<div class="info-card'+(open?' open':'')+'" data-info-idx="'+i+'">'+
-          '<button class="info-head"><span class="info-title">'+s.t+'</span><span class="info-chev">'+(open?'▾':'▸')+'</span></button>'+
+          '<button class="info-head"><span class="info-title">'+tr(s.t)+'</span><span class="info-chev">'+(open?'▾':'▸')+'</span></button>'+
           (open?'<div class="info-body">'+infoIllus(s.k)+'<p>'+tr(s.d)+'</p></div>':'')+
         '</div>';
       }).join('')+
       '</div>'+
-      '<p class="profile-footer" style="margin-top:2px;">Spendy · versione '+APP_VERSION+'</p>'+
+      '<p class="profile-footer" style="margin-top:2px;">Spendy · '+tr('versione')+' '+APP_VERSION+'</p>'+
     '</div>';
   }
   function render(){
@@ -3394,7 +3590,7 @@ function openLinkPasswordModal(){
       '<p class="hint">Serve per accedere <strong>allo stesso account</strong> dall\'iPhone, dove l\'accesso con Google non funziona dentro l\'app installata. L\'account resta uno solo: '+esc(sync.email||'')+'.</p>'+
       '<div class="field-group"><label class="field-label">'+tr('Nuova password (almeno 6 caratteri)')+'</label><input type="password" class="text-input" id="lpPwd" autocomplete="new-password"></div>'+
       (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
-      '<button class="btn-primary full-width" id="lpGo" '+(m.busy?'disabled':'')+'>'+(m.busy?'Collegamento…':'Collega la password')+'</button>'+
+      '<button class="btn-primary full-width" id="lpGo" '+(m.busy?'disabled':'')+'>'+(m.busy?tr('Collegamento…'):tr('Collega la password'))+'</button>'+
       '<button class="btn-secondary full-width" id="lpCancel">'+tr('Annulla')+'</button></div>';
   }
   function render(){
@@ -3407,7 +3603,7 @@ function openLinkPasswordModal(){
     var go=document.getElementById('lpGo');
     if(go)go.onclick=async function(){
       var pwd=document.getElementById('lpPwd').value;
-      if(!pwd||pwd.length<6){m.err='La password deve avere almeno 6 caratteri.';render();return;}
+      if(!pwd||pwd.length<6){m.err=tr('La password deve avere almeno 6 caratteri.');render();return;}
       m.busy=true;m.err='';render();
       try{
         var cred=firebase.auth.EmailAuthProvider.credential(sync.email,pwd);
@@ -3517,7 +3713,7 @@ function goalsSectionHTML(){
   return '<section style="display:flex;flex-direction:column;gap:10px;">'+
     '<div class="section-title-row" style="margin-top:6px;"><h3>'+tr('Salvadanai')+'</h3></div>'+
     (goals.length?cards:'<p class="empty-note" style="text-align:left;">'+tr('Metti da parte per un obiettivo: un viaggio, un acquisto, un fondo di emergenza.')+'</p>')+
-    '<button class="btn-secondary full-width" id="addGoalBtn">🐷 + Nuovo salvadanaio</button>'+
+    '<button class="btn-secondary full-width" id="addGoalBtn">🐷 + '+tr('Nuovo salvadanaio')+'</button>'+
     '<p class="hint" style="margin-top:-4px;">'+tr('I salvadanai sono "buste" virtuali: versare o prelevare qui non modifica i saldi dei conti.')+'</p>'+
   '</section>';
 }
@@ -3582,7 +3778,7 @@ function openGoalSheet(goalId){
       if(!(target>0)){m.err=tr('Indica un traguardo maggiore di zero.');render();return;}
       state.goals=state.goals||[];
       state.goals.push({id:uid('goal'),name:name,emoji:(m.emoji.trim()||'🎯'),color:m.color,target:target,createdAt:Date.now(),history:[]});
-      saveState();closeModal();showToast('Salvadanaio creato');renderActiveTab();
+      saveState();closeModal();showToast(tr('Salvadanaio creato'));renderActiveTab();
     };
     var mg=document.getElementById('goalMoveGo');
     if(mg)mg.onclick=function(){
@@ -3593,22 +3789,22 @@ function openGoalSheet(goalId){
       if(m.moveMode==='out'&&amt>saved){m.err=tr('Nel salvadanaio ci sono solo ')+fmt(saved)+'.';render();return;}
       g.history.push({id:uid('gh'),date:(function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(),amount:m.moveMode==='in'?amt:-amt});
       m.moveStr='';m.err='';
-      saveState();showToast(m.moveMode==='in'?'Versato nel salvadanaio':'Prelevato dal salvadanaio');render();renderActiveTab();
+      saveState();showToast(m.moveMode==='in'?tr('Versato nel salvadanaio'):tr('Prelevato dal salvadanaio'));render();renderActiveTab();
     };
     var se=document.getElementById('goalSaveEdit');
     if(se)se.onclick=function(){
       readForm();
       var name=m.name.trim(),target=parseAmt(m.targetStr);
-      if(!name){m.err='Il nome non può essere vuoto.';render();return;}
+      if(!name){m.err=tr('Il nome non può essere vuoto.');render();return;}
       if(!(target>0)){m.err=tr('Indica un traguardo maggiore di zero.');render();return;}
       g.name=name;g.emoji=m.emoji.trim()||'🎯';g.color=m.color;g.target=target;
-      saveState();showToast('Salvadanaio aggiornato');render();renderActiveTab();
+      saveState();showToast(tr('Salvadanaio aggiornato'));render();renderActiveTab();
     };
     var de=document.getElementById('goalDelete');
     if(de)de.onclick=function(){
-      confirmDialog('Eliminare il salvadanaio "'+g.name+'"? I soldi messi da parte qui sono solo un promemoria: i saldi dei conti non cambiano.',function(){
+      confirmDialog(tr('Eliminare il salvadanaio')+' "'+g.name+'"? '+tr('I soldi messi da parte qui sono solo un promemoria: i saldi dei conti non cambiano.'),function(){
         state.goals=state.goals.filter(function(x){return x.id!==g.id;});
-        saveState();closeModal();showToast('Salvadanaio eliminato');renderActiveTab();
+        saveState();closeModal();showToast(tr('Salvadanaio eliminato'));renderActiveTab();
       },'Elimina');
     };
   }
@@ -3645,7 +3841,7 @@ function wireAccounts(){
   document.querySelectorAll('[data-del-account]').forEach(function(btn){
     btn.onclick=function(){
       var id=btn.dataset.delAccount,a=accById(id),n=state.transactions.filter(function(t){return t.accountId===id;}).length+state.transfers.filter(function(t){return t.fromAccountId===id||t.toAccountId===id;}).length;
-      var warn=n===0?'':(n===1?'Verrà eliminato anche il movimento collegato a questo conto.':'Verranno eliminati anche i '+n+' movimenti collegati a questo conto.');
+      var warn=n===0?'':(n===1?tr('Verrà eliminato anche il movimento collegato a questo conto.'):tr('Verranno eliminati anche i N movimenti collegati a questo conto.').replace('N',n));
       confirmDialog('Eliminare "'+a.name+'"? '+warn,function(){
         state.transactions=state.transactions.filter(function(t){return t.accountId!==id;});
         state.transfers=state.transfers.filter(function(t){return t.fromAccountId!==id&&t.toAccountId!==id;});
@@ -3911,7 +4107,7 @@ function openSearchOverlay(){
   var query='';
   function resultsHTML(q){
     var entries=searchEntries(q);
-    if(!entries.length)return'<p class="search-meta">Nessun risultato'+(q?' per "'+esc(q)+'"':'')+'.</p>';
+    if(!entries.length)return'<p class="search-meta">'+tr('Nessun risultato')+(q?' '+tr('per')+' "'+esc(q)+'"':'')+'.</p>';
     var label=q?entries.length+' '+(entries.length===1?'risultato':'risultati'):'Movimenti recenti';
     var groups=[],lastDate=null;
     entries.forEach(function(e){if(e.date!==lastDate){groups.push({date:e.date,items:[]});lastDate=e.date;}groups[groups.length-1].items.push(e);});
@@ -4874,16 +5070,16 @@ function openExportModal(){
     var n=exportEntries(ex.scope).length;
     return '<div class="sheet">'+
       '<div class="sheet-handle"></div>'+
-      '<h3 style="margin:4px 0 0;">Esporta i movimenti</h3>'+
+      '<h3 style="margin:4px 0 0;">'+tr('Esporta i movimenti')+'</h3>'+
       '<div class="field-group"><label class="field-label">Periodo</label><div class="segmented small">'+
         '<button class="'+(ex.scope==='month'?'active':'')+'" data-exp-scope="month">'+tr('Mese')+'</button>'+
         '<button class="'+(ex.scope==='year'?'active':'')+'" data-exp-scope="year">'+tr('Anno')+'</button>'+
         '<button class="'+(ex.scope==='all'?'active':'')+'" data-exp-scope="all">Tutto</button>'+
       '</div></div>'+
       '<p class="hint">'+esc(exportScopeLabel(ex.scope))+' · <strong>'+n+'</strong> movimenti (spese, entrate e trasferimenti).</p>'+
-      '<button class="btn-secondary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 Esporta PDF</button>'+
-      '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 Esporta Excel (.xlsx)</button>'+
-      '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 Esporta CSV</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 '+tr('Esporta PDF')+'</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 '+tr('Esporta Excel (.xlsx)')+'</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 '+tr('Esporta CSV')+'</button>'+
       (ex.msg?'<p class="hint">'+esc(ex.msg)+'</p>':'<p class="hint">'+tr('Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.')+'</p>')+
     '</div>';
   }
@@ -4911,7 +5107,7 @@ function openExportModal(){
         var out=await saveOrShare(res.name,res.blob,res.mime);
         ex.busy=false;
         if(out==='cancelled'){ex.msg='Esportazione annullata.';render();return;}
-        if(out==='failed'){ex.msg='Non è stato possibile salvare il file.';render();return;}
+        if(out==='failed'){ex.msg=tr('Non è stato possibile salvare il file.');render();return;}
         closeModal();
         showToast(res.count+' movimenti esportati in '+res.name);
       };
@@ -5003,7 +5199,7 @@ function openImportModal(){
     else if(imp.error)status='<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.error)+'</p>'+(imp.rawLines.length?'<div class="field-group"><label class="field-label">'+tr('Testo che sono riuscito a leggere (per capire cosa non va)')+'</label><textarea class="text-input" readonly style="font-family:monospace;font-size:11px;">'+esc(imp.rawLines.slice(0,60).join('\n'))+'</textarea></div>':'');
     else if(imp.rows.length)status='<p class="hint">✅ '+esc(imp.fileName||'File')+': '+imp.rows.length+' righe lette.</p>';
     return'<div class="sheet">'+stepDots()+
-      '<h3 style="margin:4px 0 0;">Importa i tuoi dati</h3>'+
+      '<h3 style="margin:4px 0 0;">'+tr('Importa i tuoi dati')+'</h3>'+
       '<div class="field-group"><label class="field-label">'+tr('Conto di destinazione')+'</label><select class="select" id="impAcc">'+opts+'</select></div>'+
       '<div class="field-group"><label class="field-label">File (CSV, Excel .xlsx o PDF)</label><input type="file" accept=".csv,.txt,.xlsx,.pdf,text/csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="impFile"></div>'+
       status+
@@ -5213,7 +5409,7 @@ function openImportModal(){
   function step3(){
     var cnt=imp.parsed.filter(function(r){return r.include;}).length;
     var inc=imp.parsed.filter(function(r){return r.include&&r.type==='income';}).length;
-    return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">Controlla e importa</h3>'+
+    return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">'+tr('Controlla e importa')+'</h3>'+
       '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'" ('+inc+' entrate, '+(cnt-inc)+' spese). Le categorie sono assegnate in automatico dalla descrizione — puoi cambiarle qui, e tocca <strong>S/E</strong> per invertire spesa/entrata.</p>'+
       '<div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){
         return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'>'+
@@ -5364,7 +5560,7 @@ function nextDueLabel(item){
   if(st==='paused')return 'In pausa';
   var n=daysUntil(item.nextDate);
   if(n<0)return 'Scaduta il '+formatShortDate(item.nextDate);
-  if(n===0)return 'In scadenza oggi';
+  if(n===0)return tr('In scadenza oggi');
   if(n===1)return 'Domani';
   return 'Prossima '+formatShortDate(item.nextDate);
 }
@@ -5559,7 +5755,7 @@ function openRecurringSheet(opts){
 
   function catChips(){
     var chips=catsByType(m.type==='income'?'income':'expense').map(function(c){return'<button class="chip'+(c.id===m.categoryId?' selected':'')+'" data-rc-cat="'+c.id+'"><span class="dot" style="background:'+colorHex(c.color)+'"></span>'+esc(c.emoji)+' '+esc(c.name)+'</button>';}).join('');
-    chips+='<button class="chip" id="rcNewCatBtn">+ Nuova</button>';
+    chips+='<button class="chip" id="rcNewCatBtn">+ '+tr('Nuova')+'</button>';
     var form='';
     if(m.showCatForm){
       form='<div class="new-tag-card" style="margin-top:8px;"><div style="display:flex;gap:8px;"><input id="rcNewCatEmoji" class="emoji-input" maxlength="2" placeholder="🙂" value="'+esc(m.newCatEmoji)+'"><input id="rcNewCatName" class="text-input" placeholder="'+tr('Nome categoria')+'" value="'+esc(m.newCatName)+'"></div><div class="color-dots-row">'+(isDarkTheme()?COLORS_DARK:COLORS_LIGHT).map(function(c,i){return'<button class="color-dot'+(m.newCatColor===i?' active':'')+'" data-rc-cat-color="'+i+'" aria-label="Colore '+(i+1)+'" style="background:'+c+';"></button>';}).join('')+'</div><div style="display:flex;gap:8px;"><button class="btn-primary-sm" id="rcCreateCatBtn">'+tr('Aggiungi categoria')+'</button><button class="btn-secondary" style="padding:10px 14px;font-size:13px;" id="rcCancelCatBtn">'+tr('Annulla')+'</button></div></div>';
@@ -5582,7 +5778,7 @@ function openRecurringSheet(opts){
       '<button class="btn-primary full-width sticky-save" id="rcSave">'+(m.isEdit?tr('Salva modifiche'):tr('Aggiungi ricorrente'))+'</button>';
   }
   function sheetHTML(){
-    return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;font-family:var(--font-display);font-size:18px;letter-spacing:-0.01em;">'+(m.isEdit?'Modifica ricorrente':'Nuovo ricorrente')+'</h3><div id="rcBody" style="display:flex;flex-direction:column;gap:16px;">'+bodyHTML()+'</div></div>';
+    return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;font-family:var(--font-display);font-size:18px;letter-spacing:-0.01em;">'+(m.isEdit?tr('Modifica ricorrente'):tr('Nuovo ricorrente'))+'</h3><div id="rcBody" style="display:flex;flex-direction:column;gap:16px;">'+bodyHTML()+'</div></div>';
   }
   function rerenderCats(){var el=document.getElementById('rcCatSection');if(el){el.outerHTML=catChips();wireCats();}}
   function rerenderBody(){var b=document.getElementById('rcBody');if(b){b.innerHTML=bodyHTML();wireBody();}}
@@ -5614,7 +5810,7 @@ function openRecurringSheet(opts){
       var date=m.nextDate||todayISO();
       if(m.isEdit){var it=state.recurring.find(function(r){return r.id===m.id;});if(it){it.name=name;it.type=m.type;it.amount=amount;it.categoryId=m.categoryId;it.accountId=m.accountId;it.cadence=m.cadence;it.nextDate=date;it.note=(m.note||'').trim();it.status=m.status;}}
       else state.recurring.push({id:uid('rec'),name:name,type:m.type,amount:amount,categoryId:m.categoryId,accountId:m.accountId,cadence:m.cadence,nextDate:date,note:(m.note||'').trim(),status:m.status,lastPaidDate:null,createdAt:Date.now()});
-      saveState();closeModal();showToast(m.isEdit?'Ricorrente aggiornato':'Ricorrente aggiunto');renderActiveTab();
+      saveState();closeModal();showToast(m.isEdit?tr('Ricorrente aggiornato'):tr('Ricorrente aggiunto'));renderActiveTab();
     };
   }
   openModal('<div class="sheet"></div>');
