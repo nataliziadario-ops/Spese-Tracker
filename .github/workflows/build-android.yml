@@ -49,20 +49,24 @@ jobs:
         run: |
           if [ ! -d android ]; then npx cap add android; fi
 
-      # --- Fix login Google: versioni stabili del Credential Manager ---
-      # Il plugin usa di default versioni "release candidate" difettose che
-      # causano l'errore "Your device doesn't support credential manager".
-      # Qui forziamo le versioni stabili raccomandate.
-      - name: Correggi le versioni del Credential Manager (login Google)
+      # --- Fix login Google (causa strutturale) ---
+      # Il plugin, di default, NON include davvero il provider Google a runtime
+      # (rgcfaIncludeGoogle=false): le librerie del Credential Manager restano
+      # "solo in compilazione" e a runtime arrivano da firebase-auth nella
+      # versione difettosa 1.2.0-rc01 (errore "device doesn't support credential
+      # manager"). Qui attiviamo il provider Google e fissiamo una versione
+      # stabile del Credential Manager (1.5.0), coerente fra compile e runtime.
+      - name: Attiva il provider Google e fissa il Credential Manager
         run: |
-          if [ -f android/variables.gradle ] && ! grep -q "androidxCredentialsVersion" android/variables.gradle; then
+          if [ -f android/variables.gradle ] && ! grep -q "rgcfaIncludeGoogle" android/variables.gradle; then
             {
               echo ""
-              echo "// Fix login Google (Credential Manager): versione stabile e molto diffusa."
+              echo "// Login Google nativo: includi il provider a runtime + versione stabile."
+              echo "ext.rgcfaIncludeGoogle = true"
               echo "ext.androidxCredentialsVersion = '1.5.0'"
               echo "ext.androidxCredentialsPlayServicesAuthVersion = '1.5.0'"
             } >> android/variables.gradle
-            echo "variables.gradle: Credential Manager forzato a 1.5.0"
+            echo "variables.gradle: provider Google attivo + Credential Manager 1.5.0"
           else
             echo "variables.gradle non trovato o gia' corretto: salto."
           fi
