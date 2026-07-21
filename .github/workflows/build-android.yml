@@ -130,56 +130,67 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       # --- VERIFICA FORENSE: cosa contiene DAVVERO l'APK compilato ---
-      # Fin qui abbiamo controllato il keystore (l'ingrediente). Qui invece
-      # controlliamo il PRODOTTO FINITO: l'APK stesso. Leggiamo dall'APK:
-      #   1. l'impronta SHA-1 del certificato con cui e' firmato davvero;
+      # Controlliamo il PRODOTTO FINITO (l'APK), non gli ingredienti:
+      #   1. l'impronta SHA-1 del certificato che lo firma davvero
+      #      (con apksigner, che legge anche le firme moderne v2/v3);
       #   2. il nome pacchetto reale;
-      #   3. il client ID web (default_web_client_id) incorporato a runtime.
-      # Se tutte e tre le righe finali dicono OK, il lato APP e' matematicamente
-      # a posto e la causa dell'errore 10 e' al 100% lato server Google
-      # (Cloud Console / Firebase / propagazione). Nessun dubbio residuo.
+      #   3. il client ID web (default_web_client_id) incorporato a runtime
+      #      (cercato sia nei file generati sia, in riserva, dentro l'APK).
+      # Tre "OK" = lato app matematicamente a posto: la causa dell'errore 10
+      # e' al 100% lato server Google (Cloud Console / Firebase / propagazione).
       - name: VERIFICA FORENSE dell'APK (firma, pacchetto, client web)
         run: |
           APK=android/app/build/outputs/apk/debug/app-debug.apk
-          ATTESO_SHA1="75:AB:38:DD:7C:86:E1:4C:8A:76:6F:66:E4:D2:F7:D6:20:4D:C5:C3"
+          ATTESO_SHA1="75ab38dd7c86e14c8a766f66e4d2f7d6204dc5c3"
           ATTESO_PKG="io.github.nataliziadario.spendy"
           ATTESO_WEB="963457320900-kvomkesmunacee4o8jgs62epl5r8mnks.apps.googleusercontent.com"
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | sort -V | tail -1)
 
           echo "==================================================="
           echo "1) Certificato che firma l'APK (letto dall'APK stesso):"
-          CERT=$(keytool -printcert -jarfile "$APK" 2>/dev/null || true)
-          echo "$CERT" | grep -E "SHA1:|SHA256:" || echo "  (impossibile leggere il certificato)"
-          SHA1_APK=$(echo "$CERT" | grep "SHA1:" | head -1 | sed 's/.*SHA1: //' | tr -d ' ')
+          SHA1_APK=""
+          if [ -x "$BT/apksigner" ]; then
+            CERTOUT=$("$BT/apksigner" verify --print-certs "$APK" 2>/dev/null || true)
+            echo "$CERTOUT" | grep -Ei "SHA-1 digest|SHA-256 digest" || true
+            SHA1_APK=$(echo "$CERTOUT" | grep -i "SHA-1 digest" | head -1 | grep -oE '[0-9a-fA-F]{40}' | tr 'A-F' 'a-f')
+          fi
+          if [ -z "$SHA1_APK" ]; then
+            CERT=$(keytool -printcert -jarfile "$APK" 2>/dev/null || true)
+            echo "$CERT" | grep -E "SHA1:|SHA256:" || echo "  (certificato non leggibile ne' con apksigner ne' con keytool)"
+            SHA1_APK=$(echo "$CERT" | grep "SHA1:" | head -1 | sed 's/.*SHA1: //' | tr -d ' :' | tr 'A-F' 'a-f')
+          fi
 
           echo "---------------------------------------------------"
           echo "2) Nome pacchetto reale dell'APK:"
-          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt 2>/dev/null | sort -V | tail -1)
           PKG=""
-          if [ -n "$AAPT" ]; then
-            PKG=$("$AAPT" dump badging "$APK" 2>/dev/null | grep -o "package: name='[^']*'" | cut -d"'" -f2)
+          if [ -x "$BT/aapt" ]; then
+            PKG=$("$BT/aapt" dump badging "$APK" 2>/dev/null | grep -o "package: name='[^']*'" | cut -d"'" -f2)
           fi
-          echo "  ${PKG:-'(aapt non disponibile)'}"
+          echo "  ${PKG:-(aapt non disponibile)}"
 
           echo "---------------------------------------------------"
-          echo "3) Client ID web incorporato nell'APK (default_web_client_id):"
-          WEB_ID=$(grep -rh "default_web_client_id" android/app/build/generated/res/google-services/ 2>/dev/null \
+          echo "3) Client ID web incorporato (default_web_client_id):"
+          WEB_ID=$(grep -rh --include='*.xml' "default_web_client_id" android/app/build 2>/dev/null \
                    | grep -o '[0-9a-z-]*\.apps\.googleusercontent\.com' | head -1)
-          echo "  ${WEB_ID:-'(non trovato nelle risorse generate)'}"
+          if [ -z "$WEB_ID" ] && [ -x "$BT/aapt" ]; then
+            WEB_ID=$("$BT/aapt" dump resources "$APK" 2>/dev/null | grep -A3 "default_web_client_id" \
+                     | grep -o '[0-9a-z-]*\.apps\.googleusercontent\.com' | head -1)
+          fi
+          echo "  ${WEB_ID:-(non trovato)}"
 
           echo "==================================================="
           echo "VERDETTO LATO APP:"
           [ "$SHA1_APK" = "$ATTESO_SHA1" ] \
             && echo "  OK  firma APK = impronta registrata in Firebase" \
             || echo "  ERRORE  firma APK ($SHA1_APK) DIVERSA da quella attesa"
-          [ -z "$PKG" ] || { [ "$PKG" = "$ATTESO_PKG" ] \
+          [ "$PKG" = "$ATTESO_PKG" ] \
             && echo "  OK  pacchetto = $ATTESO_PKG" \
-            || echo "  ERRORE  pacchetto ($PKG) diverso da quello registrato"; }
+            || echo "  ERRORE  pacchetto ($PKG) diverso da quello registrato"
           [ "$WEB_ID" = "$ATTESO_WEB" ] \
             && echo "  OK  client web incorporato = quello del progetto Firebase" \
             || echo "  ERRORE  client web incorporato ($WEB_ID) diverso dall'atteso"
           echo "==================================================="
-          echo "Se le tre righe sopra sono tutte OK, il problema NON e' nell'app:"
-          echo "segui la GUIDA-LOGIN-GOOGLE-DIAGNOSI.md (verifiche lato Google)."
+          echo "Con tre OK il problema NON e' nell'app: segui GUIDA-LOGIN-GOOGLE-DIAGNOSI.md."
 
       - name: Pubblica l'APK come artefatto scaricabile
         uses: actions/upload-artifact@v5
