@@ -87,6 +87,23 @@ jobs:
             echo "ATTENZIONE: manca android-config/debug.keystore — l'SHA-1 cambiera' a ogni build."
           fi
 
+      # --- Verifica (diagnostica): quale impronta firmera' DAVVERO l'APK ---
+      # Stampiamo qui, nel log stesso di questa compilazione, l'impronta letta
+      # dal file ~/.android/debug.keystore appena installato. Deve combaciare
+      # ESATTAMENTE con quella registrata in Firebase. Se non combacia, la
+      # causa del login e' proprio questa (non un errore di configurazione
+      # Firebase/Google, ma una chiave diversa da quella attesa).
+      - name: Mostra l'impronta che firmera' l'APK (controllo)
+        run: |
+          echo "===================================================="
+          echo "IMPRONTA CHE FIRMERA' QUESTO APK (confrontala con Firebase):"
+          keytool -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey 2>/dev/null | grep -E "SHA1:|SHA256:"
+          echo "===================================================="
+          echo "Attesa (registrata in Firebase):"
+          echo "  SHA1:   75:AB:38:DD:7C:86:E1:4C:8A:76:6F:66:E4:D2:F7:D6:20:4D:C5:C3"
+          echo "  SHA256: D8:89:09:2F:89:61:BD:6D:74:90:2B:0F:51:2E:AD:68:53:2E:4C:38:AD:5D:C3:82:20:50:0C:9D:DB:6D:3B:E0"
+          echo "===================================================="
+
       # --- Login Google nativo: collega Firebase ---
       # Basta questo file: il modello Android di Capacitor applica da solo il
       # plugin Google Services quando trova google-services.json nell'app.
