@@ -58,12 +58,11 @@ jobs:
           if [ -f android/variables.gradle ] && ! grep -q "androidxCredentialsVersion" android/variables.gradle; then
             {
               echo ""
-              echo "// Fix login Google (Credential Manager): versioni stabili."
-              echo "ext.androidxCredentialsVersion = '1.3.0'"
-              echo "ext.androidxCredentialsPlayServicesAuthVersion = '1.3.0'"
-              echo "ext.librariesIdentityGoogleidVersion = '1.1.1'"
+              echo "// Fix login Google (Credential Manager): versione stabile e molto diffusa."
+              echo "ext.androidxCredentialsVersion = '1.5.0'"
+              echo "ext.androidxCredentialsPlayServicesAuthVersion = '1.5.0'"
             } >> android/variables.gradle
-            echo "variables.gradle: Credential Manager forzato a 1.3.0"
+            echo "variables.gradle: Credential Manager forzato a 1.5.0"
           else
             echo "variables.gradle non trovato o gia' corretto: salto."
           fi
