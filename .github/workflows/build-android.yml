@@ -74,30 +74,64 @@ jobs:
       - name: Copia la web app nel guscio Android
         run: npx cap sync android
 
-      # --- Login Google nativo: chiave di firma STABILE ---
-      # L'APK di debug viene firmato con questa chiave fissa, cosi' l'impronta
-      # SHA-1/SHA-256 non cambia a ogni build e resta valida in Firebase.
-      - name: Usa la chiave di firma stabile (SHA-1 fisso)
+      # --- Login Google nativo: chiave di firma STABILE (metodo robusto) ---
+      # CAUSA STORICA DELL'ERRORE 10: copiare il keystore in ~/.android/ NON
+      # bastava — Gradle in certe build ne generava/usava uno diverso (chiave
+      # casuale), cosi' l'APK usciva firmato con un'impronta NON registrata in
+      # Firebase. Qui NON ci affidiamo piu' a ~/.android: IMPONIAMO a Gradle,
+      # per iscritto nel build.gradle, di firmare la build di debug con il
+      # NOSTRO file keystore, indicando percorso, password, alias e keypass
+      # espliciti. Cosi' l'impronta e' deterministica a ogni compilazione.
+      - name: Imponi la firma con la chiave fissa (signingConfig esplicito)
         run: |
-          mkdir -p ~/.android
-          if [ -f android-config/debug.keystore ]; then
-            cp android-config/debug.keystore ~/.android/debug.keystore
-            echo "Chiave di debug fissa installata."
+          set -e
+          if [ ! -f android-config/debug.keystore ]; then
+            echo "ERRORE: manca android-config/debug.keystore — impossibile firmare in modo stabile."
+            exit 1
+          fi
+          # Copio il keystore DENTRO il progetto app e uso un percorso assoluto,
+          # cosi' non dipende da ~/.android ne' dalla cartella di lavoro.
+          cp android-config/debug.keystore android/app/debug.keystore
+          KS="$GITHUB_WORKSPACE/android/app/debug.keystore"
+          GRADLE=android/app/build.gradle
+
+          # Se non l'ho gia' fatto in questa build, appendo un blocco android {}
+          # che riconfigura la signingConfig 'debug' con la nostra chiave.
+          # (In Groovy piu' blocchi android {} si fondono: e' valido e stabile.)
+          # Niente heredoc: costruisco il blocco con printf per non rompere lo YAML.
+          if ! grep -q "SPENDY_FIXED_SIGNING" "$GRADLE"; then
+            {
+              printf '\n'
+              printf '// SPENDY_FIXED_SIGNING — firma di debug deterministica (login Google)\n'
+              printf 'android {\n'
+              printf '    signingConfigs {\n'
+              printf '        debug {\n'
+              printf "            storeFile file('%s')\n" "$KS"
+              printf "            storePassword 'android'\n"
+              printf "            keyAlias 'androiddebugkey'\n"
+              printf "            keyPassword 'android'\n"
+              printf '        }\n'
+              printf '    }\n'
+              printf '}\n'
+            } >> "$GRADLE"
+            echo "signingConfig 'debug' forzata su: $KS"
+            echo "----- blocco aggiunto a build.gradle -----"
+            tail -n 13 "$GRADLE"
+            echo "------------------------------------------"
           else
-            echo "ATTENZIONE: manca android-config/debug.keystore — l'SHA-1 cambiera' a ogni build."
+            echo "signingConfig gia' presente: salto."
           fi
 
-      # --- Verifica (diagnostica): quale impronta firmera' DAVVERO l'APK ---
-      # Stampiamo qui, nel log stesso di questa compilazione, l'impronta letta
-      # dal file ~/.android/debug.keystore appena installato. Deve combaciare
-      # ESATTAMENTE con quella registrata in Firebase. Se non combacia, la
-      # causa del login e' proprio questa (non un errore di configurazione
-      # Firebase/Google, ma una chiave diversa da quella attesa).
-      - name: Mostra l'impronta che firmera' l'APK (controllo)
+      # --- Verifica (diagnostica): impronta del keystore che firmera' l'APK ---
+      # Leggiamo l'impronta dal keystore che abbiamo appena imposto nel
+      # build.gradle (android/app/debug.keystore). Questo e' un controllo
+      # sull'INGREDIENTE; il controllo definitivo sul PRODOTTO (l'APK finito)
+      # e' piu' avanti, nello step "VERIFICA FORENSE".
+      - name: Mostra l'impronta del keystore imposto (controllo)
         run: |
           echo "===================================================="
-          echo "IMPRONTA CHE FIRMERA' QUESTO APK (confrontala con Firebase):"
-          keytool -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey 2>/dev/null | grep -E "SHA1:|SHA256:"
+          echo "IMPRONTA DEL KEYSTORE CHE FIRMERA' L'APK (confrontala con Firebase):"
+          keytool -list -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey 2>/dev/null | grep -E "SHA1:|SHA256:"
           echo "===================================================="
           echo "Attesa (registrata in Firebase):"
           echo "  SHA1:   75:AB:38:DD:7C:86:E1:4C:8A:76:6F:66:E4:D2:F7:D6:20:4D:C5:C3"
