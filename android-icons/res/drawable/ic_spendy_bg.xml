@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sfondo dell'icona: lo stesso verde a gradiente del logo Spendy. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#1B8975"
+        android:endColor="#0C4A3F"
+        android:angle="315" />
+</shape>

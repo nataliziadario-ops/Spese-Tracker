@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Testi mostrati nel selettore dei widget di Android.
+     File separato apposta: NON tocca strings.xml generato da Capacitor. -->
+<resources>
+    <string name="spendy_widget_simple_desc">Patrimonio e speso del mese</string>
+    <string name="spendy_widget_rich_desc">Patrimonio, budget e ultimi movimenti</string>
+    <string name="spendy_widget_quick_desc">Registra una spesa in un tocco</string>
+    <string name="spendy_widget_quick_title">Spesa rapida</string>
+    <string name="spendy_widget_quick_other">Altro</string>
+</resources>
