@@ -38,6 +38,17 @@ RECEIVERS = """
                 android:resource="@xml/widget_rich_info" />
         </receiver>
 
+        <receiver
+            android:name=".SpendyQuickWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_info" />
+        </receiver>
+
 """
 
 
@@ -48,7 +59,7 @@ def patch(path):
         print("ERRORE: Manifest non trovato: %s" % path)
         return 1
 
-    if "SpendySimpleWidget" in src and "SpendyRichWidget" in src:
+    if "SpendySimpleWidget" in src and "SpendyRichWidget" in src and "SpendyQuickWidget" in src:
         print("Widget gia' dichiarati nel Manifest: nessuna modifica.")
         return 0
 
