@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasto principale ("Altro"): apre il modulo spesa senza categoria scelta. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#3AAE8F" />
+    <corners android:radius="16dp" />
+</shape>
