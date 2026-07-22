@@ -21,6 +21,7 @@ on:
       - 'package-lock.json'
       - 'android-config/**'
       - 'android-widget/**'
+      - 'android-icons/**'
       - '.github/workflows/**'
   workflow_dispatch: {}
 
@@ -94,6 +95,11 @@ jobs:
           cp android-widget/res/drawable/*.xml "$RES_DIR/drawable"/
           echo "File dei widget copiati nel progetto Android."
 
+          # Icone dell'app (Capacitor ne mette di sue: qui rimettiamo quelle di Spendy)
+          # e anteprime mostrate nel selettore dei widget.
+          cp -r android-icons/res/. "$RES_DIR"/
+          echo "Icone Spendy e anteprime widget copiate."
+
           python3 android-widget/patch_manifest.py "android/app/src/main/AndroidManifest.xml"
 
       # Controllo che ogni pezzo sia al suo posto PRIMA di compilare: se manca
@@ -103,14 +109,22 @@ jobs:
           set -e
           PKG_DIR=android/app/src/main/java/io/github/nataliziadario/spendy
           RES_DIR=android/app/src/main/res
-          for f in WidgetStore.java SpendyWidgetPlugin.java SpendySimpleWidget.java SpendyRichWidget.java MainActivity.java; do
+          for f in WidgetStore.java SpendyWidgetPlugin.java SpendySimpleWidget.java SpendyRichWidget.java SpendyQuickWidget.java MainActivity.java; do
             if [ -f "$PKG_DIR/$f" ]; then echo "  OK      $f"; else echo "  MANCA   $f"; exit 1; fi
           done
-          for f in layout/widget_simple.xml layout/widget_rich.xml xml/widget_simple_info.xml xml/widget_rich_info.xml drawable/widget_bg.xml drawable/widget_progress.xml; do
+          for f in layout/widget_simple.xml layout/widget_rich.xml layout/widget_quick.xml \
+                   xml/widget_simple_info.xml xml/widget_rich_info.xml xml/widget_quick_info.xml \
+                   drawable/widget_bg.xml drawable/widget_progress.xml \
+                   drawable/widget_quick_btn.xml drawable/widget_quick_btn_accent.xml \
+                   mipmap-xxxhdpi/ic_launcher.png mipmap-xxxhdpi/ic_spendy_foreground.png \
+                   mipmap-anydpi-v26/ic_launcher.xml drawable/ic_spendy_bg.xml \
+                   values/spendy_widget_strings.xml \
+                   drawable-nodpi/widget_preview_simple.png drawable-nodpi/widget_preview_rich.png drawable-nodpi/widget_preview_quick.png; do
             if [ -f "$RES_DIR/$f" ]; then echo "  OK      res/$f"; else echo "  MANCA   res/$f"; exit 1; fi
           done
           grep -q "SpendySimpleWidget" "$RES_DIR/../AndroidManifest.xml" && echo "  OK      Manifest: widget semplice" || { echo "  MANCA nel Manifest: widget semplice"; exit 1; }
           grep -q "SpendyRichWidget" "$RES_DIR/../AndroidManifest.xml" && echo "  OK      Manifest: widget completo" || { echo "  MANCA nel Manifest: widget completo"; exit 1; }
+          grep -q "SpendyQuickWidget" "$RES_DIR/../AndroidManifest.xml" && echo "  OK      Manifest: widget spesa rapida" || { echo "  MANCA nel Manifest: widget spesa rapida"; exit 1; }
           grep -q "registerPlugin(SpendyWidgetPlugin.class)" "$PKG_DIR/MainActivity.java" && echo "  OK      plugin registrato in MainActivity" || { echo "  plugin NON registrato in MainActivity"; exit 1; }
           echo "Tutti i pezzi del widget sono al loro posto."
 
