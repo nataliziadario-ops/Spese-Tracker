@@ -107,6 +107,23 @@
         .catch(function () { return false; });
     },
 
+    // Legge (una sola volta) l'azione richiesta da un tasto del widget
+    // "spesa rapida". Fallback web: null = nessuna azione in attesa.
+    consumeWidgetAction: function () {
+      if (!this.isNative()) return Promise.resolve(null);
+      var pl;
+      try {
+        pl = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SpendyWidget) || null;
+      } catch (e) { return Promise.resolve(null); }
+      if (!pl || typeof pl.consumeAction !== 'function') return Promise.resolve(null);
+      return pl.consumeAction()
+        .then(function (r) {
+          if (!r || !r.action) return null;
+          return { action: r.action, cat: r.cat || '' };
+        })
+        .catch(function () { return null; });
+    },
+
     // Pulisce anche la sessione del plugin nativo, oltre a quella Firebase JS.
     // Fallback web: false (niente da pulire lato nativo).
     signOutNative: function () {

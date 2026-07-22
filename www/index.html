@@ -326,7 +326,13 @@ main#content{flex:1;min-height:0;padding:8px 16px 132px;overflow-y:auto;-webkit-
 .modal-backdrop{position:absolute;inset:0;background:var(--backdrop);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);animation:fadein2 .22s ease;}
 @keyframes fadein2{from{opacity:0;}to{opacity:1;}}
 .sheet-wrap{position:absolute;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;}
-.sheet{width:100%;max-height:92vh;overflow-y:auto;background:var(--app-bg);border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;animation:slideup .38s var(--ease-spring);box-shadow:0 -12px 40px rgba(23,27,24,0.18);}
+.sheet{width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--app-bg);border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;animation:slideup .38s var(--ease-spring);box-shadow:0 -12px 40px rgba(23,27,24,0.18);}
+/* Su mobile 92vh non tiene conto delle barre del browser: dvh e' l'altezza reale. */
+@supports (max-height:100dvh){.sheet{max-height:92dvh;}}
+/* I contenuti del foglio NON devono comprimersi: senza questo, blocchi come
+   .menu-list (che ha overflow:hidden) vengono schiacciati e appaiono TAGLIATI
+   invece di far scorrere il foglio. */
+.sheet>*{flex-shrink:0;}
 .link-btn{background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;padding:2px 0;text-align:center;width:100%;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
 .link-btn:active{opacity:0.6;}
 .info-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:9px;margin:0 -2px;padding:0 2px 2px;}
@@ -1951,9 +1957,29 @@ function widgetTopBudget(){
   var t=list[0];
   return {label:t.cat.name+' · '+fmt(t.spent)+' / '+fmt(t.limit),pct:Math.max(0,Math.min(100,Math.round(t.pct)))};
 }
+function topExpenseCats(n){
+  /* Le categorie di spesa piu' usate negli ultimi 3 mesi (per numero di
+     movimenti), con ripiego sulle prime categorie di spesa disponibili. */
+  var since=monthKeyBack(2),count={};
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.type==='income')return;
+    if(t.date.slice(0,7)<since)return;
+    count[t.categoryId]=(count[t.categoryId]||0)+1;
+  });
+  var ranked=Object.keys(count).sort(function(a,b){return count[b]-count[a];})
+    .map(function(id){return catById(id);})
+    .filter(function(c){return c&&c.type!=='income';});
+  (state.categories||[]).forEach(function(c){
+    if(c.type==='income')return;
+    if(ranked.some(function(r){return r.id===c.id;}))return;
+    ranked.push(c);
+  });
+  return ranked.slice(0,n||2);
+}
 function buildWidgetPayload(){
   var p={premium:false,balance:'',spent:'',monthLabel:'',budgetLabel:'',budgetPct:0,
-         r1:'',r1a:'',r2:'',r2a:'',r3:'',r3a:''};
+         r1:'',r1a:'',r2:'',r2a:'',r3:'',r3a:'',
+         q1n:'',q1i:'',q2n:'',q2i:''};
   if(!isPremium())return p;
   p.premium=true;
   try{
@@ -1974,8 +2000,26 @@ function buildWidgetPayload(){
       p['r'+(i+1)]=name;
       p['r'+(i+1)+'a']=amt;
     });
+    var qc=topExpenseCats(2);
+    if(qc[0]){p.q1n=qc[0].emoji?(qc[0].emoji+' '+qc[0].name):qc[0].name;p.q1i=qc[0].id;}
+    if(qc[1]){p.q2n=qc[1].emoji?(qc[1].emoji+' '+qc[1].name):qc[1].name;p.q2i=qc[1].id;}
   }catch(e){}
   return p;
+}
+/* Azione arrivata da un tasto del widget "spesa rapida": apre il modulo
+   nuova spesa, con la categoria gia' scelta se indicata. */
+function handleWidgetAction(a){
+  if(!a||a.action!=='add_expense')return;
+  try{
+    if(typeof closeModal==='function')closeModal();
+    openEntrySheet({mode:'expense',categoryId:a.cat||null});
+  }catch(e){}
+}
+function checkWidgetAction(){
+  try{
+    if(!window.NativeBridge||typeof NativeBridge.consumeWidgetAction!=='function')return;
+    NativeBridge.consumeWidgetAction().then(handleWidgetAction).catch(function(){});
+  }catch(e){}
 }
 var __widgetTimer=null;
 function pushWidgetData(){
@@ -2004,7 +2048,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v29';
+var APP_VERSION='v30';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3892,6 +3936,16 @@ function infoIllus(kind){
     s+='<rect x="52" y="20" width="92" height="48" rx="10" fill="'+S+'"/><rect x="52" y="20" width="92" height="14" rx="7" fill="'+T+'" opacity="0.7"/><circle cx="128" cy="52" r="7" fill="'+A+'" opacity="0.8"/><text x="196" y="56" text-anchor="middle" font-size="34">🐷</text><rect x="164" y="66" width="66" height="8" rx="4" fill="'+TR+'"/><rect x="164" y="66" width="42" height="8" rx="4" fill="'+A+'"/>';
   }else if(kind==='budget'){
     s+='<circle cx="82" cy="43" r="24" fill="none" stroke="'+TR+'" stroke-width="11"/><circle cx="82" cy="43" r="24" fill="none" stroke="'+A+'" stroke-width="11" stroke-dasharray="98 53" transform="rotate(-90 82 43)" stroke-linecap="butt"/><circle cx="82" cy="43" r="24" fill="none" stroke="'+R+'" stroke-width="11" stroke-dasharray="30 121" stroke-dashoffset="-98" transform="rotate(-90 82 43)"/><rect x="128" y="22" width="110" height="7" rx="3.5" fill="'+F+'" opacity="0.45"/><rect x="128" y="38" width="148" height="9" rx="4.5" fill="'+TR+'"/><rect x="128" y="38" width="100" height="9" rx="4.5" fill="'+A+'"/><rect x="128" y="56" width="148" height="9" rx="4.5" fill="'+TR+'"/><rect x="128" y="56" width="132" height="9" rx="4.5" fill="'+R+'" opacity="0.85"/>';
+  }else if(kind==='premium'){
+    /* Stella premium + tre "funzioni sbloccate" che salgono. */
+    s+='<path d="M52 20l6.4 13.4L73 35.6l-10.5 10.6L65 61l-13-7-13 7 2.5-14.8L31 35.6l14.6-2.2z" fill="'+A+'" opacity="0.95"/>';
+    s+='<rect x="96" y="52" width="22" height="22" rx="5" fill="'+A+'" opacity="0.85"/>';
+    s+='<rect x="128" y="38" width="22" height="36" rx="5" fill="'+A+'" opacity="0.9"/>';
+    s+='<rect x="160" y="24" width="22" height="50" rx="5" fill="'+A+'"/>';
+    s+='<rect x="200" y="22" width="76" height="52" rx="10" fill="'+S+'"/>';
+    s+='<rect x="210" y="32" width="40" height="6" rx="3" fill="'+F+'" opacity="0.45"/>';
+    s+='<rect x="210" y="44" width="56" height="10" rx="5" fill="'+A+'"/>';
+    s+='<rect x="210" y="60" width="30" height="5" rx="2.5" fill="'+F+'" opacity="0.35"/>';
   }else if(kind==='data'){
     s+='<path d="M118 52a20 20 0 1 1 6-39 24 24 0 0 1 46 6h4a17 17 0 0 1 0 33z" fill="'+S+'" stroke="'+T+'" stroke-width="2.5"/><path d="M138 60v14M132 68l6 7 6-7" stroke="'+A+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M158 74V60M152 66l6-7 6 7" stroke="'+T+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
   }else if(kind==='cats'){
@@ -3911,7 +3965,8 @@ function openInfoSheet(){
     {k:'accounts',t:'Conti e Salvadanai',d:'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.'},
     {k:'budget',t:'Budget mensili',d:'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.'},
     {k:'cats',t:'Categorie & Tag',d:'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.'},
-    {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'}
+    {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'},
+    {k:'premium',t:'Spendy Premium',d:'Spendy è <strong>gratuita e completa</strong>: movimenti illimitati, categorie predefinite, tema chiaro e scuro, import dei dati ed export in PDF. Nel piano gratuito puoi avere <strong>2 conti, 3 ricorrenti, 1 salvadanaio e 2 categorie personalizzate</strong>: quello che hai già creato resta sempre tuo, anche se supera questi numeri.<br><br>Con <strong>Premium</strong> sblocchi conti, ricorrenti, salvadanai e categorie <strong>illimitati</strong>; l\'<strong>export in Excel e CSV</strong>; le <strong>statistiche avanzate</strong> (confronto con il mese scorso, proiezione di fine mese, dove vanno i tuoi soldi, andamento a 12 mesi, il giorno più costoso); gli <strong>avvisi di budget</strong> quando ti avvicini o superi un limite; e i <strong>widget</strong> nella schermata Home, compresa la <strong>spesa rapida</strong> per registrare un movimento in un tocco.'}
   ];
   var openIdx=0;
   function sheetHTML(){
@@ -4433,6 +4488,10 @@ function openEntrySheet(opts){
     showCatForm:false,newCatName:'',newCatEmoji:'',newCatColor:0,
     isEditTx:!!editTx,isEditTr:!!editTr
   };
+  if(!entry.isEditTx&&!entry.isEditTr&&opts.categoryId){
+    var pre=catById(opts.categoryId);
+    if(pre&&pre.type!=='income')entry.categoryId=pre.id;
+  }
   if(!entry.categoryId){var fc=catsByType(entry.mode==='income'?'income':'expense')[0];entry.categoryId=fc?fc.id:null;}
   if(entry.fromAccountId===entry.toAccountId&&state.accounts.length>1){var alt=state.accounts.find(function(a){return a.id!==entry.fromAccountId;});if(alt)entry.toAccountId=alt.id;}
 
@@ -6554,6 +6613,10 @@ async function init(){
   initNativeNotificationBridge();
   initRecurringReminders();
   pushWidgetData();
+  setTimeout(checkWidgetAction,600);
+  document.addEventListener('visibilitychange',function(){
+    if(!document.hidden)checkWidgetAction();
+  });
 }
 
 init();
