@@ -20,6 +20,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'android-config/**'
+      - 'android-widget/**'
       - '.github/workflows/**'
   workflow_dispatch: {}
 
@@ -73,6 +74,45 @@ jobs:
 
       - name: Copia la web app nel guscio Android
         run: npx cap sync android
+
+      # --- WIDGET IN SCHERMATA HOME (Android) ---
+      # Il progetto android/ viene rigenerato a ogni build, quindi i file dei
+      # widget NON possono stare li' dentro: vivono in android-widget/ e li
+      # iniettiamo qui. Tre cose: file Java, risorse grafiche, e due ritocchi
+      # (MainActivity registra il plugin; il Manifest dichiara i due widget).
+      - name: Inietta i widget Android
+        run: |
+          set -e
+          PKG_DIR=android/app/src/main/java/io/github/nataliziadario/spendy
+          RES_DIR=android/app/src/main/res
+          mkdir -p "$PKG_DIR" "$RES_DIR/layout" "$RES_DIR/xml" "$RES_DIR/drawable"
+
+          cp android-widget/java/*.java "$PKG_DIR"/
+          cp android-widget/MainActivity.java "$PKG_DIR"/MainActivity.java
+          cp android-widget/res/layout/*.xml "$RES_DIR/layout"/
+          cp android-widget/res/xml/*.xml "$RES_DIR/xml"/
+          cp android-widget/res/drawable/*.xml "$RES_DIR/drawable"/
+          echo "File dei widget copiati nel progetto Android."
+
+          python3 android-widget/patch_manifest.py "android/app/src/main/AndroidManifest.xml"
+
+      # Controllo che ogni pezzo sia al suo posto PRIMA di compilare: se manca
+      # qualcosa e' molto piu' chiaro leggerlo qui che in un errore di Gradle.
+      - name: Controllo file dei widget
+        run: |
+          set -e
+          PKG_DIR=android/app/src/main/java/io/github/nataliziadario/spendy
+          RES_DIR=android/app/src/main/res
+          for f in WidgetStore.java SpendyWidgetPlugin.java SpendySimpleWidget.java SpendyRichWidget.java MainActivity.java; do
+            if [ -f "$PKG_DIR/$f" ]; then echo "  OK      $f"; else echo "  MANCA   $f"; exit 1; fi
+          done
+          for f in layout/widget_simple.xml layout/widget_rich.xml xml/widget_simple_info.xml xml/widget_rich_info.xml drawable/widget_bg.xml drawable/widget_progress.xml; do
+            if [ -f "$RES_DIR/$f" ]; then echo "  OK      res/$f"; else echo "  MANCA   res/$f"; exit 1; fi
+          done
+          grep -q "SpendySimpleWidget" "$RES_DIR/../AndroidManifest.xml" && echo "  OK      Manifest: widget semplice" || { echo "  MANCA nel Manifest: widget semplice"; exit 1; }
+          grep -q "SpendyRichWidget" "$RES_DIR/../AndroidManifest.xml" && echo "  OK      Manifest: widget completo" || { echo "  MANCA nel Manifest: widget completo"; exit 1; }
+          grep -q "registerPlugin(SpendyWidgetPlugin.class)" "$PKG_DIR/MainActivity.java" && echo "  OK      plugin registrato in MainActivity" || { echo "  plugin NON registrato in MainActivity"; exit 1; }
+          echo "Tutti i pezzi del widget sono al loro posto."
 
       # --- Login Google nativo: chiave di firma STABILE (metodo robusto) ---
       # CAUSA STORICA DELL'ERRORE 10: copiare il keystore in ~/.android/ NON
