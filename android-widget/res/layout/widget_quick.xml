@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WIDGET SPESA RAPIDA: tre scorciatoie che aprono il modulo "nuova spesa"
+     gia' pronto (le prime due con la categoria preselezionata).
+     Nota: un widget Android non puo' contenere campi di testo, quindi la
+     registrazione vera avviene nell'app, che si apre gia' compilata. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/wq_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/wq_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/spendy_widget_quick_title"
+        android:textColor="#ECF0EB"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:baselineAligned="false">
+
+        <LinearLayout
+            android:id="@+id/wq_b1"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/widget_quick_btn">
+            <TextView
+                android:id="@+id/wq_b1_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ECF0EB"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/wq_b2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/widget_quick_btn">
+            <TextView
+                android:id="@+id/wq_b2_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#ECF0EB"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/wq_b3"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/widget_quick_btn_accent">
+            <TextView
+                android:id="@+id/wq_b3_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/spendy_widget_quick_other"
+                android:textColor="#0D100E"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
