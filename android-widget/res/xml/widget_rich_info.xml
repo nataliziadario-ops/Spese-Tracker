@@ -5,6 +5,7 @@
     android:minHeight="110dp"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_rich"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@drawable/widget_preview_rich"
+    android:description="@string/spendy_widget_rich_desc"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

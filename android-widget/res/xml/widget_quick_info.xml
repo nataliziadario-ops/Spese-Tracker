@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scheda tecnica del widget SPESA RAPIDA (circa 4x1 celle). -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="70dp"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_quick"
+    android:previewImage="@drawable/widget_preview_quick"
+    android:description="@string/spendy_widget_quick_desc"
+    android:resizeMode="horizontal"
+    android:widgetCategory="home_screen" />

@@ -5,6 +5,7 @@
     android:minHeight="60dp"
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_simple"
-    android:previewImage="@mipmap/ic_launcher"
+    android:previewImage="@drawable/widget_preview_simple"
+    android:description="@string/spendy_widget_simple_desc"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />
