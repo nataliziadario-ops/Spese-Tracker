@@ -377,6 +377,17 @@ textarea.text-input{min-height:80px;resize:vertical;font-family:ui-monospace,SFM
 .annual-tile{text-align:center;padding:11px 4px;}
 .annual-tile .alabel{font-size:10.5px;color:var(--ink-soft);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;}
 .annual-tile .avalue{font-family:var(--font-display);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:-0.015em;}
+/* ---------- Statistiche avanzate (Premium) ---------- */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stat-box{display:flex;flex-direction:column;gap:2px;background:var(--track);border-radius:12px;padding:10px 8px;text-align:center;}
+.stat-label{font-size:11px;color:var(--ink-soft);}
+.stat-value{font-size:14.5px;font-weight:650;color:var(--ink);}
+.stat-delta{font-size:11px;font-weight:600;}
+.stat-delta.good{color:var(--accent);}
+.stat-delta.bad{color:var(--red);}
+.stat-delta.neutral{color:var(--ink-faint);}
+.stat-row{display:flex;flex-direction:column;gap:5px;}
+.stat-row-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;gap:8px;}
 .chart-wrap{background:var(--surface);border:1px solid var(--hairline);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow);}
 .chart-legend{display:flex;gap:14px;justify-content:center;font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
 .chart-legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
@@ -1614,6 +1625,143 @@ Object.assign(TR.fr,{
 Object.assign(TR.en,{'Accedi con Apple':'Sign in with Apple'});
 Object.assign(TR.es,{'Accedi con Apple':'Acceder con Apple'});
 Object.assign(TR.fr,{'Accedi con Apple':'Se connecter avec Apple'});
+/* --- Carote Premium: avvisi budget e statistiche avanzate --- */
+Object.assign(TR.en,{
+'Budget superato':'Budget exceeded',
+'Budget quasi esaurito':'Budget almost used up',
+'Budget superati':'Budgets exceeded',
+'Budget quasi esauriti':'Budgets almost used up',
+'…e altri ':'…and another ',
+'Statistiche avanzate':'Advanced statistics',
+'Confronti, proiezioni e andamento':'Comparisons, projections and trends',
+'Confronto con il mese scorso':'Compared with last month',
+'Spese':'Expenses',
+'Entrate':'Income',
+'Risparmio':'Savings',
+'Confronto con':'Compared with',
+'di spese':'in expenses',
+'Proiezione di fine mese':'End-of-month projection',
+'Di questo passo (media di':'At this rate (average of',
+'al giorno) chiuderai il mese così.':'a day) this is how you will end the month.',
+'Il mese scorso avevi speso':'Last month you spent',
+'Dove vanno i tuoi soldi':'Where your money goes',
+'Nessuna spesa registrata questo mese.':'No expenses recorded this month.',
+'Andamento degli ultimi 12 mesi':'Last 12 months trend',
+'Spese totali per mese. Il mese in corso è ancora parziale.':'Total expenses per month. The current month is still partial.',
+'Il tuo giorno più costoso':'Your most expensive day',
+'Negli ultimi 6 mesi ci hai speso':'Over the last 6 months you spent',
+'in':'across',
+'movimenti.':'transactions.',
+'Con Premium sblocchi:':'With Premium you unlock:',
+'Confronto con il mese scorso (spese, entrate, risparmio)':'Comparison with last month (expenses, income, savings)',
+'Dove vanno i tuoi soldi, con variazione per categoria':'Where your money goes, with change per category',
+'Avvisi quando ti avvicini o superi un budget':'Alerts when you approach or exceed a budget',
+'Le tue statistiche di base restano sempre gratuite nella schermata Home.':'Your basic statistics always stay free on the Home screen.'
+});
+Object.assign(TR.es,{
+'Budget superato':'Presupuesto superado',
+'Budget quasi esaurito':'Presupuesto casi agotado',
+'Budget superati':'Presupuestos superados',
+'Budget quasi esauriti':'Presupuestos casi agotados',
+'…e altri ':'…y otros ',
+'Statistiche avanzate':'Estadísticas avanzadas',
+'Confronti, proiezioni e andamento':'Comparaciones, proyecciones y evolución',
+'Confronto con il mese scorso':'Comparación con el mes pasado',
+'Spese':'Gastos',
+'Entrate':'Ingresos',
+'Risparmio':'Ahorro',
+'Confronto con':'Comparado con',
+'di spese':'en gastos',
+'Proiezione di fine mese':'Proyección de fin de mes',
+'Di questo passo (media di':'A este ritmo (media de',
+'al giorno) chiuderai il mese così.':'al día) así cerrarás el mes.',
+'Il mese scorso avevi speso':'El mes pasado gastaste',
+'Dove vanno i tuoi soldi':'Adónde va tu dinero',
+'Nessuna spesa registrata questo mese.':'No hay gastos registrados este mes.',
+'Andamento degli ultimi 12 mesi':'Evolución de los últimos 12 meses',
+'Spese totali per mese. Il mese in corso è ancora parziale.':'Gastos totales por mes. El mes en curso aún es parcial.',
+'Il tuo giorno più costoso':'Tu día más caro',
+'Negli ultimi 6 mesi ci hai speso':'En los últimos 6 meses gastaste',
+'in':'en',
+'movimenti.':'movimientos.',
+'Con Premium sblocchi:':'Con Premium desbloqueas:',
+'Confronto con il mese scorso (spese, entrate, risparmio)':'Comparación con el mes pasado (gastos, ingresos, ahorro)',
+'Dove vanno i tuoi soldi, con variazione per categoria':'Adónde va tu dinero, con variación por categoría',
+'Avvisi quando ti avvicini o superi un budget':'Avisos cuando te acercas o superas un presupuesto',
+'Le tue statistiche di base restano sempre gratuite nella schermata Home.':'Tus estadísticas básicas siempre son gratuitas en la pantalla de Inicio.'
+});
+Object.assign(TR.fr,{
+'Budget superato':'Budget dépassé',
+'Budget quasi esaurito':'Budget presque épuisé',
+'Budget superati':'Budgets dépassés',
+'Budget quasi esauriti':'Budgets presque épuisés',
+'…e altri ':'…et encore ',
+'Statistiche avanzate':'Statistiques avancées',
+'Confronti, proiezioni e andamento':'Comparaisons, projections et évolution',
+'Confronto con il mese scorso':'Comparaison avec le mois dernier',
+'Spese':'Dépenses',
+'Entrate':'Revenus',
+'Risparmio':'Épargne',
+'Confronto con':'Comparé à',
+'di spese':'de dépenses',
+'Proiezione di fine mese':'Projection de fin de mois',
+'Di questo passo (media di':'À ce rythme (moyenne de',
+'al giorno) chiuderai il mese così.':'par jour) vous terminerez le mois ainsi.',
+'Il mese scorso avevi speso':'Le mois dernier vous aviez dépensé',
+'Dove vanno i tuoi soldi':'Où va votre argent',
+'Nessuna spesa registrata questo mese.':'Aucune dépense enregistrée ce mois-ci.',
+'Andamento degli ultimi 12 mesi':'Évolution des 12 derniers mois',
+'Spese totali per mese. Il mese in corso è ancora parziale.':'Dépenses totales par mois. Le mois en cours est encore partiel.',
+'Il tuo giorno più costoso':'Votre jour le plus coûteux',
+'Negli ultimi 6 mesi ci hai speso':'Ces 6 derniers mois vous avez dépensé',
+'in':'sur',
+'movimenti.':'mouvements.',
+'Con Premium sblocchi:':'Avec Premium vous débloquez :',
+'Confronto con il mese scorso (spese, entrate, risparmio)':'Comparaison avec le mois dernier (dépenses, revenus, épargne)',
+'Dove vanno i tuoi soldi, con variazione per categoria':'Où va votre argent, avec variation par catégorie',
+'Avvisi quando ti avvicini o superi un budget':'Alertes quand vous approchez ou dépassez un budget',
+'Le tue statistiche di base restano sempre gratuite nella schermata Home.':'Vos statistiques de base restent toujours gratuites sur l\'écran Accueil.'
+});
+/* --- Freemium: limiti piano gratuito / premium --- */
+Object.assign(TR.en,{
+'Nel piano gratuito puoi avere fino a 2 conti. Passa a Premium per averne illimitati.':'On the free plan you can have up to 2 accounts. Upgrade to Premium for unlimited.',
+'Nel piano gratuito puoi avere fino a 3 ricorrenti. Passa a Premium per averne illimitati.':'On the free plan you can have up to 3 recurring items. Upgrade to Premium for unlimited.',
+'Nel piano gratuito puoi avere 1 salvadanaio. Passa a Premium per averne illimitati.':'On the free plan you get 1 savings goal. Upgrade to Premium for unlimited.',
+'Nel piano gratuito puoi creare fino a 2 categorie personalizzate. Passa a Premium per averne illimitate.':'On the free plan you can create up to 2 custom categories. Upgrade to Premium for unlimited.',
+'Esportare in Excel e CSV è una funzione Premium. Il PDF resta gratuito.':'Exporting to Excel and CSV is a Premium feature. PDF stays free.',
+'Funzione Premium':'Premium feature',
+'Premium (prova)':'Premium (test)',
+'Attivo — funzioni sbloccate':'On — features unlocked',
+'Non attivo — piano gratuito':'Off — free plan',
+'Modalità Premium di prova ATTIVA':'Premium test mode ON',
+'Modalità Premium di prova disattivata':'Premium test mode turned off'
+});
+Object.assign(TR.es,{
+'Nel piano gratuito puoi avere fino a 2 conti. Passa a Premium per averne illimitati.':'En el plan gratuito puedes tener hasta 2 cuentas. Pasa a Premium para tenerlas ilimitadas.',
+'Nel piano gratuito puoi avere fino a 3 ricorrenti. Passa a Premium per averne illimitati.':'En el plan gratuito puedes tener hasta 3 recurrentes. Pasa a Premium para tenerlos ilimitados.',
+'Nel piano gratuito puoi avere 1 salvadanaio. Passa a Premium per averne illimitati.':'En el plan gratuito tienes 1 hucha. Pasa a Premium para tenerlas ilimitadas.',
+'Nel piano gratuito puoi creare fino a 2 categorie personalizzate. Passa a Premium per averne illimitate.':'En el plan gratuito puedes crear hasta 2 categorías personalizadas. Pasa a Premium para tenerlas ilimitadas.',
+'Esportare in Excel e CSV è una funzione Premium. Il PDF resta gratuito.':'Exportar a Excel y CSV es una función Premium. El PDF sigue siendo gratis.',
+'Funzione Premium':'Función Premium',
+'Premium (prova)':'Premium (prueba)',
+'Attivo — funzioni sbloccate':'Activo — funciones desbloqueadas',
+'Non attivo — piano gratuito':'No activo — plan gratuito',
+'Modalità Premium di prova ATTIVA':'Modo Premium de prueba ACTIVO',
+'Modalità Premium di prova disattivata':'Modo Premium de prueba desactivado'
+});
+Object.assign(TR.fr,{
+'Nel piano gratuito puoi avere fino a 2 conti. Passa a Premium per averne illimitati.':'Dans le plan gratuit, vous pouvez avoir jusqu\'à 2 comptes. Passez à Premium pour un nombre illimité.',
+'Nel piano gratuito puoi avere fino a 3 ricorrenti. Passa a Premium per averne illimitati.':'Dans le plan gratuit, vous pouvez avoir jusqu\'à 3 récurrents. Passez à Premium pour un nombre illimité.',
+'Nel piano gratuito puoi avere 1 salvadanaio. Passa a Premium per averne illimitati.':'Dans le plan gratuit, vous avez 1 tirelire. Passez à Premium pour un nombre illimité.',
+'Nel piano gratuito puoi creare fino a 2 categorie personalizzate. Passa a Premium per averne illimitate.':'Dans le plan gratuit, vous pouvez créer jusqu\'à 2 catégories personnalisées. Passez à Premium pour un nombre illimité.',
+'Esportare in Excel e CSV è una funzione Premium. Il PDF resta gratuito.':'L\'export en Excel et CSV est une fonction Premium. Le PDF reste gratuit.',
+'Funzione Premium':'Fonction Premium',
+'Premium (prova)':'Premium (test)',
+'Attivo — funzioni sbloccate':'Activé — fonctions débloquées',
+'Non attivo — piano gratuito':'Non activé — plan gratuit',
+'Modalità Premium di prova ATTIVA':'Mode Premium test ACTIVÉ',
+'Modalità Premium di prova disattivata':'Mode Premium test désactivé'
+});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -1787,10 +1935,64 @@ async function persistLocal(){
    capire, al momento della sincronizzazione, quale versione è la più
    recente) e prova a spingere nel cloud. Se il cloud non è raggiungibile
    il dato resta in locale e viene marcato "da sincronizzare". */
+/* ================================================================
+   CAROTA PREMIUM 3 — DATI PER I WIDGET IN HOME (Android)
+   Il widget NON puo' leggere i dati dell'app: gira fuori dalla pagina web.
+   Qui prepariamo una "fotografia" minima (gia' formattata) e la passiamo al
+   codice nativo tramite NativeBridge. Sul web questa funzione non fa nulla.
+   Se l'utente non ha Premium mandiamo solo premium:false e il widget mostra
+   il messaggio di invito, senza cifre.
+================================================================ */
+function widgetTopBudget(){
+  var list=[];
+  try{list=budgetStatusList();}catch(e){return null;}
+  if(!list.length)return null;
+  list.sort(function(a,b){return b.pct-a.pct;});
+  var t=list[0];
+  return {label:t.cat.name+' · '+fmt(t.spent)+' / '+fmt(t.limit),pct:Math.max(0,Math.min(100,Math.round(t.pct)))};
+}
+function buildWidgetPayload(){
+  var p={premium:false,balance:'',spent:'',monthLabel:'',budgetLabel:'',budgetPct:0,
+         r1:'',r1a:'',r2:'',r2a:'',r3:'',r3a:''};
+  if(!isPremium())return p;
+  p.premium=true;
+  try{
+    var tot=(state.accounts||[]).reduce(function(s,a){return s+accBalance(a.id);},0);
+    p.balance=fmt(tot);
+    p.spent=fmt(totalOf(filteredTx(currentMonthKey(),'all','all','expense')));
+    p.monthLabel=monthLabelShort(currentMonthKey());
+    var tb=widgetTopBudget();
+    if(tb){p.budgetLabel=tb.label;p.budgetPct=tb.pct;}
+    var last=(state.transactions||[]).slice().sort(function(a,b){
+      if(a.date===b.date)return (b.createdAt||0)-(a.createdAt||0);
+      return a.date<b.date?1:-1;
+    }).slice(0,3);
+    last.forEach(function(t,i){
+      var c=catById(t.categoryId);
+      var name=(t.merchant||'').trim()||(c&&c.name)||'—';
+      var amt=(t.type==='income'?'+':'−')+fmt(Math.abs(t.amount));
+      p['r'+(i+1)]=name;
+      p['r'+(i+1)+'a']=amt;
+    });
+  }catch(e){}
+  return p;
+}
+var __widgetTimer=null;
+function pushWidgetData(){
+  try{
+    if(!window.NativeBridge||typeof NativeBridge.updateWidget!=='function')return;
+    clearTimeout(__widgetTimer);
+    __widgetTimer=setTimeout(function(){
+      try{NativeBridge.updateWidget(buildWidgetPayload());}catch(e){}
+    },400);
+  }catch(e){}
+}
+
 async function saveState(){
   state.updatedAt=Date.now();
   await persistLocal();
   pushStateToCloud();
+  pushWidgetData();
 }
 
 /* ================================================================
@@ -1802,7 +2004,39 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v26';
+var APP_VERSION='v29';
+/* ============================================================
+   PIANO GRATUITO / PREMIUM (freemium)
+   Limiti del piano gratuito + "grandfathering": gli elementi gia'
+   creati restano sempre; si blocca solo la CREAZIONE di nuovi
+   elementi oltre la soglia. isPremium() e' per ora un interruttore
+   di PROVA salvato sul dispositivo (chiave separata, NON sincronizzata):
+   verra' collegato all'acquisto reale (store / RevenueCat) col paywall.
+   Per cambiare i limiti, modifica solo FREE_LIMITS qui sotto.
+   ============================================================ */
+var PREMIUM_TEST_KEY='spendy-premium-test';
+var premiumActive=false;
+try{premiumActive=(window.localStorage.getItem(PREMIUM_TEST_KEY)==='1');}catch(e){}
+function isPremium(){return premiumActive;}
+function setPremiumTest(on){premiumActive=!!on;try{window.localStorage.setItem(PREMIUM_TEST_KEY,premiumActive?'1':'0');}catch(e){}}
+var FREE_LIMITS={accounts:2,recurring:3,goals:1,customCats:2};
+function planCount(kind){
+  if(kind==='accounts')return (state.accounts||[]).length;
+  if(kind==='recurring')return (state.recurring||[]).length;
+  if(kind==='goals')return (state.goals||[]).length;
+  if(kind==='customCats')return (state.categories||[]).filter(function(c){return c.custom;}).length;
+  return 0;
+}
+function canAdd(kind){return isPremium()||planCount(kind)<(FREE_LIMITS[kind]||0);}
+function premiumBlock(kind){
+  var m={
+    accounts:tr('Nel piano gratuito puoi avere fino a 2 conti. Passa a Premium per averne illimitati.'),
+    recurring:tr('Nel piano gratuito puoi avere fino a 3 ricorrenti. Passa a Premium per averne illimitati.'),
+    goals:tr('Nel piano gratuito puoi avere 1 salvadanaio. Passa a Premium per averne illimitati.'),
+    customCats:tr('Nel piano gratuito puoi creare fino a 2 categorie personalizzate. Passa a Premium per averne illimitate.')
+  };
+  showToast(m[kind]||tr('Funzione Premium'));
+}
 /* Login con Apple: resta DISATTIVATO finché non ci sono un account Apple
    Developer a pagamento e build iOS firmate (senza, Apple blocca il login).
    Il codice è già completo: basta mettere true quando tutto è pronto. */
@@ -3287,6 +3521,7 @@ function openCatsTagsSheet(){
     if(ab)ab.onclick=function(){
       var name=document.getElementById('newCatName').value.trim(),emoji=document.getElementById('newCatEmoji').value.trim()||(ui.newCatType==='income'?'💰':'🏷️');
       if(!name){showToast(tr('Dai un nome alla categoria'));return;}
+      if(!canAdd('customCats')){premiumBlock('customCats');return;}
       state.categories.push({id:uid('cat'),name:name,emoji:emoji,color:state.categories.length%8,type:ui.newCatType,custom:true});
       saveState();showToast(tr('Categoria aggiunta'));render();
     };
@@ -3391,8 +3626,12 @@ function openProfileSheet(){
         '<button class="menu-row" id="menuBudget"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><span>'+tr('Budget mensili')+'<span class="menu-sub">'+tr('Limiti di spesa per categoria')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuCats"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 3.5h6l7 7-6 6-7-7z"/><circle cx="10" cy="7" r="1.3" fill="currentColor" stroke="none"/><path d="M4 19V9"/></svg></span><span>'+tr('Categorie &amp; Tag')+'<span class="menu-sub">'+tr('Gestione e andamento nel tempo')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuData"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-.4-9A6 6 0 0 0 5.3 12 3.5 3.5 0 0 0 6 19z"/><path d="M12 12v6"/><path d="m9.5 15 2.5-3 2.5 3"/></svg></span><span>'+tr('Export e sincronizzazione')+'<span class="menu-sub">'+tr('Cloud, importazione ed esportazione dati')+'</span></span>'+chev()+'</button>'+
+        '<button class="menu-row" id="menuAdvStats"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></span><span>'+tr('Statistiche avanzate')+(isPremium()?'':' 🔒')+'<span class="menu-sub">'+tr('Confronti, proiezioni e andamento')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuInfo"><span class="menu-ico" style="background:var(--amber-soft);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></span><span>'+tr('Guida all\'app')+'<span class="menu-sub">'+tr('Come funzionano le sezioni')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuLang"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg></span><span>'+tr('Lingua')+'<span class="menu-sub">'+LANG_NAMES[LANG]+'</span></span>'+chev()+'</button>'+
+      '</div>'+
+      '<div class="menu-list" style="margin-top:10px;">'+
+        '<button class="menu-row" id="menuPremiumTest"><span class="menu-ico" style="background:var(--amber-soft);color:var(--amber);font-size:15px;">🧪</span><span>'+tr('Premium (prova)')+'<span class="menu-sub">'+(isPremium()?tr('Attivo — funzioni sbloccate'):tr('Non attivo — piano gratuito'))+'</span></span>'+chev()+'</button>'+
       '</div>'+
       '<p class="profile-footer">Spendy · '+tr('versione installata:')+' <strong>'+APP_VERSION+'</strong><br>'+tr('i tuoi dati restano sul dispositivo')+'</p>'+
     '</div>';
@@ -3424,6 +3663,181 @@ function openProfileSheet(){
     var mlg=document.getElementById('menuLang');if(mlg)mlg.onclick=openLangSheet;
     var md=document.getElementById('menuData');if(md)md.onclick=openDataSheet;
     var mi=document.getElementById('menuInfo');if(mi)mi.onclick=openInfoSheet;
+    var mas=document.getElementById('menuAdvStats');if(mas)mas.onclick=openAdvStatsSheet;
+    var mpt=document.getElementById('menuPremiumTest');if(mpt)mpt.onclick=function(){setPremiumTest(!isPremium());showToast(isPremium()?tr('Modalità Premium di prova ATTIVA'):tr('Modalità Premium di prova disattivata'));pushWidgetData();render();renderActiveTab();};
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
+
+/* ================================================================
+   CAROTA PREMIUM 2 — STATISTICHE AVANZATE
+   Costruite sui dati gia' presenti: nessun dato nuovo da raccogliere.
+   Contiene: confronto con il mese scorso, proiezione di fine mese,
+   top categorie con variazione, andamento 12 mesi, giorno piu' costoso.
+================================================================ */
+function monthKeyBack(n){
+  var d=new Date();d.setDate(1);d.setMonth(d.getMonth()-(n||0));
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function monthLabelShort(mk){
+  try{
+    var p=mk.split('-'),d=new Date(+p[0],+p[1]-1,1);
+    return new Intl.DateTimeFormat(currentLocale(),{month:'short'}).format(d);
+  }catch(e){return mk;}
+}
+function monthTotals(mk){
+  var ex=0,inc=0;
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.date.slice(0,7)!==mk)return;
+    if(t.type==='income')inc+=t.amount;else ex+=t.amount;
+  });
+  return {exp:ex,inc:inc,saved:inc-ex};
+}
+function deltaHTML(cur,prev,lowerIsBetter){
+  if(!prev){return '<span class="stat-delta neutral">—</span>';}
+  var d=(cur-prev)/Math.abs(prev)*100;
+  var up=d>0,good=lowerIsBetter?!up:up;
+  var sign=up?'+':'−';
+  return '<span class="stat-delta '+(Math.abs(d)<0.5?'neutral':(good?'good':'bad'))+'">'+sign+Math.abs(d).toFixed(0)+'%</span>';
+}
+function expByCategory(mk){
+  var map={};
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.date.slice(0,7)!==mk||t.type==='income')return;
+    map[t.categoryId]=(map[t.categoryId]||0)+t.amount;
+  });
+  return map;
+}
+function heaviestWeekday(){
+  var sums=[0,0,0,0,0,0,0],counts=[0,0,0,0,0,0,0],any=false;
+  var limit=monthKeyBack(5);
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.type==='income')return;
+    if(t.date.slice(0,7)<limit)return;
+    var p=t.date.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);
+    var w=d.getDay();
+    if(isNaN(w))return;
+    sums[w]+=t.amount;counts[w]++;any=true;
+  });
+  if(!any)return null;
+  var best=0;
+  for(var i=1;i<7;i++){if(sums[i]>sums[best])best=i;}
+  if(!sums[best])return null;
+  var names;
+  try{
+    names=[];
+    for(var k=0;k<7;k++){
+      var dd=new Date(2024,0,7+k); /* 7 gen 2024 = domenica */
+      names.push(new Intl.DateTimeFormat(currentLocale(),{weekday:'long'}).format(dd));
+    }
+  }catch(e){names=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];}
+  return {name:names[best],total:sums[best],count:counts[best]};
+}
+function advStatsBodyHTML(){
+  var mk=currentMonthKey(),pk=monthKeyBack(1);
+  var cur=monthTotals(mk),prev=monthTotals(pk);
+  /* Proiezione: media giornaliera finora × giorni del mese */
+  var now=new Date(),dayNow=now.getDate();
+  var daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  var avgDay=dayNow>0?cur.exp/dayNow:0;
+  var projection=avgDay*daysInMonth;
+  var h='';
+  /* 1. Confronto con il mese scorso */
+  h+='<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">'+tr('Confronto con il mese scorso')+'</h3>'+
+    '<div class="stat-grid">'+
+      '<div class="stat-box"><span class="stat-label">'+tr('Spese')+'</span><span class="stat-value">'+fmt(cur.exp)+'</span>'+deltaHTML(cur.exp,prev.exp,true)+'</div>'+
+      '<div class="stat-box"><span class="stat-label">'+tr('Entrate')+'</span><span class="stat-value">'+fmt(cur.inc)+'</span>'+deltaHTML(cur.inc,prev.inc,false)+'</div>'+
+      '<div class="stat-box"><span class="stat-label">'+tr('Risparmio')+'</span><span class="stat-value '+(cur.saved>=0?'saldo-pos':'saldo-neg')+'">'+fmt(cur.saved)+'</span>'+deltaHTML(cur.saved,prev.saved,false)+'</div>'+
+    '</div>'+
+    '<p class="hint">'+tr('Confronto con')+' '+esc(monthLabelShort(pk))+' ('+fmt(prev.exp)+' '+tr('di spese')+').</p>'+
+  '</section>';
+  /* 2. Proiezione di fine mese */
+  h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">'+tr('Proiezione di fine mese')+'</h3>'+
+    '<div class="stat-value" style="font-size:22px;">'+fmt(projection)+'</div>'+
+    '<p class="hint">'+tr('Di questo passo (media di')+' '+fmt(avgDay)+' '+tr('al giorno) chiuderai il mese così.')+
+    (prev.exp>0?' '+tr('Il mese scorso avevi speso')+' '+fmt(prev.exp)+'.':'')+'</p>'+
+  '</section>';
+  /* 3. Top categorie con variazione */
+  var curCats=expByCategory(mk),prevCats=expByCategory(pk);
+  var rows=Object.keys(curCats).map(function(id){
+    return {cat:catById(id),amount:curCats[id],prev:prevCats[id]||0};
+  }).sort(function(a,b){return b.amount-a.amount;}).slice(0,5);
+  h+='<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">'+tr('Dove vanno i tuoi soldi')+'</h3>';
+  if(!rows.length){h+='<p class="hint">'+tr('Nessuna spesa registrata questo mese.')+'</p>';}
+  else{
+    var top=rows[0].amount||1;
+    rows.forEach(function(r){
+      var pct=Math.max(4,Math.round(r.amount/top*100));
+      h+='<div class="stat-row">'+
+        '<div class="stat-row-top"><span>'+esc((r.cat&&r.cat.emoji)||'🏷️')+' '+esc((r.cat&&r.cat.name)||'—')+'</span>'+
+        '<span><strong>'+fmt(r.amount)+'</strong> '+deltaHTML(r.amount,r.prev,true)+'</span></div>'+
+        '<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%;background:'+colorHex(r.cat?r.cat.color:0)+';"></div></div>'+
+      '</div>';
+    });
+  }
+  h+='</section>';
+  /* 4. Andamento 12 mesi */
+  var series=[];
+  for(var i=11;i>=0;i--){var k=monthKeyBack(i);series.push({k:k,label:monthLabelShort(k),v:monthTotals(k).exp});}
+  var maxV=series.reduce(function(m,s){return Math.max(m,s.v);},0)||1;
+  var bw=100/series.length;
+  var bars='';
+  series.forEach(function(s,i){
+    var hh=Math.max(1,(s.v/maxV)*74);
+    var isCur=(i===series.length-1);
+    bars+='<rect x="'+(i*bw+bw*0.18).toFixed(2)+'" y="'+(80-hh).toFixed(2)+'" width="'+(bw*0.64).toFixed(2)+'" height="'+hh.toFixed(2)+'" rx="1.2" fill="var(--accent)" opacity="'+(isCur?'1':'0.55')+'"/>';
+  });
+  h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">'+tr('Andamento degli ultimi 12 mesi')+'</h3>'+
+    '<svg viewBox="0 0 100 92" preserveAspectRatio="none" style="width:100%;height:120px;" aria-hidden="true">'+bars+'</svg>'+
+    '<div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);">'+
+      '<span>'+esc(series[0].label)+'</span><span>'+esc(series[Math.floor(series.length/2)].label)+'</span><span>'+esc(series[series.length-1].label)+'</span>'+
+    '</div>'+
+    '<p class="hint">'+tr('Spese totali per mese. Il mese in corso è ancora parziale.')+'</p>'+
+  '</section>';
+  /* 5. Giorno più costoso */
+  var wd=heaviestWeekday();
+  if(wd){
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:6px;">'+
+      '<h3 style="margin:0;font-size:14.5px;">'+tr('Il tuo giorno più costoso')+'</h3>'+
+      '<div class="stat-value" style="font-size:19px;text-transform:capitalize;">'+esc(wd.name)+'</div>'+
+      '<p class="hint">'+tr('Negli ultimi 6 mesi ci hai speso')+' '+fmt(wd.total)+' '+tr('in')+' '+wd.count+' '+tr('movimenti.')+'</p>'+
+    '</section>';
+  }
+  return h;
+}
+function advStatsLockedHTML(){
+  return '<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">🔒 '+tr('Statistiche avanzate')+'</h3>'+
+    '<p class="hint">'+tr('Con Premium sblocchi:')+'</p>'+
+    '<ul style="margin:0;padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.7;">'+
+      '<li>'+tr('Confronto con il mese scorso (spese, entrate, risparmio)')+'</li>'+
+      '<li>'+tr('Proiezione di fine mese')+'</li>'+
+      '<li>'+tr('Dove vanno i tuoi soldi, con variazione per categoria')+'</li>'+
+      '<li>'+tr('Andamento degli ultimi 12 mesi')+'</li>'+
+      '<li>'+tr('Il tuo giorno più costoso')+'</li>'+
+      '<li>'+tr('Avvisi quando ti avvicini o superi un budget')+'</li>'+
+    '</ul>'+
+    '<p class="hint">'+tr('Le tue statistiche di base restano sempre gratuite nella schermata Home.')+'</p>'+
+  '</section>';
+}
+function openAdvStatsSheet(){
+  function sheetHTML(){
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">'+tr('Statistiche avanzate')+'</h3>'+
+      (isPremium()?advStatsBodyHTML():advStatsLockedHTML())+
+    '</div>';
+  }
+  function render(){
+    var w=document.querySelector('#modal-root .sheet-wrap');
+    if(!w)return;
+    w.innerHTML=sheetHTML();
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
   }
   openModal('<div class="sheet"></div>');
   render();
@@ -3848,6 +4262,7 @@ function openGoalSheet(goalId){
       if(!name){m.err='Dai un nome all\'obiettivo.';render();return;}
       if(!(target>0)){m.err=tr('Indica un traguardo maggiore di zero.');render();return;}
       state.goals=state.goals||[];
+      if(!canAdd('goals')){premiumBlock('goals');return;}
       state.goals.push({id:uid('goal'),name:name,emoji:(m.emoji.trim()||'🎯'),color:m.color,target:target,createdAt:Date.now(),history:[]});
       saveState();closeModal();showToast(tr('Salvadanaio creato'));renderActiveTab();
     };
@@ -3924,7 +4339,7 @@ function wireAccounts(){
     };
   });
   var addB=document.getElementById('addAccBtn');if(addB)addB.onclick=function(){ui.addingAccount=true;renderActiveTab();};
-  var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast(tr('Dai un nome al conto'));return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast(tr('Conto creato'));renderActiveTab();};
+  var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast(tr('Dai un nome al conto'));return;}if(!canAdd('accounts')){premiumBlock('accounts');return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast(tr('Conto creato'));renderActiveTab();};
   document.querySelectorAll('[data-goal-open]').forEach(function(b){b.onclick=function(){openGoalSheet(b.dataset.goalOpen);};});
   var agB=document.getElementById('addGoalBtn');if(agB)agB.onclick=function(){openGoalSheet(null);};
   var hideTog=document.getElementById('hideBalToggle');
@@ -4110,7 +4525,7 @@ function openEntrySheet(opts){
     var ne=document.getElementById('entryNewCatEmoji');if(ne)ne.oninput=function(){entry.newCatEmoji=ne.value;};
     var nn=document.getElementById('entryNewCatName');if(nn)nn.oninput=function(){entry.newCatName=nn.value;};
     document.querySelectorAll('[data-ecat-color]').forEach(function(d){d.onclick=function(){entry.newCatColor=parseInt(d.dataset.ecatColor,10);document.querySelectorAll('[data-ecat-color]').forEach(function(q){q.classList.toggle('active',q===d);});};});
-    var cc=document.getElementById('createCatBtn');if(cc)cc.onclick=function(){var n=(entry.newCatName||'').trim();if(!n){showToast(tr('Dai un nome alla categoria'));return;}var cat={id:uid('cat'),name:n,emoji:(entry.newCatEmoji||'').trim()||(entry.mode==='income'?'💰':'🏷️'),color:entry.newCatColor,type:entry.mode==='income'?'income':'expense',custom:true};state.categories.push(cat);entry.categoryId=cat.id;entry.showCatForm=false;entry.newCatName='';entry.newCatEmoji='';entry.newCatColor=0;saveState();showToast(tr('Categoria aggiunta'));var el=document.getElementById('catSection');if(el)el.outerHTML=catSectionHTML();wireCatSection();};
+    var cc=document.getElementById('createCatBtn');if(cc)cc.onclick=function(){var n=(entry.newCatName||'').trim();if(!n){showToast(tr('Dai un nome alla categoria'));return;}if(!canAdd('customCats')){premiumBlock('customCats');return;}var cat={id:uid('cat'),name:n,emoji:(entry.newCatEmoji||'').trim()||(entry.mode==='income'?'💰':'🏷️'),color:entry.newCatColor,type:entry.mode==='income'?'income':'expense',custom:true};state.categories.push(cat);entry.categoryId=cat.id;entry.showCatForm=false;entry.newCatName='';entry.newCatEmoji='';entry.newCatColor=0;saveState();showToast(tr('Categoria aggiunta'));var el=document.getElementById('catSection');if(el)el.outerHTML=catSectionHTML();wireCatSection();};
     var xc=document.getElementById('cancelCatBtn');if(xc)xc.onclick=function(){entry.showCatForm=false;entry.newCatName='';entry.newCatEmoji='';var el=document.getElementById('catSection');if(el)el.outerHTML=catSectionHTML();wireCatSection();};
   }
 
@@ -4150,6 +4565,7 @@ function openEntrySheet(opts){
         else state.transactions.push({id:uid('tx'),type:entry.mode,amount:amount,accountId:entry.accountId,categoryId:entry.categoryId,merchant:(entry.merchant||'').trim(),note:entry.note,date:date,tags:entry.tags.slice(),createdAt:Date.now()});
       }
       saveState();closeModal();showToast(entry.isEditTx||entry.isEditTr?'Aggiornato':'Salvato');renderActiveTab();
+      try{checkBudgetAlerts();}catch(e){}
     };
   }
 
@@ -5159,8 +5575,8 @@ function openExportModal(){
       '</div></div>'+
       '<p class="hint">'+esc(exportScopeLabel(ex.scope))+' · <strong>'+n+'</strong> movimenti (spese, entrate e trasferimenti).</p>'+
       '<button class="btn-secondary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 '+tr('Esporta PDF')+'</button>'+
-      '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 '+tr('Esporta Excel (.xlsx)')+'</button>'+
-      '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 '+tr('Esporta CSV')+'</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 '+tr('Esporta Excel (.xlsx)')+(isPremium()?'':' 🔒')+'</button>'+
+      '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 '+tr('Esporta CSV')+(isPremium()?'':' 🔒')+'</button>'+
       (ex.msg?'<p class="hint">'+esc(ex.msg)+'</p>':'<p class="hint">'+tr('Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.')+'</p>')+
     '</div>';
   }
@@ -5177,6 +5593,7 @@ function openExportModal(){
     });
     document.querySelectorAll('[data-exp-fmt]').forEach(function(b){
       b.onclick=async function(){
+        if((b.dataset.expFmt==='xlsx'||b.dataset.expFmt==='csv')&&!isPremium()){ex.msg=tr('Esportare in Excel e CSV è una funzione Premium. Il PDF resta gratuito.');render();return;}
         if(ex.busy)return;
         ex.busy=true;
         var fmt=b.dataset.expFmt,res=null;
@@ -5732,10 +6149,68 @@ function checkRecurringDue(force){
   }
   if(ui.activeTab==='home')renderActiveTab();
 }
+/* ================================================================
+   CAROTA PREMIUM 1 — AVVISI DI BUDGET
+   I budget mensili per categoria esistono gia'. Qui aggiungiamo
+   l'avviso vero sul telefono quando ti avvicini (80%) o superi (100%)
+   il limite. Ogni soglia avvisa UNA volta sola per categoria e per mese,
+   cosi' non diventa martellante. Funzione riservata al piano Premium.
+================================================================ */
+var BUDGETNOTIF_KEY='spendy-budget-notif-v1';
+function budgetNotifLog(){
+  try{var r=window.localStorage.getItem(BUDGETNOTIF_KEY);return r?JSON.parse(r):{};}catch(e){return {};}
+}
+function budgetNotifSave(log){try{window.localStorage.setItem(BUDGETNOTIF_KEY,JSON.stringify(log));}catch(e){}}
+/* Stato di tutte le categorie che hanno un budget impostato nel mese corrente. */
+function budgetStatusList(){
+  var b=state.budgets||{};
+  return (state.categories||[]).filter(function(c){return c.type==='expense'&&b[c.id]>0;}).map(function(c){
+    var sp=totalOf(filteredTx(currentMonthKey(),'all',c.id,'expense')),lm=b[c.id];
+    return {cat:c,spent:sp,limit:lm,pct:lm>0?(sp/lm*100):0};
+  });
+}
+function fireBudgetNotification(items){
+  if(!notifEnabled())return;
+  try{
+    var over=items.filter(function(a){return a.level>=100;});
+    var title=items.length===1
+      ? (items[0].level>=100?tr('Budget superato'):tr('Budget quasi esaurito'))
+      : (over.length?tr('Budget superati'):tr('Budget quasi esauriti'));
+    var body=items.slice(0,4).map(function(a){
+      return (a.level>=100?'⚠️ ':'• ')+a.cat.name+' · '+fmt(a.spent)+' / '+fmt(a.limit)+' ('+Math.round(a.pct)+'%)';
+    }).join('\n');
+    if(items.length>4)body+='\n'+tr('…e altri ')+(items.length-4);
+    var opts={body:body,tag:'budget'};
+    var shown=false;
+    function fallback(){if(shown)return;shown=true;try{new Notification(title,opts);}catch(e){}}
+    if(!usingClaudeStorage&&navigator.serviceWorker&&navigator.serviceWorker.getRegistration){
+      var t=setTimeout(fallback,600);
+      navigator.serviceWorker.getRegistration().then(function(r){
+        if(shown)return;
+        if(r&&r.showNotification){shown=true;clearTimeout(t);try{r.showNotification(title,Object.assign({icon:'icon-192.png',badge:'icon-192.png'},opts));}catch(e){fallback();}}
+        else{clearTimeout(t);fallback();}
+      }).catch(function(){clearTimeout(t);fallback();});
+    }else{fallback();}
+  }catch(e){}
+}
+function checkBudgetAlerts(){
+  if(!isPremium())return;
+  if(!state||!state.categories)return;
+  var mk=currentMonthKey(),log=budgetNotifLog(),fresh=[];
+  budgetStatusList().forEach(function(a){
+    var lvl=a.pct>=100?100:(a.pct>=80?80:0);
+    if(!lvl)return;
+    var key=mk+'|'+a.cat.id;
+    if((log[key]||0)>=lvl)return;
+    log[key]=lvl;
+    fresh.push({cat:a.cat,spent:a.spent,limit:a.limit,pct:a.pct,level:lvl});
+  });
+  if(fresh.length){budgetNotifSave(log);fireBudgetNotification(fresh);}
+}
 function initRecurringReminders(){
-  setTimeout(function(){checkRecurringDue(false);},1500);
+  setTimeout(function(){checkRecurringDue(false);checkBudgetAlerts();},1500);
   document.addEventListener('visibilitychange',function(){
-    if(!document.hidden)checkRecurringDue(false);
+    if(!document.hidden){checkRecurringDue(false);checkBudgetAlerts();}
   });
 }
 /* Banner in-app: sempre visibile in Home quando c'è qualcosa in scadenza,
@@ -5890,7 +6365,7 @@ function openRecurringSheet(opts){
       var amount=parseAmount(String(m.amountStr).replace(',','.'));if(!(amount>0)){showToast(tr('Inserisci un importo valido'));return;}
       var date=m.nextDate||todayISO();
       if(m.isEdit){var it=state.recurring.find(function(r){return r.id===m.id;});if(it){it.name=name;it.type=m.type;it.amount=amount;it.categoryId=m.categoryId;it.accountId=m.accountId;it.cadence=m.cadence;it.nextDate=date;it.note=(m.note||'').trim();it.status=m.status;}}
-      else state.recurring.push({id:uid('rec'),name:name,type:m.type,amount:amount,categoryId:m.categoryId,accountId:m.accountId,cadence:m.cadence,nextDate:date,note:(m.note||'').trim(),status:m.status,lastPaidDate:null,createdAt:Date.now()});
+      else {if(!canAdd('recurring')){premiumBlock('recurring');return;}state.recurring.push({id:uid('rec'),name:name,type:m.type,amount:amount,categoryId:m.categoryId,accountId:m.accountId,cadence:m.cadence,nextDate:date,note:(m.note||'').trim(),status:m.status,lastPaidDate:null,createdAt:Date.now()});}
       saveState();closeModal();showToast(m.isEdit?tr('Ricorrente aggiornato'):tr('Ricorrente aggiunto'));renderActiveTab();
     };
   }
@@ -6078,6 +6553,7 @@ async function init(){
   initSyncFromSavedConfig();
   initNativeNotificationBridge();
   initRecurringReminders();
+  pushWidgetData();
 }
 
 init();

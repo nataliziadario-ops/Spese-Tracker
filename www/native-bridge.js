@@ -91,6 +91,22 @@
       });
     },
 
+    // --- Widget in schermata Home (Fase 3, solo Android) ---
+    // Manda al codice nativo la "fotografia" gia' formattata da mostrare nel
+    // widget. Fallback web: non fa nulla e restituisce false, cosi' la
+    // versione GitHub Pages continua a funzionare identica.
+    updateWidget: function (payload) {
+      if (!this.isNative()) return Promise.resolve(false);
+      var pl;
+      try {
+        pl = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SpendyWidget) || null;
+      } catch (e) { return Promise.resolve(false); }
+      if (!pl || typeof pl.update !== 'function') return Promise.resolve(false);
+      return pl.update(payload || {})
+        .then(function () { return true; })
+        .catch(function () { return false; });
+    },
+
     // Pulisce anche la sessione del plugin nativo, oltre a quella Firebase JS.
     // Fallback web: false (niente da pulire lato nativo).
     signOutNative: function () {
