@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sfondo a scheda dei widget Spendy: verde molto scuro, angoli arrotondati.
+     Funziona bene sia su sfondi chiari sia scuri. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#1E231F" />
+    <corners android:radius="20dp" />
+</shape>
