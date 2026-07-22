@@ -46,6 +46,11 @@ public class SpendyWidgetPlugin extends Plugin {
             e.putString("r2a", s(call, "r2a"));
             e.putString("r3", s(call, "r3"));
             e.putString("r3a", s(call, "r3a"));
+            // Categorie mostrate dal widget "spesa rapida"
+            e.putString("q1n", s(call, "q1n"));
+            e.putString("q1i", s(call, "q1i"));
+            e.putString("q2n", s(call, "q2n"));
+            e.putString("q2i", s(call, "q2i"));
             e.putLong("updatedAt", System.currentTimeMillis());
             e.apply();
 
@@ -57,5 +62,31 @@ public class SpendyWidgetPlugin extends Plugin {
         } catch (Exception ex) {
             call.reject("Aggiornamento widget non riuscito: " + ex.getMessage());
         }
+    }
+
+    /**
+     * Restituisce (una sola volta) l'azione richiesta toccando un tasto del
+     * widget "spesa rapida", e poi la cancella. L'app la chiama all'avvio e
+     * ogni volta che torna in primo piano.
+     *
+     * Risposta: { action: "add_expense" | "", cat: "<id categoria>" | "" }
+     */
+    @PluginMethod
+    public void consumeAction(PluginCall call) {
+        JSObject ret = new JSObject();
+        try {
+            SharedPreferences p = WidgetStore.prefs(getContext());
+            String action = p.getString("pendingAction", "");
+            String cat = p.getString("pendingCat", "");
+            if (action != null && action.length() > 0) {
+                p.edit().remove("pendingAction").remove("pendingCat").apply();
+            }
+            ret.put("action", action == null ? "" : action);
+            ret.put("cat", cat == null ? "" : cat);
+        } catch (Exception ex) {
+            ret.put("action", "");
+            ret.put("cat", "");
+        }
+        call.resolve(ret);
     }
 }
