@@ -2294,7 +2294,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v37';
+var APP_VERSION='v38';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3769,10 +3769,22 @@ function normTxt(s){try{return String(s||'').toLowerCase().normalize('NFD').repl
 function searchCatalog(q){
   var toks=normTxt(q).split(/\s+/).filter(Boolean);
   if(!toks.length)return [];
-  return (PRICES.catalog||[]).filter(function(a){
-    var hay=normTxt(a.symbol+' '+(a.name||'')+' '+(a.kind||''));
-    return toks.every(function(t){return hay.indexOf(t)>=0;});
+  var out=[];
+  (PRICES.catalog||[]).forEach(function(a){
+    var sym=normTxt(a.symbol),nam=normTxt(a.name||''),kin=normTxt(a.kind||''),des=normTxt(a.desc||'');
+    var hay=sym+' '+nam+' '+kin+' '+des;
+    if(!toks.every(function(t){return hay.indexOf(t)>=0;}))return;
+    var sc=0;
+    toks.forEach(function(t){
+      if(sym===t)sc+=100;else if(sym.indexOf(t)===0)sc+=60;else if(sym.indexOf(t)>=0)sc+=30;
+      if(nam.indexOf(t)===0)sc+=40;else if(nam.indexOf(t)>=0)sc+=25;
+      if(kin.indexOf(t)>=0)sc+=10;
+      if(des.indexOf(t)>=0)sc+=5;
+    });
+    out.push({a:a,s:sc});
   });
+  out.sort(function(x,y){return y.s-x.s;});
+  return out.map(function(o){return o.a;});
 }
 function histRange(hist,days){
   hist=hist||[];
