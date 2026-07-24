@@ -1,0 +1,53 @@
+# Robot dei PREZZI: una volta al giorno scarica i prezzi degli asset del
+# catalogo (tickers.json) e i cambi valuta, e aggiorna prezzi.json alla
+# radice del repo. L'app legge prezzi.json e mostra i valori aggiornati.
+#
+# SERVE (una volta sola): in GitHub -> Settings -> Secrets and variables ->
+# Actions -> "New repository secret" con nome  TWELVE_DATA_KEY  e come valore
+# la chiave gratuita di Twelve Data. Vedi GUIDA-PREZZI-AUTOMATICI.md.
+#
+# NOTA: scrive solo /prezzi.json (radice), quindi NON fa ripartire le build
+# di app/sito (che guardano solo la cartella www/).
+name: Robot prezzi (aggiorna prezzi.json)
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # ogni giorno alle 06:00 UTC
+  workflow_dispatch: {}    # + pulsante per lanciarlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prezzi
+  cancel-in-progress: false
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica il repository
+        uses: actions/checkout@v5
+
+      - name: Prepara Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Aggiorna i prezzi
+        env:
+          TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
+        run: python scripts/aggiorna_prezzi.py
+
+      - name: Salva prezzi.json se cambiato
+        run: |
+          if [ -n "$(git status --porcelain prezzi.json)" ]; then
+            git config user.name  "spendy-price-bot"
+            git config user.email "bot@users.noreply.github.com"
+            git add prezzi.json
+            git commit -m "Aggiornamento prezzi $(date -u +%Y-%m-%d)"
+            git push
+            echo "prezzi.json aggiornato e salvato."
+          else
+            echo "Nessuna modifica ai prezzi."
+          fi
