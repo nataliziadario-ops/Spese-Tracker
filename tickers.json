@@ -1,0 +1,15 @@
+{
+  "_nota": "Catalogo asset seguiti dal robot dei prezzi. Aggiungi qui gli asset che vuoi rendere disponibili nell'app. 'symbol' e' quello che vedi nell'app; 'apiSymbol' e' quello che il robot invia a Twelve Data (spesso uguale); 'exchange'/'mic' aiutano per gli ETF europei; 'currency' e' la valuta di quotazione.",
+  "assets": [
+    { "symbol": "VWCE", "name": "Vanguard FTSE All-World UCITS ETF Acc", "kind": "etf", "apiSymbol": "VWCE", "exchange": "XETRA", "currency": "EUR" },
+    { "symbol": "SWDA", "name": "iShares Core MSCI World UCITS ETF Acc", "kind": "etf", "apiSymbol": "SWDA", "exchange": "MTA", "currency": "EUR" },
+    { "symbol": "AGGH", "name": "iShares Core Global Aggregate Bond UCITS ETF", "kind": "etf", "apiSymbol": "AGGH", "exchange": "MTA", "currency": "EUR" },
+    { "symbol": "SPY5", "name": "SPDR S&P 500 UCITS ETF", "kind": "etf", "apiSymbol": "SPY5", "exchange": "MTA", "currency": "EUR" },
+    { "symbol": "AAPL", "name": "Apple Inc.", "kind": "stock", "apiSymbol": "AAPL", "exchange": "NASDAQ", "currency": "USD" },
+    { "symbol": "MSFT", "name": "Microsoft Corp.", "kind": "stock", "apiSymbol": "MSFT", "exchange": "NASDAQ", "currency": "USD" },
+    { "symbol": "ENEL", "name": "Enel S.p.A.", "kind": "stock", "apiSymbol": "ENEL", "exchange": "MTA", "currency": "EUR" },
+    { "symbol": "ISP", "name": "Intesa Sanpaolo", "kind": "stock", "apiSymbol": "ISP", "exchange": "MTA", "currency": "EUR" },
+    { "symbol": "BTC", "name": "Bitcoin", "kind": "crypto", "apiSymbol": "BTC/USD", "currency": "USD" },
+    { "symbol": "ETH", "name": "Ethereum", "kind": "crypto", "apiSymbol": "ETH/USD", "currency": "USD" }
+  ]
+}
