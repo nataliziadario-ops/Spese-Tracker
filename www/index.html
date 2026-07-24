@@ -2274,7 +2274,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v35';
+var APP_VERSION='v36';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3618,7 +3618,8 @@ function tagManageRowHTML(t){
    Il prezzo a mano resta solo come riserva se un simbolo non e' coperto.
    Solo monitoraggio: nessun consiglio finanziario.
 ================================================================ */
-var PRICES_URL='https://raw.githubusercontent.com/nataliziadario-ops/Spese-Tracker/Spendy-V29-premium/prezzi.json';
+/* 'HEAD' = ramo impostato come DEFAULT su GitHub (nessun ramo fisso). Riserva: file locale accanto all'app. */
+var PRICES_URLS=['https://raw.githubusercontent.com/nataliziadario-ops/Spese-Tracker/HEAD/prezzi.json','prezzi.json'];
 var PRICES_CACHE_KEY='spendy-prezzi-cache-v1';
 var PRICES={updatedAt:null,fxToEur:{EUR:1},catalog:[],prices:{}};
 var invRerender=null;
@@ -3635,10 +3636,12 @@ function applyPrices(o){
 }
 async function loadPrices(){
   try{var c=window.localStorage.getItem(PRICES_CACHE_KEY);if(c)applyPrices(JSON.parse(c));}catch(e){}
-  try{
-    var r=await fetch(PRICES_URL,{cache:'no-store'});
-    if(r&&r.ok){var j=await r.json();applyPrices(j);try{window.localStorage.setItem(PRICES_CACHE_KEY,JSON.stringify(j));}catch(e){}}
-  }catch(e){}
+  for(var _i=0;_i<PRICES_URLS.length;_i++){
+    try{
+      var r=await fetch(PRICES_URLS[_i]+((PRICES_URLS[_i].indexOf('?')<0?'?t=':'&t=')+Date.now()),{cache:'no-store'});
+      if(r&&r.ok){var j=await r.json();if(j&&(j.catalog||j.prices)){applyPrices(j);try{window.localStorage.setItem(PRICES_CACHE_KEY,JSON.stringify(j));}catch(e){}break;}}
+    }catch(e){}
+  }
   try{
     var root=document.getElementById('modal-root');
     if(root&&root.classList.contains('open')&&(root.querySelector('.inv-summary')||root.querySelector('.inv-form'))&&typeof invRerender==='function')invRerender();
