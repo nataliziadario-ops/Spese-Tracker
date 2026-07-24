@@ -601,6 +601,13 @@ main#content{overscroll-behavior-y:contain;position:relative;}
 .invp-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border);z-index:37;}
 .invp-bar .btn-primary,.invp-bar .btn-secondary{flex:1;}
 .ip-nochart{font-size:12.5px;color:var(--ink-soft);padding:26px 0;text-align:center;}
+/* --- Mercato a tendina per categoria (v37) --- */
+.invp-cat{border:1px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden;background:var(--surface);}
+.invp-cat-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;color:var(--ink);font-weight:600;font-size:14px;}
+.invp-cat-n{font-size:11px;color:var(--ink-soft);background:var(--track);border-radius:8px;padding:1px 7px;margin-left:6px;}
+.invp-cat-chev{color:var(--ink-soft);font-size:13px;}
+.invp-cat-body{padding:0 10px 8px;}
+.invp-cat-body .invp-row{background:var(--bg);}
 </style>
 </head>
 <body>
@@ -1992,6 +1999,19 @@ Object.assign(TR.fr,{
 'Registra la spesa dal conto e aggiunge le quote al portafoglio. Non è un ordine reale né consulenza finanziaria.':'Enregistre la dépense depuis le compte et ajoute les parts au portefeuille. Ni ordre réel ni conseil financier.',
 'Acquistate':'Acheté','quote di':'parts de','Azioni':'Actions','Cripto':'Crypto','Altro':'Autres','Solo monitoraggio · non è consulenza finanziaria.':'Suivi uniquement · pas un conseil financier.'
 });
+/* i18n investimenti (v37) */
+Object.assign(TR.en,{
+'Elimina posizione':'Delete position','Eliminare la posizione su':'Delete the position in','Verrà eliminato anche il piano di accumulo collegato.':'The linked recurring plan will be deleted too.',
+'Posizione eliminata':'Position deleted','La sezione Investimenti è una funzione Premium. Passa a Premium per usarla.':'The Investments section is a Premium feature. Go Premium to use it.'
+});
+Object.assign(TR.es,{
+'Elimina posizione':'Eliminar posición','Eliminare la posizione su':'Eliminar la posición en','Verrà eliminato anche il piano di accumulo collegato.':'También se eliminará el plan periódico vinculado.',
+'Posizione eliminata':'Posición eliminada','La sezione Investimenti è una funzione Premium. Passa a Premium per usarla.':'La sección Inversiones es una función Premium. Pasa a Premium para usarla.'
+});
+Object.assign(TR.fr,{
+'Elimina posizione':'Supprimer la position','Eliminare la posizione su':'Supprimer la position sur','Verrà eliminato anche il piano di accumulo collegato.':'Le plan programmé lié sera aussi supprimé.',
+'Posizione eliminata':'Position supprimée','La sezione Investimenti è una funzione Premium. Passa a Premium per usarla.':'La section Investissements est une fonction Premium. Passez à Premium pour l\'utiliser.'
+});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -2274,7 +2294,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v36';
+var APP_VERSION='v37';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -2305,7 +2325,7 @@ function premiumBlock(kind){
     recurring:tr('Nel piano gratuito puoi avere fino a 3 ricorrenti. Passa a Premium per averne illimitati.'),
     goals:tr('Nel piano gratuito puoi avere 1 salvadanaio. Passa a Premium per averne illimitati.'),
     customCats:tr('Nel piano gratuito puoi creare fino a 2 categorie personalizzate. Passa a Premium per averne illimitate.'),
-    investments:tr('Nel piano gratuito puoi monitorare fino a 3 titoli. Passa a Premium per averne illimitati.')
+    investments:tr('La sezione Investimenti è una funzione Premium. Passa a Premium per usarla.')
   };
   showToast(m[kind]||tr('Funzione Premium'));
 }
@@ -3857,6 +3877,7 @@ function openBuySheet(sym){
       try{updatePortfolioHistory();}catch(e){}
       closeModal();
       showToast(tr('Acquistate')+' '+ipQty(r.units)+' '+tr('quote di')+' '+r.symbol);
+      if(IPAGE){IPAGE.view='home';IPAGE.q='';}
       invPageRerender();
     };
   }
@@ -3920,12 +3941,18 @@ function ipMarketHTML(){
     return res.map(ipMarketRow).join('');
   }
   var order=['stock','etf','crypto','other'],out='';
+  IPAGE.openCat=IPAGE.openCat||{};
   order.forEach(function(k){
     var items=(PRICES.catalog||[]).filter(function(a){return (a.kind||'other')===k;});
     if(!items.length)return;
-    out+='<h4 style="margin:14px 0 8px;font-size:13px;color:var(--ink-soft);">'+ipKindName(k)+'</h4>'+items.map(ipMarketRow).join('');
+    var open=!!IPAGE.openCat[k];
+    out+='<div class="invp-cat'+(open?' open':'')+'"><button class="invp-cat-head" data-ip-cat="'+k+'"><span>'+ipKindName(k)+'<span class="invp-cat-n">'+items.length+'</span></span><span class="invp-cat-chev">'+(open?'▾':'▸')+'</span></button>'+(open?'<div class="invp-cat-body">'+items.map(ipMarketRow).join('')+'</div>':'')+'</div>';
   });
   return out||'<p class="empty-note">'+tr('Catalogo non ancora caricato.')+'</p>';
+}
+function ipWireMarket(scope){
+  ipWireRows(scope);
+  (scope||document).querySelectorAll('[data-ip-cat]').forEach(function(b){b.onclick=function(){var k=b.dataset.ipCat;IPAGE.openCat=IPAGE.openCat||{};IPAGE.openCat[k]=!IPAGE.openCat[k];var mk=document.getElementById('ipMarket');if(mk){mk.innerHTML=ipMarketHTML();ipWireMarket(mk);}};});
 }
 function ipDetailHTML(sym){
   var ce=catalogEntry(sym)||{},pe=priceEntry(sym)||{};
@@ -3949,7 +3976,7 @@ function ipDetailHTML(sym){
       '<div class="invp-kv"><span>'+tr('Valore')+'</span><b>'+(hidden?'••••':fmt(invValueEur(h)))+'</b></div>'+
       '<div class="invp-kv"><span>'+tr('Prezzo medio')+'</span><b>'+invFmt(invNum(h.buyPrice),h.currency||invAssetCur(h))+'</b></div>'+
       '<div class="invp-kv"><span>'+tr('Guadagno/Perdita')+'</span><b class="'+cls+'">'+(hidden?'••••':(s2+fmt(g)))+' ('+s2+gp.toFixed(1).replace('.',',')+'%)</b></div>'+
-    '</div></div>';
+    '</div><button class="btn-danger full-width" id="ipDel" style="margin-top:10px;">'+tr('Elimina posizione')+'</button></div>';
   }
   var info=ce.desc?'<div class="invp-sec"><h4>'+tr('Informazioni')+'</h4><p style="font-size:14px;line-height:1.5;margin:0;">'+esc(ce.desc)+'</p></div>':'';
   var kv='<div class="invp-sec"><h4>'+tr('Dati chiave')+'</h4><div class="invp-chart-card" style="margin-top:0;">'+
@@ -3974,10 +4001,12 @@ function renderInvestPage(){
   if(back)back.onclick=function(){if(IPAGE.view==='detail'){IPAGE.view='home';IPAGE.sym=null;renderInvestPage();}else closeInvestPage();};
   el.querySelectorAll('[data-ip-range]').forEach(function(b){b.onclick=function(){IPAGE.range=b.dataset.ipRange;renderInvestPage();};});
   ipWireRows(el);
+  var mk0=document.getElementById('ipMarket');if(mk0)ipWireMarket(mk0);
   var s=document.getElementById('ipSearch');
-  if(s)s.oninput=function(){IPAGE.q=s.value;var mk=document.getElementById('ipMarket');if(mk){mk.innerHTML=ipMarketHTML();ipWireRows(mk);}};
+  if(s)s.oninput=function(){IPAGE.q=s.value;var mk=document.getElementById('ipMarket');if(mk){mk.innerHTML=ipMarketHTML();ipWireMarket(mk);}};
   var ac=document.getElementById('ipAcc');if(ac)ac.onclick=function(){openPacSheet({symbol:IPAGE.sym});};
   var by=document.getElementById('ipBuy');if(by)by.onclick=function(){openBuySheet(IPAGE.sym);};
+  var idel=document.getElementById('ipDel');if(idel)idel.onclick=function(){var sym=IPAGE.sym;var hasPac=(state.recurring||[]).some(function(r){return r.kind==='pac'&&String(r.assetSymbol).toUpperCase()===String(sym).toUpperCase();});confirmDialog(tr('Eliminare la posizione su')+' '+esc(sym)+'?'+(hasPac?' '+tr('Verrà eliminato anche il piano di accumulo collegato.'):''),function(){state.investments=(state.investments||[]).filter(function(x){return String(x.ticker).toUpperCase()!==String(sym).toUpperCase();});if(hasPac)state.recurring=(state.recurring||[]).filter(function(r){return !(r.kind==='pac'&&String(r.assetSymbol).toUpperCase()===String(sym).toUpperCase());});saveState();try{updatePortfolioHistory();}catch(e){}showToast(tr('Posizione eliminata'));IPAGE.view='home';IPAGE.sym=null;renderInvestPage();},tr('Elimina'));};
 }
 
 function openInvestmentsSheet(){
@@ -4406,7 +4435,7 @@ function openProfileSheet(){
         '<button class="'+(pref==='auto'?'active':'')+'" data-theme-pref="auto">Automatico</button>'+
       '</div><p class="hint">Con "Automatico" l\'app segue il tema del telefono.</p></div>'+
       '<div class="menu-list">'+
-        '<button class="menu-row" id="menuInvest"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-3-3-4 4"/></svg></span><span>'+tr('Investimenti')+'<span class="menu-sub">'+tr('Monitora azioni, ETF e cripto')+'</span></span>'+chev()+'</button>'+
+        '<button class="menu-row" id="menuInvest"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-3-3-4 4"/></svg></span><span>'+tr('Investimenti')+(isPremium()?'':' 🔒')+'<span class="menu-sub">'+tr('Monitora azioni, ETF e cripto')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuBudget"><span class="menu-ico" style="background:var(--accent-soft);color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></span><span>'+tr('Budget mensili')+'<span class="menu-sub">'+tr('Limiti di spesa per categoria')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuCats"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 3.5h6l7 7-6 6-7-7z"/><circle cx="10" cy="7" r="1.3" fill="currentColor" stroke="none"/><path d="M4 19V9"/></svg></span><span>'+tr('Categorie &amp; Tag')+'<span class="menu-sub">'+tr('Gestione e andamento nel tempo')+'</span></span>'+chev()+'</button>'+
         '<button class="menu-row" id="menuData"><span class="menu-ico" style="background:var(--transfer-soft);color:var(--transfer);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-.4-9A6 6 0 0 0 5.3 12 3.5 3.5 0 0 0 6 19z"/><path d="M12 12v6"/><path d="m9.5 15 2.5-3 2.5 3"/></svg></span><span>'+tr('Export e sincronizzazione')+'<span class="menu-sub">'+tr('Cloud, importazione ed esportazione dati')+'</span></span>'+chev()+'</button>'+
@@ -4442,7 +4471,7 @@ function openProfileSheet(){
     document.querySelectorAll('[data-theme-pref]').forEach(function(b){
       b.onclick=function(){setThemePref(b.dataset.themePref);render();};
     });
-    var minv=document.getElementById('menuInvest');if(minv)minv.onclick=function(){closeModal();openInvestPage();};
+    var minv=document.getElementById('menuInvest');if(minv)minv.onclick=function(){if(!isPremium()){premiumBlock('investments');return;}closeModal();openInvestPage();};
     var mb=document.getElementById('menuBudget');if(mb)mb.onclick=openBudgetSheet;
     var mct=document.getElementById('menuCats');if(mct)mct.onclick=openCatsTagsSheet;
     var mlg=document.getElementById('menuLang');if(mlg)mlg.onclick=openLangSheet;
@@ -4593,6 +4622,17 @@ function advStatsBodyHTML(){
       '<p class="hint">'+tr('Negli ultimi 6 mesi ci hai speso')+' '+fmt(wd.total)+' '+tr('in')+' '+wd.count+' '+tr('movimenti.')+'</p>'+
     '</section>';
   }
+  var _invL=state.investments||[];
+  if(_invL.length){
+    var _it=invTotalsEur(_invL),_gc=_it.gain>=0?'inv-up':'inv-down',_gs=_it.gain>=0?'+':'';
+    var _ph=state.portfolioHistory||[],_sp=_ph.length>=2?invSparkSVG(_ph):'';
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;"><h3 style="margin:0;font-size:14.5px;">📈 '+tr('Investimenti')+'</h3>'+
+      '<div class="invp-kv"><span>'+tr('Valore del portafoglio')+'</span><b>'+fmt(_it.value)+'</b></div>'+
+      '<div class="invp-kv"><span>'+tr('Investito')+'</span><b>'+fmt(_it.cost)+'</b></div>'+
+      '<div class="invp-kv"><span>'+tr('Guadagno/Perdita')+'</span><b class="'+_gc+'">'+_gs+fmt(_it.gain)+' ('+_gs+_it.gainPct.toFixed(1).replace('.',',')+'%)</b></div>'+
+      (_sp?'<div style="margin-top:4px;">'+_sp+'</div>':'')+
+    '</section>';
+  }
   return h;
 }
 function advStatsLockedHTML(){
@@ -4689,6 +4729,8 @@ function infoIllus(kind){
     s+='<rect x="210" y="60" width="30" height="5" rx="2.5" fill="'+F+'" opacity="0.35"/>';
   }else if(kind==='data'){
     s+='<path d="M118 52a20 20 0 1 1 6-39 24 24 0 0 1 46 6h4a17 17 0 0 1 0 33z" fill="'+S+'" stroke="'+T+'" stroke-width="2.5"/><path d="M138 60v14M132 68l6 7 6-7" stroke="'+A+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M158 74V60M152 66l6-7 6 7" stroke="'+T+'" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  }else if(kind==='invest'){
+    s+='<path d="M24 60 60 50 96 54 132 36 168 42 204 26 240 30 276 18 276 74 24 74 Z" fill="'+A+'" opacity="0.12"/><polyline points="24,60 60,50 96,54 132,36 168,42 204,26 240,30 276,18" fill="none" stroke="'+A+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="276" cy="18" r="4" fill="'+A+'"/>';
   }else if(kind==='cats'){
     var cbx=[30,62,94,126,158,190],cbh=[22,38,28,48,34,42];
     for(var q=0;q<6;q++){s+='<rect x="'+cbx[q]+'" y="'+(74-cbh[q])+'" width="20" height="'+cbh[q]+'" rx="3" fill="'+((74-cbh[q])<40?R:A)+'" opacity="0.88"/>';}
@@ -4707,6 +4749,7 @@ function openInfoSheet(){
     {k:'budget',t:'Budget mensili',d:'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.'},
     {k:'cats',t:'Categorie & Tag',d:'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.'},
     {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'},
+    {k:'invest',t:'Investimenti',d:'Una sezione dedicata (Premium) per <strong>monitorare</strong> azioni, ETF e cripto. I <strong>prezzi si aggiornano da soli</strong> ogni giorno e tutto è convertito in euro. Vedi il <strong>valore del portafoglio</strong> con grafico e periodi (1S/1M/1A/Max), cerchi un asset scrivendo anche solo una parola (es. «world»), e apri la sua scheda con grafico, descrizione e dati chiave. Con <strong>Compra</strong> fai un acquisto una tantum: inserisci gli euro e le quote si calcolano da sole; con <strong>Accumula</strong> crei un <strong>piano di accumulo</strong> che investe in automatico a intervalli regolari. Ogni operazione viene registrata come movimento sui tuoi conti: è monitoraggio, non un broker reale.'},
     {k:'premium',t:'Spendy Premium',d:'Spendy è <strong>gratuita e completa</strong>: movimenti illimitati, categorie predefinite, tema chiaro e scuro, import dei dati ed export in PDF. Nel piano gratuito puoi avere <strong>2 conti, 3 ricorrenti, 1 salvadanaio e 2 categorie personalizzate</strong>: quello che hai già creato resta sempre tuo, anche se supera questi numeri.<br><br>Con <strong>Premium</strong> sblocchi conti, ricorrenti, salvadanai e categorie <strong>illimitati</strong>; l\'<strong>export in Excel e CSV</strong>; le <strong>statistiche avanzate</strong> (confronto con il mese scorso, proiezione di fine mese, dove vanno i tuoi soldi, andamento a 12 mesi, il giorno più costoso); gli <strong>avvisi di budget</strong> quando ti avvicini o superi un limite; e i <strong>widget</strong> nella schermata Home, compresa la <strong>spesa rapida</strong> per registrare un movimento in un tocco.'}
   ];
   var openIdx=0;
@@ -7273,6 +7316,7 @@ function openPacSheet(opts){
       saveState();closeModal();showToast(tr('Piano di accumulo creato'));
     }
     renderActiveTab();
+    try{if(typeof invPageRerender==='function')invPageRerender();}catch(e){}
     setTimeout(function(){autoRunDuePacs();},60);
   }
   openModal('<div class="sheet"></div>');
