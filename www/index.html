@@ -569,6 +569,15 @@ main#content{overscroll-behavior-y:contain;position:relative;}
 .inv-hint{font-size:11.5px;color:var(--ink-soft);margin:-4px 0 8px;}
 .inv-del-confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--red-soft);color:var(--red-ink);padding:10px 12px;border-radius:12px;margin-top:10px;font-size:13px;}
 .inv-del-confirm span{flex:1 1 100%;}
+/* --- Investimenti v32 (prezzi auto / andamento) --- */
+.inv-updated{font-size:11px;color:var(--ink-soft);margin-top:8px;opacity:.85;}
+.inv-manual{font-size:10px;background:var(--amber-soft);color:var(--amber-ink);padding:1px 5px;border-radius:6px;}
+.inv-live{font-size:12px;margin:-4px 0 10px;min-height:16px;line-height:1.4;}
+.inv-live-ok{color:var(--accent);}
+.inv-live-wait{color:var(--amber-ink);}
+.inv-live-manual{color:var(--ink-soft);}
+.inv-chart{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-bottom:12px;}
+.inv-chart-head{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--ink-soft);}
 </style>
 </head>
 <body>
@@ -1860,11 +1869,83 @@ Object.assign(TR.fr,{
 'I totali non convertono ancora le valute (arriva con l\'aggiornamento automatico dei prezzi).':'Les totaux ne convertissent pas encore les devises (\u00e0 venir avec la mise \u00e0 jour automatique des prix).',
 'Nel piano gratuito puoi monitorare fino a 3 titoli. Passa a Premium per averne illimitati.':'Avec le plan gratuit, vous pouvez suivre jusqu\'\u00e0 3 titres. Passez \u00e0 Premium pour un nombre illimit\u00e9.'
 });
+/* i18n Investimenti v32 (prezzi automatici) */
+Object.assign(TR.en,{
+'Prezzi aggiornati il':'Prices updated on','Prezzi non ancora disponibili':'Prices not available yet',
+'Andamento':'Trend','a mano':'manual','Asset (cerca o scrivi il simbolo)':'Asset (search or type the symbol)',
+'Prezzo attuale a mano (solo se manca automatico)':'Current price by hand (only if automatic is missing)',
+'Prezzo automatico':'Automatic price','Asset in elenco: il prezzo arriverà col prossimo aggiornamento.':'Asset in the list: the price will arrive with the next update.',
+'Simbolo non in elenco: userò il prezzo inserito a mano.':'Symbol not in the list: the hand-entered price will be used.',
+'Scegli un asset dall\'elenco per il prezzo automatico.':'Pick an asset from the list for the automatic price.'
+});
+Object.assign(TR.es,{
+'Prezzi aggiornati il':'Precios actualizados el','Prezzi non ancora disponibili':'Precios aún no disponibles',
+'Andamento':'Evolución','a mano':'a mano','Asset (cerca o scrivi il simbolo)':'Activo (busca o escribe el símbolo)',
+'Prezzo attuale a mano (solo se manca automatico)':'Precio actual a mano (solo si falta el automático)',
+'Prezzo automatico':'Precio automático','Asset in elenco: il prezzo arriverà col prossimo aggiornamento.':'Activo en la lista: el precio llegará con la próxima actualización.',
+'Simbolo non in elenco: userò il prezzo inserito a mano.':'Símbolo no en la lista: se usará el precio introducido a mano.',
+'Scegli un asset dall\'elenco per il prezzo automatico.':'Elige un activo de la lista para el precio automático.'
+});
+Object.assign(TR.fr,{
+'Prezzi aggiornati il':'Prix mis à jour le','Prezzi non ancora disponibili':'Prix pas encore disponibles',
+'Andamento':'Évolution','a mano':'manuel','Asset (cerca o scrivi il simbolo)':'Actif (cherchez ou saisissez le symbole)',
+'Prezzo attuale a mano (solo se manca automatico)':'Prix actuel à la main (seulement si l\'automatique manque)',
+'Prezzo automatico':'Prix automatique','Asset in elenco: il prezzo arriverà col prossimo aggiornamento.':'Actif dans la liste : le prix arrivera à la prochaine mise à jour.',
+'Simbolo non in elenco: userò il prezzo inserito a mano.':'Symbole absent de la liste : le prix saisi à la main sera utilisé.',
+'Scegli un asset dall\'elenco per il prezzo automatico.':'Choisissez un actif dans la liste pour le prix automatique.'
+});
+/* i18n PAC (piano di accumulo) */
+Object.assign(TR.en,{
+'Piano di accumulo eseguito':'Recurring investment done','acquisti PAC eseguiti':'recurring buys done','quote':'shares',
+'Nuovo piano di accumulo (PAC)':'New recurring investment (DCA)','Nuovo piano di accumulo':'New recurring investment',
+'Modifica piano di accumulo':'Edit recurring investment','Crea piano di accumulo':'Create recurring investment',
+'Conto di partenza':'Source account','Importo per periodo':'Amount per period','Primo acquisto':'First buy',
+'Esegui in automatico all\'apertura dell\'app':'Run automatically when the app opens',
+'Ogni periodo l\'app sposta l\'importo dal conto scelto e compra quote dell\'asset al prezzo del giorno.':'Each period the app moves the amount from the chosen account and buys shares of the asset at that day\'s price.',
+'Elimina piano':'Delete plan','Eliminare questo piano di accumulo? Gli acquisti già registrati restano.':'Delete this recurring investment? Buys already recorded stay.',
+'Piano eliminato':'Plan deleted','Piano aggiornato':'Plan updated','Piano di accumulo creato':'Recurring investment created',
+'Investito':'Invested','Prezzo non disponibile: riprova più tardi':'Price not available: try again later',
+'Scegli un asset.':'Pick an asset.','Inserisci un importo valido.':'Enter a valid amount.',
+'Scegli un asset dall\'elenco.':'Pick an asset from the list.','Simbolo non in elenco: scegline uno dal catalogo.':'Symbol not in the list: pick one from the catalog.',
+'Eseguire ora l\'acquisto':'Buy now','Investi':'Invest'
+});
+Object.assign(TR.es,{
+'Piano di accumulo eseguito':'Inversión periódica hecha','acquisti PAC eseguiti':'compras periódicas hechas','quote':'participaciones',
+'Nuovo piano di accumulo (PAC)':'Nueva inversión periódica','Nuovo piano di accumulo':'Nueva inversión periódica',
+'Modifica piano di accumulo':'Editar inversión periódica','Crea piano di accumulo':'Crear inversión periódica',
+'Conto di partenza':'Cuenta de origen','Importo per periodo':'Importe por periodo','Primo acquisto':'Primera compra',
+'Esegui in automatico all\'apertura dell\'app':'Ejecutar automáticamente al abrir la app',
+'Ogni periodo l\'app sposta l\'importo dal conto scelto e compra quote dell\'asset al prezzo del giorno.':'Cada periodo la app mueve el importe de la cuenta elegida y compra participaciones del activo al precio del día.',
+'Elimina piano':'Eliminar plan','Eliminare questo piano di accumulo? Gli acquisti già registrati restano.':'¿Eliminar esta inversión periódica? Las compras ya registradas se mantienen.',
+'Piano eliminato':'Plan eliminado','Piano aggiornato':'Plan actualizado','Piano di accumulo creato':'Inversión periódica creada',
+'Investito':'Invertido','Prezzo non disponibile: riprova più tardi':'Precio no disponible: inténtalo más tarde',
+'Scegli un asset.':'Elige un activo.','Inserisci un importo valido.':'Introduce un importe válido.',
+'Scegli un asset dall\'elenco.':'Elige un activo de la lista.','Simbolo non in elenco: scegline uno dal catalogo.':'Símbolo no en la lista: elige uno del catálogo.',
+'Eseguire ora l\'acquisto':'Comprar ahora','Investi':'Invertir'
+});
+Object.assign(TR.fr,{
+'Piano di accumulo eseguito':'Investissement programmé effectué','acquisti PAC eseguiti':'achats programmés effectués','quote':'parts',
+'Nuovo piano di accumulo (PAC)':'Nouvel investissement programmé','Nuovo piano di accumulo':'Nouvel investissement programmé',
+'Modifica piano di accumulo':'Modifier l\'investissement programmé','Crea piano di accumulo':'Créer l\'investissement programmé',
+'Conto di partenza':'Compte de départ','Importo per periodo':'Montant par période','Primo acquisto':'Premier achat',
+'Esegui in automatico all\'apertura dell\'app':'Exécuter automatiquement à l\'ouverture de l\'app',
+'Ogni periodo l\'app sposta l\'importo dal conto scelto e compra quote dell\'asset al prezzo del giorno.':'À chaque période, l\'app déplace le montant du compte choisi et achète des parts de l\'actif au prix du jour.',
+'Elimina piano':'Supprimer le plan','Eliminare questo piano di accumulo? Gli acquisti già registrati restano.':'Supprimer cet investissement programmé ? Les achats déjà enregistrés restent.',
+'Piano eliminato':'Plan supprimé','Piano aggiornato':'Plan mis à jour','Piano di accumulo creato':'Investissement programmé créé',
+'Investito':'Investi','Prezzo non disponibile: riprova più tardi':'Prix non disponible : réessayez plus tard',
+'Scegli un asset.':'Choisissez un actif.','Inserisci un importo valido.':'Saisissez un montant valide.',
+'Scegli un asset dall\'elenco.':'Choisissez un actif dans la liste.','Simbolo non in elenco: scegline uno dal catalogo.':'Symbole absent de la liste : choisissez-en un dans le catalogue.',
+'Eseguire ora l\'acquisto':'Acheter maintenant','Investi':'Investir'
+});
+/* i18n grafico valore portafoglio (v34) */
+Object.assign(TR.en,{'Valore del portafoglio':'Portfolio value'});
+Object.assign(TR.es,{'Valore del portafoglio':'Valor de la cartera'});
+Object.assign(TR.fr,{'Valore del portafoglio':'Valeur du portefeuille'});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
     categories:DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);}).concat(DEFAULT_INCOME_CATS.map(function(c){return Object.assign({},c);})),
-    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[]
+    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[]
   };
 }
 
@@ -1872,7 +1953,7 @@ function ensureV3Fields(s){
   s.tags=s.tags||[];
   s.transactions=s.transactions||[];
   s.transfers=s.transfers||[];
-  s.recurring=s.recurring||[];
+  s.recurring=s.recurring||[];s.portfolioHistory=s.portfolioHistory||[];
   s.goals=s.goals||[];
   s.investments=s.investments||[];
   s.investments.forEach(function(h){h.currency=h.currency||'EUR';h.kind=h.kind||'etf';if(h.price==='')h.price=null;});
@@ -1905,7 +1986,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -2142,7 +2223,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v31';
+var APP_VERSION='v34';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3478,26 +3559,128 @@ function tagManageRowHTML(t){
     '<button class="icon-btn-danger" data-tag-del="'+t.id+'" aria-label="Elimina">🗑</button></div>';
 }
 /* ================================================================
-   INVESTIMENTI (Fase 1 - portafoglio manuale)
-   L'utente inserisce quantita', prezzo di carico e prezzo attuale;
-   l'app calcola valore, guadagno/perdita e patrimonio investito.
-   Prezzi automatici (robot gratuito) previsti in una fase successiva.
+   INVESTIMENTI (v32 - prezzi automatici, valuta in EUR, andamento)
+   L'utente sceglie l'asset da un elenco; il prezzo arriva da solo dal
+   file condiviso prezzi.json (aggiornato una volta al giorno da un
+   "robot" gratuito su GitHub). L'app converte tutto in euro con i cambi
+   BCE e mostra valore, guadagno/perdita e andamento nel tempo.
+   Il prezzo a mano resta solo come riserva se un simbolo non e' coperto.
    Solo monitoraggio: nessun consiglio finanziario.
 ================================================================ */
+var PRICES_URL='https://raw.githubusercontent.com/nataliziadario-ops/Spese-Tracker/Spendy-V29-premium/prezzi.json';
+var PRICES_CACHE_KEY='spendy-prezzi-cache-v1';
+var PRICES={updatedAt:null,fxToEur:{EUR:1},catalog:[],prices:{}};
+var invRerender=null;
+
+function applyPrices(o){
+  if(!o||typeof o!=='object')return;
+  PRICES={
+    updatedAt:o.updatedAt||null,
+    fxToEur:(o.fxToEur&&typeof o.fxToEur==='object')?o.fxToEur:{EUR:1},
+    catalog:Array.isArray(o.catalog)?o.catalog:[],
+    prices:(o.prices&&typeof o.prices==='object')?o.prices:{}
+  };
+  if(!PRICES.fxToEur.EUR)PRICES.fxToEur.EUR=1;
+}
+async function loadPrices(){
+  try{var c=window.localStorage.getItem(PRICES_CACHE_KEY);if(c)applyPrices(JSON.parse(c));}catch(e){}
+  try{
+    var r=await fetch(PRICES_URL,{cache:'no-store'});
+    if(r&&r.ok){var j=await r.json();applyPrices(j);try{window.localStorage.setItem(PRICES_CACHE_KEY,JSON.stringify(j));}catch(e){}}
+  }catch(e){}
+  try{
+    var root=document.getElementById('modal-root');
+    if(root&&root.classList.contains('open')&&(root.querySelector('.inv-summary')||root.querySelector('.inv-form'))&&typeof invRerender==='function')invRerender();
+  }catch(e){}
+  try{if(typeof autoRunDuePacs==='function')autoRunDuePacs();}catch(e){}
+  try{if(typeof updatePortfolioHistory==='function')updatePortfolioHistory();}catch(e){}
+}
+
 function invNum(v){v=parseFloat(String(v==null?'':v).replace(',','.'));return isNaN(v)?0:v;}
+function invKindLabel(k){return k==='stock'?tr('Azione'):k==='etf'?'ETF':k==='crypto'?tr('Cripto'):tr('Altro');}
+function invFmt(n,c){if(!c||c==='EUR')return fmt(n);try{return new Intl.NumberFormat(currentLocale(),{style:'currency',currency:c}).format(n||0);}catch(e){return (Number(n)||0).toFixed(2)+' '+c;}}
+function fxToEur(cur){if(!cur||cur==='EUR')return 1;var f=PRICES.fxToEur&&PRICES.fxToEur[cur];return (typeof f==='number'&&f>0)?f:1;}
+function priceEntry(sym){if(!sym)return null;return (PRICES.prices||{})[String(sym).toUpperCase()]||null;}
+function catalogEntry(sym){if(!sym)return null;sym=String(sym).toUpperCase();var c=PRICES.catalog||[];for(var i=0;i<c.length;i++){if(c[i]&&String(c[i].symbol).toUpperCase()===sym)return c[i];}return null;}
+function invHasLive(h){var e=priceEntry(h.ticker);return !!(e&&typeof e.price==='number');}
+function invAssetCur(h){var e=priceEntry(h.ticker)||catalogEntry(h.ticker);return (e&&e.currency)||h.currency||'EUR';}
+function invLiveUnit(h){var e=priceEntry(h.ticker);if(e&&typeof e.price==='number')return e.price;if(h.price!=null&&h.price!=='')return invNum(h.price);return invNum(h.buyPrice);}
+function invUnitEur(h){return invLiveUnit(h)*fxToEur(invAssetCur(h));}
+function invBuyEur(h){return invNum(h.buyPrice)*fxToEur(h.currency||invAssetCur(h));}
+function invCostEur(h){return invNum(h.qty)*invBuyEur(h);}
+function invValueEur(h){return invNum(h.qty)*invUnitEur(h);}
+function invGainEur(h){return invValueEur(h)-invCostEur(h);}
+function invGainPctH(h){var c=invCostEur(h);return c>0?(invGainEur(h)/c*100):0;}
+function invTotalsEur(list){list=list||[];var cost=0,val=0;list.forEach(function(h){cost+=invCostEur(h);val+=invValueEur(h);});return {cost:cost,value:val,gain:val-cost,gainPct:cost>0?((val-cost)/cost*100):0};}
+function invHistory(h){var e=priceEntry(h.ticker);return (e&&Array.isArray(e.history))?e.history:[];}
+
+/* --- vecchi helper Fase 1 (mono-valuta, senza prezzi auto): mantenuti per compatibilita' --- */
 function invCost(h){return invNum(h.qty)*invNum(h.buyPrice);}
 function invUnitPrice(h){return (h.price==null||h.price==='')?invNum(h.buyPrice):invNum(h.price);}
 function invValue(h){return invNum(h.qty)*invUnitPrice(h);}
 function invGain(h){return invValue(h)-invCost(h);}
 function invGainPct(h){var c=invCost(h);return c>0?(invGain(h)/c*100):0;}
 function invTotals(list){list=list||[];var cost=0,val=0;list.forEach(function(h){cost+=invCost(h);val+=invValue(h);});return {cost:cost,value:val,gain:val-cost,gainPct:cost>0?((val-cost)/cost*100):0};}
-function invCurList(){return ['EUR','USD','GBP','CHF','JPY'];}
-function invFmt(n,c){if(!c||c==='EUR')return fmt(n);try{return new Intl.NumberFormat(currentLocale(),{style:'currency',currency:c}).format(n||0);}catch(e){return (Number(n)||0).toFixed(2)+' '+c;}}
 function invMixedCur(list){return (list||[]).some(function(h){return h.currency&&h.currency!=='EUR';});}
-function invKindLabel(k){return k==='stock'?tr('Azione'):k==='etf'?'ETF':k==='crypto'?tr('Cripto'):tr('Altro');}
+function invCurList(){return ['EUR','USD','GBP','CHF','JPY'];}
+
+function invSparkSVG(hist){
+  hist=(hist||[]).filter(function(p){return p&&typeof p[1]==='number';});
+  if(hist.length<2)return '';
+  var W=320,H=88,PAD=6,n=hist.length;
+  var vals=hist.map(function(p){return p[1];});
+  var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=(max-min)||1;
+  var pts=hist.map(function(p,i){var x=PAD+(i/(n-1))*(W-2*PAD);var y=PAD+(1-((p[1]-min)/rng))*(H-2*PAD);return x.toFixed(1)+','+y.toFixed(1);});
+  var up=vals[n-1]>=vals[0],col=up?'var(--accent)':'var(--red)';
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;">'+
+    '<path d="M'+PAD+','+(H-PAD)+' L'+pts.join(' L')+' L'+(W-PAD)+','+(H-PAD)+' Z" fill="'+col+'" opacity="0.10"/>'+
+    '<path d="M'+pts.join(' L')+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+}
+
+/* ================================================================
+   ANDAMENTO DEL VALORE DEL PORTAFOGLIO NEL TEMPO
+   Registra ogni giorno (all'apertura) il valore totale in euro degli
+   investimenti, per mostrarlo su un grafico. La prima volta ricostruisce
+   una curva stimata dal passato usando lo storico prezzi e le posizioni
+   attuali; da li' in poi il valore viene registrato giorno per giorno.
+================================================================ */
+var PORTF_MAX=400;
+function portfolioValueEur(){return invTotalsEur(state.investments||[]).value;}
+function recordPortfolioSnapshot(){
+  if(!state)return;
+  var list=state.investments||[];if(!list.length)return;
+  if(!list.some(function(h){return invHasLive(h);}))return;
+  var v=portfolioValueEur();if(!(v>0))return;
+  v=Math.round(v*100)/100;
+  var today=todayISO();
+  state.portfolioHistory=state.portfolioHistory||[];
+  var h=state.portfolioHistory;
+  if(h.length&&h[h.length-1][0]===today)h[h.length-1]=[today,v];
+  else h.push([today,v]);
+  if(h.length>PORTF_MAX)state.portfolioHistory=h.slice(-PORTF_MAX);
+}
+function backfillPortfolioHistory(){
+  var list=(state.investments||[]).filter(function(h){return invHasLive(h);});
+  if(!list.length)return;
+  var dates={};list.forEach(function(h){invHistory(h).forEach(function(p){if(p&&p[0])dates[p[0]]=1;});});
+  var ds=Object.keys(dates).sort();
+  if(ds.length<2)return;
+  function priceOn(h,d){var hist=invHistory(h),val=null;for(var i=0;i<hist.length;i++){if(hist[i][0]<=d)val=hist[i][1];else break;}return val;}
+  state.portfolioHistory=ds.map(function(d){
+    var v=0;list.forEach(function(h){var p=priceOn(h,d);if(p!=null)v+=invNum(h.qty)*p*fxToEur(invAssetCur(h));});
+    return [d,Math.round(v*100)/100];
+  });
+}
+function updatePortfolioHistory(){
+  if(!state||!(state.investments||[]).length)return;
+  if(!((state.portfolioHistory||[]).length))backfillPortfolioHistory();
+  recordPortfolioSnapshot();
+  saveState();
+}
 
 function openInvestmentsSheet(){
   var iv={mode:'list',editId:null,err:'',confirmDel:false,form:null};
+  invRerender=function(){render();};
   function blankForm(){return {ticker:'',name:'',kind:'etf',qty:'',buyPrice:'',price:'',currency:'EUR',date:''};}
   function formFrom(h){return {ticker:h.ticker||'',name:h.name||'',kind:h.kind||'etf',qty:String(h.qty==null?'':h.qty),buyPrice:String(h.buyPrice==null?'':h.buyPrice),price:String(h.price==null?'':h.price),currency:h.currency||'EUR',date:h.date||''};}
   function readForm(){
@@ -3512,46 +3695,68 @@ function openInvestmentsSheet(){
     v=g('invCur');if(v!==undefined)iv.form.currency=v;
     v=g('invDate');if(v!==undefined)iv.form.date=v;
   }
+  function updatedLabel(){
+    return PRICES.updatedAt?(tr('Prezzi aggiornati il')+' '+esc(String(PRICES.updatedAt))):tr('Prezzi non ancora disponibili');
+  }
+  function invLiveHintHTML(sym){
+    var e=priceEntry(sym);
+    if(e&&typeof e.price==='number')return '<span class="inv-live-ok">'+tr('Prezzo automatico')+': <b>'+invFmt(e.price,e.currency||'EUR')+'</b> · '+updatedLabel()+'</span>';
+    var ce=catalogEntry(sym);
+    if(ce)return '<span class="inv-live-wait">'+tr('Asset in elenco: il prezzo arriverà col prossimo aggiornamento.')+'</span>';
+    if(sym&&sym.trim())return '<span class="inv-live-manual">'+tr('Simbolo non in elenco: userò il prezzo inserito a mano.')+'</span>';
+    return '<span class="inv-live-manual">'+tr('Scegli un asset dall\'elenco per il prezzo automatico.')+'</span>';
+  }
   function listHTML(){
-    var list=state.investments||[],t=invTotals(list),hidden=balHidden();
+    var list=state.investments||[],t=invTotalsEur(list),hidden=balHidden();
     var gCls=t.gain>=0?'inv-up':'inv-down',sign=t.gain>=0?'+':'';
     var head='<div class="inv-summary"><div class="inv-sum-main"><span class="inv-sum-lbl">'+tr('Valore totale')+'</span>'+
-      '<span class="inv-sum-val">'+(hidden?'\u2022\u2022\u2022\u2022':fmt(t.value))+'</span></div>'+
-      '<div class="inv-sum-row"><span>'+tr('Investito')+': <b>'+(hidden?'\u2022\u2022\u2022\u2022':fmt(t.cost))+'</b></span>'+
-      '<span class="'+gCls+'">'+tr('Guadagno/Perdita')+': <b>'+(hidden?'\u2022\u2022\u2022\u2022':(sign+fmt(t.gain)))+'</b> ('+sign+t.gainPct.toFixed(1)+'%)</span></div></div>';
-    var note=invMixedCur(list)?'<p class="inv-note">'+tr('I totali non convertono ancora le valute (arriva con l\'aggiornamento automatico dei prezzi).')+'</p>':'';
+      '<span class="inv-sum-val">'+(hidden?'••••':fmt(t.value))+'</span></div>'+
+      '<div class="inv-sum-row"><span>'+tr('Investito')+': <b>'+(hidden?'••••':fmt(t.cost))+'</b></span>'+
+      '<span class="'+gCls+'">'+tr('Guadagno/Perdita')+': <b>'+(hidden?'••••':(sign+fmt(t.gain)))+'</b> ('+sign+t.gainPct.toFixed(1)+'%)</span></div>'+
+      '<div class="inv-updated">'+updatedLabel()+'</div></div>';
+    var ph=state.portfolioHistory||[];var pchart='';if(ph.length>=2){var pv0=ph[0][1],pv1=ph[ph.length-1][1],pchg=pv0>0?((pv1-pv0)/pv0*100):0,pcc=pchg>=0?'inv-up':'inv-down',pcs=pchg>=0?'+':'';pchart='<div class="inv-chart"><div class="inv-chart-head"><span>'+tr('Valore del portafoglio')+'</span><span class="'+pcc+'">'+pcs+pchg.toFixed(1)+'%</span></div>'+invSparkSVG(ph)+'</div>';}
     var rows='';
     if(!list.length){
-      rows='<div class="inv-empty"><div class="inv-empty-emoji">\ud83d\udcc8</div><h4>'+tr('Nessun titolo ancora')+'</h4><p>'+tr('Aggiungi il tuo primo titolo (azione, ETF o cripto) per iniziare a monitorare il portafoglio.')+'</p></div>';
+      rows='<div class="inv-empty"><div class="inv-empty-emoji">📈</div><h4>'+tr('Nessun titolo ancora')+'</h4><p>'+tr('Aggiungi il tuo primo titolo (azione, ETF o cripto) per iniziare a monitorare il portafoglio.')+'</p></div>';
     }else{
       list.forEach(function(h){
-        var val=invValue(h),gp=invGainPct(h),g=invGain(h),cls=g>=0?'inv-up':'inv-down',s=g>=0?'+':'';
+        var val=invValueEur(h),gp=invGainPctH(h),g=invGainEur(h),cls=g>=0?'inv-up':'inv-down',s=g>=0?'+':'';
         var w=t.value>0?(val/t.value*100):0;
+        var live=invHasLive(h)?invFmt(invLiveUnit(h),invAssetCur(h)):('<span class="inv-manual">'+tr('a mano')+'</span> '+invFmt(invLiveUnit(h),invAssetCur(h)));
         rows+='<button class="inv-row" data-inv-edit="'+esc(h.id)+'"><div class="inv-row-l">'+
-          '<span class="inv-tick">'+esc(h.ticker||'\u2014')+'</span>'+
+          '<span class="inv-tick">'+esc(h.ticker||'—')+'</span>'+
           '<span class="inv-name">'+esc(h.name||invKindLabel(h.kind))+'</span>'+
-          '<span class="inv-meta">'+esc(String(h.qty||0))+' \u00d7 '+invFmt(invUnitPrice(h),h.currency)+' \u00b7 '+w.toFixed(0)+'% '+tr('del portafoglio')+'</span></div>'+
-          '<div class="inv-row-r"><span class="inv-val">'+(hidden?'\u2022\u2022\u2022\u2022':invFmt(val,h.currency))+'</span>'+
+          '<span class="inv-meta">'+esc(String(h.qty||0))+' × '+live+' · '+w.toFixed(0)+'% '+tr('del portafoglio')+'</span></div>'+
+          '<div class="inv-row-r"><span class="inv-val">'+(hidden?'••••':fmt(val))+'</span>'+
           '<span class="inv-badge '+cls+'">'+s+gp.toFixed(1)+'%</span></div></button>';
       });
     }
-    return head+note+'<div class="inv-list">'+rows+'</div>'+
+    return head+pchart+'<div class="inv-list">'+rows+'</div>'+
       '<button class="btn-primary full-width" id="invAdd" style="margin-top:12px;">'+tr('+ Aggiungi titolo')+'</button>'+
-      '<p class="inv-disc">'+tr('Solo monitoraggio \u00b7 prezzi inseriti a mano \u00b7 non \u00e8 consulenza finanziaria.')+'</p>';
+      '<p class="inv-disc">'+tr('Solo monitoraggio · prezzi inseriti a mano · non è consulenza finanziaria.')+'</p>';
   }
   function formHTML(){
     var f=iv.form,isEdit=!!iv.editId;
     var curOpts=invCurList().map(function(c){return '<option value="'+c+'"'+(f.currency===c?' selected':'')+'>'+c+'</option>';}).join('');
+    var cat=PRICES.catalog||[];
+    var dl=cat.map(function(a){return '<option value="'+esc(a.symbol)+'">'+esc(a.name||'')+'</option>';}).join('');
+    var chart='';
+    if(isEdit){
+      var h0=(state.investments||[]).filter(function(x){return x.id===iv.editId;})[0];
+      if(h0){var hist=invHistory(h0);if(hist.length>=2){var first=hist[0][1],last=hist[hist.length-1][1],ch=first>0?((last-first)/first*100):0,cc=ch>=0?'inv-up':'inv-down',cs=ch>=0?'+':'';chart='<div class="inv-chart"><div class="inv-chart-head"><span>'+tr('Andamento')+'</span><span class="'+cc+'">'+cs+ch.toFixed(1)+'%</span></div>'+invSparkSVG(hist)+'</div>';}}
+    }
+    var liveHint=invLiveHintHTML(f.ticker);
     return '<div class="inv-form">'+
-      (iv.err?'<p class="hint" style="color:var(--red);">\u26a0\ufe0f '+esc(iv.err)+'</p>':'')+
-      '<div class="field-group"><label class="field-label">'+tr('Simbolo (ticker)')+'</label><input id="invTicker" class="text-input" type="text" autocapitalize="characters" value="'+esc(f.ticker)+'" placeholder="VWCE, AAPL, BTC"></div>'+
+      chart+
+      (iv.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(iv.err)+'</p>':'')+
+      '<div class="field-group"><label class="field-label">'+tr('Asset (cerca o scrivi il simbolo)')+'</label><input id="invTicker" class="text-input" list="invCatalog" type="text" autocapitalize="characters" value="'+esc(f.ticker)+'" placeholder="VWCE, AAPL, BTC"><datalist id="invCatalog">'+dl+'</datalist></div>'+
+      '<div id="invLive" class="inv-live">'+liveHint+'</div>'+
       '<div class="field-group"><label class="field-label">'+tr('Nome (facoltativo)')+'</label><input id="invName" class="text-input" type="text" value="'+esc(f.name)+'" placeholder="Vanguard FTSE All-World"></div>'+
       '<div class="field-group"><label class="field-label">'+tr('Tipo')+'</label><select id="invKind" class="text-input"><option value="etf"'+(f.kind==='etf'?' selected':'')+'>ETF</option><option value="stock"'+(f.kind==='stock'?' selected':'')+'>'+tr('Azione')+'</option><option value="crypto"'+(f.kind==='crypto'?' selected':'')+'>'+tr('Cripto')+'</option><option value="other"'+(f.kind==='other'?' selected':'')+'>'+tr('Altro')+'</option></select></div>'+
-      '<div class="inv-two"><div class="field-group"><label class="field-label">'+tr('Quantit\u00e0')+'</label><input id="invQty" class="text-input" type="text" inputmode="decimal" value="'+esc(f.qty)+'" placeholder="10"></div>'+
+      '<div class="inv-two"><div class="field-group"><label class="field-label">'+tr('Quantità')+'</label><input id="invQty" class="text-input" type="text" inputmode="decimal" value="'+esc(f.qty)+'" placeholder="10"></div>'+
       '<div class="field-group"><label class="field-label">'+tr('Valuta')+'</label><select id="invCur" class="text-input">'+curOpts+'</select></div></div>'+
-      '<div class="field-group"><label class="field-label">'+tr('Prezzo di carico (per unit\u00e0)')+'</label><input id="invBuy" class="text-input" type="text" inputmode="decimal" value="'+esc(f.buyPrice)+'" placeholder="100"></div>'+
-      '<div class="field-group"><label class="field-label">'+tr('Prezzo attuale')+'</label><input id="invPrice" class="text-input" type="text" inputmode="decimal" value="'+esc(f.price)+'" placeholder="105"></div>'+
-      '<p class="inv-hint">'+tr('Se lo lasci vuoto, uso il prezzo di carico.')+'</p>'+
+      '<div class="field-group"><label class="field-label">'+tr('Prezzo di carico (per unità)')+'</label><input id="invBuy" class="text-input" type="text" inputmode="decimal" value="'+esc(f.buyPrice)+'" placeholder="100"></div>'+
+      '<div class="field-group"><label class="field-label">'+tr('Prezzo attuale a mano (solo se manca automatico)')+'</label><input id="invPrice" class="text-input" type="text" inputmode="decimal" value="'+esc(f.price)+'" placeholder="—"></div>'+
       '<div class="field-group"><label class="field-label">'+tr('Data di acquisto (facoltativa)')+'</label><input id="invDate" class="text-input" type="date" value="'+esc(f.date)+'"></div>'+
       '<button class="btn-primary full-width" id="invSave">'+tr('Salva')+'</button>'+
       '<button class="btn-secondary full-width" id="invCancel" style="margin-top:8px;">'+tr('Annulla')+'</button>'+
@@ -3561,9 +3766,7 @@ function openInvestmentsSheet(){
   }
   function sheetHTML(){
     var title=iv.mode==='form'?(iv.editId?tr('Modifica titolo'):tr('Aggiungi titolo')):tr('Investimenti');
-    return '<div class="sheet"><div class="sheet-handle"></div>'+
-      '<h3 style="margin:4px 0 10px;">'+title+'</h3>'+
-      (iv.mode==='form'?formHTML():listHTML())+'</div>';
+    return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 10px;">'+title+'</h3>'+(iv.mode==='form'?formHTML():listHTML())+'</div>';
   }
   function render(){
     var w=document.querySelector('#modal-root .sheet-wrap');if(!w)return;
@@ -3574,6 +3777,8 @@ function openInvestmentsSheet(){
       if(ad)ad.onclick=function(){if(!canAdd('investments')){premiumBlock('investments');return;}iv.mode='form';iv.editId=null;iv.confirmDel=false;iv.form=blankForm();iv.err='';render();};
       document.querySelectorAll('[data-inv-edit]').forEach(function(b){b.onclick=function(){var h=(state.investments||[]).filter(function(x){return x.id===b.dataset.invEdit;})[0];if(!h)return;iv.mode='form';iv.editId=h.id;iv.confirmDel=false;iv.form=formFrom(h);iv.err='';render();};});
     }else{
+      var tk=document.getElementById('invTicker');
+      if(tk)tk.oninput=function(){var el=document.getElementById('invLive');if(el)el.innerHTML=invLiveHintHTML(tk.value);var ce=catalogEntry(tk.value);if(ce){var nm=document.getElementById('invName');if(nm&&!nm.value)nm.value=ce.name||'';var cu=document.getElementById('invCur');if(cu&&ce.currency)cu.value=ce.currency;var kd=document.getElementById('invKind');if(kd&&ce.kind)kd.value=ce.kind;}};
       var cc=document.getElementById('invCancel');if(cc)cc.onclick=function(){readForm();iv.mode='list';iv.editId=null;iv.confirmDel=false;iv.err='';render();};
       var sv=document.getElementById('invSave');if(sv)sv.onclick=onSave;
       var dl=document.getElementById('invDel');if(dl)dl.onclick=function(){readForm();iv.confirmDel=true;render();};
@@ -3583,19 +3788,23 @@ function openInvestmentsSheet(){
   }
   function onSave(){
     readForm();var f=iv.form;
-    var ticker=(f.ticker||'').trim();
+    var ticker=(f.ticker||'').trim().toUpperCase();
     if(!ticker){iv.err=tr('Inserisci un simbolo.');render();return;}
-    var qty=invNum(f.qty);if(!(qty>0)){iv.err=tr('La quantit\u00e0 deve essere maggiore di zero.');render();return;}
+    var qty=invNum(f.qty);if(!(qty>0)){iv.err=tr('La quantità deve essere maggiore di zero.');render();return;}
     var buy=invNum(f.buyPrice);if(!(buy>0)){iv.err=tr('Il prezzo di carico deve essere maggiore di zero.');render();return;}
     var price=(f.price===''||f.price==null)?null:invNum(f.price);
+    var ce=catalogEntry(ticker);
+    var cur=ce&&ce.currency?ce.currency:(f.currency||'EUR');
+    var kind=ce&&ce.kind?ce.kind:(f.kind||'etf');
+    var name=(f.name||'').trim()||(ce?ce.name||'':'');
     state.investments=state.investments||[];
     if(iv.editId){
       var h=state.investments.filter(function(x){return x.id===iv.editId;})[0];
-      if(h){h.ticker=ticker.toUpperCase();h.name=(f.name||'').trim();h.kind=f.kind||'etf';h.qty=qty;h.buyPrice=buy;h.price=price;h.currency=f.currency||'EUR';h.date=f.date||'';h.updatedAt=Date.now();}
+      if(h){h.ticker=ticker;h.name=name;h.kind=kind;h.qty=qty;h.buyPrice=buy;h.price=price;h.currency=cur;h.date=f.date||'';h.updatedAt=Date.now();}
       saveState();showToast(tr('Titolo aggiornato'));
     }else{
       if(!canAdd('investments')){premiumBlock('investments');return;}
-      state.investments.push({id:uid('inv'),ticker:ticker.toUpperCase(),name:(f.name||'').trim(),kind:f.kind||'etf',qty:qty,buyPrice:buy,price:price,currency:f.currency||'EUR',date:f.date||'',createdAt:Date.now(),updatedAt:Date.now()});
+      state.investments.push({id:uid('inv'),ticker:ticker,name:name,kind:kind,qty:qty,buyPrice:buy,price:price,currency:cur,date:f.date||'',createdAt:Date.now(),updatedAt:Date.now()});
       saveState();showToast(tr('Titolo aggiunto'));
     }
     iv.mode='list';iv.editId=null;iv.confirmDel=false;iv.err='';render();
@@ -3609,7 +3818,6 @@ function openInvestmentsSheet(){
   openModal('<div class="sheet"></div>');
   render();
 }
-
 function openBudgetSheet(){
   function sheetHTML(){
     return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;font-family:var(--font-display);font-size:18px;letter-spacing:-0.01em;">'+tr('Budget mensili')+'</h3>'+budgetSheetBodyHTML()+'</div>';
@@ -6362,6 +6570,7 @@ function sortedRecurring(){
 function payRecurring(id){
   var item=state.recurring.find(function(r){return r.id===id;});
   if(!item)return;
+  if(item.kind==='pac'){var d0=item.nextDate||todayISO();var pr=executePac(item,d0);if(!pr){showToast(tr('Prezzo non disponibile: riprova più tardi'));return;}saveState();showToast(tr('Investito')+' '+fmt(pr.amount)+' → '+pr.symbol);renderActiveTab();return;}
   var due=item.nextDate||todayISO();
   state.transactions.push({
     id:uid('tx'),type:item.type||'expense',amount:item.amount,
@@ -6428,6 +6637,7 @@ function fireRecNotification(due){
   }catch(e){}
 }
 function checkRecurringDue(force){
+  autoRunDuePacs();
   var due=dueRecurringToday();
   if(!due.length)return;
   var today=todayISO(),log=recNotifLog();
@@ -6549,13 +6759,14 @@ function recurringHTML(){
   var filters='<div class="chip-row">'+
     ['all','active','paused'].map(function(f){var lbl=f==='all'?'Tutti':f==='active'?'Attivi':'In pausa';return '<button class="chip'+(ui.recurringFilter===f?' selected':'')+'" data-rec-filter="'+f+'">'+lbl+'</button>';}).join('')+'</div>';
   var addBtn='<button class="btn-primary full-width" id="recAddBtn"><span style="display:inline-flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>'+tr('Nuovo pagamento ricorrente')+'</span></button>';
+  var pacBtn='<button class="btn-secondary full-width" id="pacAddBtn" style="margin-top:8px;">📈 '+tr('Nuovo piano di accumulo (PAC)')+'</button>';
   if(!state.recurring.length){
     return '<div class="view">'+head+
       '<section class="card" style="text-align:center;padding:34px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;">'+
       '<span style="width:52px;height:52px;border-radius:18px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1 21 6l-4 3.9"/><path d="M21 6H8a5 5 0 0 0-5 5v1"/><path d="M7 21.9 3 18l4-3.9"/><path d="M3 18h13a5 5 0 0 0 5-5v-1"/></svg></span>'+
       '<strong style="font-family:var(--font-display);font-size:16px;">'+tr('Nessun pagamento ricorrente')+'</strong>'+
       '<p class="hint" style="max-width:260px;">'+tr('Aggiungi abbonamenti, rate, tasse o bollette fisse: l\'app tiene traccia delle scadenze e, quando paghi, registra la spesa per te.')+'</p>'+
-      addBtn+'</section></div>';
+      addBtn+pacBtn+'</section></div>';
   }
   var list=filtered.map(function(r){
     var c=catById(r.categoryId),acc=accById(r.accountId),st=recStatus(r),cad=cadenceById(r.cadence);
@@ -6570,14 +6781,198 @@ function recurringHTML(){
   }).join('');
   return '<div class="view">'+head+filters+
     '<section style="display:flex;flex-direction:column;gap:10px;">'+(filtered.length?list:'<p class="empty-note">'+tr('Nessun ricorrente in questo filtro.')+'</p>')+'</section>'+
-    addBtn+
+    addBtn+pacBtn+
   '</div>';
 }
 function wireRecurring(){
   document.querySelectorAll('[data-rec-filter]').forEach(function(b){b.onclick=function(){ui.recurringFilter=b.dataset.recFilter;renderActiveTab();};});
-  var add=document.getElementById('recAddBtn');if(add)add.onclick=function(){openRecurringSheet({});};
-  document.querySelectorAll('[data-rec-pay]').forEach(function(b){b.onclick=function(e){e.stopPropagation();var id=b.dataset.recPay;var it=state.recurring.find(function(r){return r.id===id;});confirmDialog('Registrare '+(it&&it.type==='income'?'l\'entrata':'il pagamento')+' di '+fmt(it?it.amount:0)+' su "'+esc(it?it.name:'')+'"? Verrà creato un movimento e la scadenza passerà alla successiva.',function(){payRecurring(id);},'Registra');};});
-  document.querySelectorAll('[data-rec-open]').forEach(function(b){b.onclick=function(){openRecurringSheet({id:b.dataset.recOpen});};});
+  var add=document.getElementById('recAddBtn');if(add)add.onclick=function(){openRecurringSheet({});};var pacB=document.getElementById('pacAddBtn');if(pacB)pacB.onclick=function(){openPacSheet({});};
+  document.querySelectorAll('[data-rec-pay]').forEach(function(b){b.onclick=function(e){e.stopPropagation();var id=b.dataset.recPay;var it=state.recurring.find(function(r){return r.id===id;});if(it&&it.kind==='pac'){confirmDialog(tr('Eseguire ora l\'acquisto')+' '+fmt(it.amount)+' → '+esc(it.assetSymbol)+'?',function(){payRecurring(id);},tr('Investi'));return;}confirmDialog('Registrare '+(it&&it.type==='income'?'l\'entrata':'il pagamento')+' di '+fmt(it?it.amount:0)+' su "'+esc(it?it.name:'')+'"? Verrà creato un movimento e la scadenza passerà alla successiva.',function(){payRecurring(id);},'Registra');};});
+  document.querySelectorAll('[data-rec-open]').forEach(function(b){b.onclick=function(){var it=state.recurring.find(function(r){return r.id===b.dataset.recOpen;});if(it&&it.kind==='pac')openPacSheet({id:it.id});else openRecurringSheet({id:b.dataset.recOpen});};});
+}
+
+/* ================================================================
+   PAC — Piano di Accumulo (investimento ricorrente)
+   Un PAC e' una ricorrente speciale (kind:'pac'): a ogni scadenza sposta
+   un importo in euro dal conto scelto (registra una spesa) e compra quote
+   dell'asset al prezzo del giorno (da prezzi.json), aggiornando il prezzo
+   medio di carico. Puo' scattare da solo all'apertura dell'app oppure
+   essere confermato a mano dal banner delle scadenze. Se manca il prezzo,
+   rimanda al prossimo avvio. Solo monitoraggio: non e' consulenza.
+================================================================ */
+function ensureInvestCategory(){
+  var byFlag=(state.categories||[]).filter(function(x){return x.type==='expense'&&x._invest;})[0];
+  if(byFlag)return byFlag.id;
+  var byName=(state.categories||[]).filter(function(x){return x.type==='expense'&&/investiment/i.test(x.name||'');})[0];
+  if(byName){byName._invest=true;return byName.id;}
+  var cat={id:uid('cat'),name:'Investimenti',emoji:'📈',color:0,type:'expense',custom:true,_invest:true};
+  state.categories=state.categories||[];state.categories.push(cat);
+  return cat.id;
+}
+function pacLastPrice(symbol){
+  var e=priceEntry(symbol);
+  if(e&&typeof e.price==='number')return {price:e.price,currency:e.currency||'EUR'};
+  if(e&&Array.isArray(e.history)&&e.history.length){var last=e.history[e.history.length-1];if(last&&typeof last[1]==='number')return {price:last[1],currency:e.currency||'EUR'};}
+  return null;
+}
+function pacUnits(amountEur,symbol){
+  var p=pacLastPrice(symbol);if(!p)return null;
+  var priceEur=p.price*fxToEur(p.currency);
+  if(!(priceEur>0))return null;
+  return {units:amountEur/priceEur, price:p.price, currency:p.currency, priceEur:priceEur};
+}
+function pacHolding(symbol){
+  var s=String(symbol).toUpperCase();
+  return (state.investments||[]).filter(function(h){return String(h.ticker).toUpperCase()===s;})[0]||null;
+}
+/* Esegue un PAC per la scadenza 'due'. Ritorna un riepilogo o null se manca il prezzo. */
+function executePac(item,due){
+  due=due||item.nextDate||todayISO();
+  var u=pacUnits(item.amount,item.assetSymbol);
+  if(!u)return null;
+  var ce=catalogEntry(item.assetSymbol)||{};
+  state.transactions.push({
+    id:uid('tx'),type:'expense',amount:item.amount,
+    accountId:item.accountId,categoryId:ensureInvestCategory(),
+    merchant:item.name||('PAC '+item.assetSymbol),
+    note:item.note||('Piano di accumulo · '+item.assetSymbol),
+    date:due,tags:[],createdAt:Date.now(),
+    source:'pac',recurringId:item.id,recurrenceDate:due
+  });
+  state.investments=state.investments||[];
+  var h=pacHolding(item.assetSymbol);
+  if(h){
+    var oldQty=invNum(h.qty),oldBuy=invNum(h.buyPrice);
+    var newQty=oldQty+u.units;
+    h.qty=newQty;
+    h.buyPrice=newQty>0?((oldQty*oldBuy)+(u.units*u.price))/newQty:u.price;
+    h.currency=u.currency;h.updatedAt=Date.now();
+    if(!h.name&&ce.name)h.name=ce.name;
+  }else{
+    state.investments.push({id:uid('inv'),ticker:String(item.assetSymbol).toUpperCase(),name:ce.name||item.assetSymbol,kind:ce.kind||'etf',qty:u.units,buyPrice:u.price,price:null,currency:u.currency,date:due,createdAt:Date.now(),updatedAt:Date.now()});
+  }
+  item.lastPaidDate=due;
+  item.nextDate=addCadenceISO(due,item.cadence);
+  return {symbol:String(item.assetSymbol).toUpperCase(),units:u.units,amount:item.amount,price:u.price,currency:u.currency};
+}
+/* Esegue automaticamente i PAC scaduti (all'avvio / ritorno in primo piano / dopo il caricamento prezzi). */
+function autoRunDuePacs(){
+  if(!state||!state.recurring)return;
+  var due=state.recurring.filter(function(r){return r.kind==='pac'&&r.status!=='paused'&&r.auto!==false&&daysUntil(r.nextDate)<=0;});
+  if(!due.length)return;
+  var done=[],guard=0;
+  due.forEach(function(item){
+    var loops=0;
+    while(item.status!=='paused'&&daysUntil(item.nextDate)<=0&&loops<24&&guard<200){
+      var r=executePac(item,item.nextDate);
+      loops++;guard++;
+      if(!r)break; // prezzo mancante: riprova al prossimo avvio
+      done.push(r);
+    }
+  });
+  if(done.length){
+    saveState();
+    var tot={};done.forEach(function(r){tot[r.symbol]=(tot[r.symbol]||0)+r.amount;});
+    var parts=Object.keys(tot).map(function(s){return fmt(tot[s])+' → '+s;});
+    showToast(tr('Piano di accumulo eseguito')+': '+parts.join(', '));
+    firePacNotification(done);
+    if(ui.activeTab==='home'||ui.activeTab==='recurring')renderActiveTab();
+  }
+}
+function firePacNotification(done){
+  if(!notifEnabled())return;
+  try{
+    var title=done.length===1?tr('Piano di accumulo eseguito'):done.length+' '+tr('acquisti PAC eseguiti');
+    var body=done.slice(0,4).map(function(r){return '📈 '+fmt(r.amount)+' → '+r.symbol+' ('+(r.units>=1?r.units.toFixed(3):r.units.toFixed(6))+' '+tr('quote')+')';}).join('\n');
+    var opts={body:body,tag:'pac'};
+    if(!usingClaudeStorage&&navigator.serviceWorker&&navigator.serviceWorker.getRegistration){
+      navigator.serviceWorker.getRegistration().then(function(r){
+        if(r&&r.showNotification){try{r.showNotification(title,Object.assign({icon:'icon-192.png',badge:'icon-192.png'},opts));}catch(e){try{new Notification(title,opts);}catch(e2){}}}
+        else{try{new Notification(title,opts);}catch(e){}}
+      }).catch(function(){try{new Notification(title,opts);}catch(e){}});
+    }else{try{new Notification(title,opts);}catch(e){}}
+  }catch(e){}
+}
+
+function openPacSheet(opts){
+  opts=opts||{};
+  var edit=opts.id?(state.recurring||[]).find(function(r){return r.id===opts.id&&r.kind==='pac';}):null;
+  var cat=PRICES.catalog||[];
+  var m={
+    isEdit:!!edit,id:edit?edit.id:null,
+    symbol:edit?(edit.assetSymbol||''):(opts.symbol||''),
+    amountStr:edit?String(edit.amount).replace('.',','):'',
+    accountId:edit?edit.accountId:((state.accounts[0]||{}).id),
+    cadence:edit?(edit.cadence||'monthly'):'monthly',
+    nextDate:edit?edit.nextDate:todayISO(),
+    auto:edit?(edit.auto!==false):true,
+    status:edit?(edit.status||'active'):'active',
+    err:''
+  };
+  function liveHint(){
+    var amt=parseAmount(String(m.amountStr).replace(',','.'))||0;
+    var u=pacUnits(amt,m.symbol),e=priceEntry(m.symbol);
+    if(e&&typeof e.price==='number'){
+      var q=(u&&amt>0)?(' · ≈ '+(u.units>=1?u.units.toFixed(3):u.units.toFixed(6))+' '+tr('quote')):'';
+      return '<span class="inv-live-ok">'+tr('Prezzo automatico')+': <b>'+invFmt(e.price,e.currency||'EUR')+'</b>'+q+'</span>';
+    }
+    if(catalogEntry(m.symbol))return '<span class="inv-live-wait">'+tr('Asset in elenco: il prezzo arriverà col prossimo aggiornamento.')+'</span>';
+    if(m.symbol&&m.symbol.trim())return '<span class="inv-live-manual">'+tr('Simbolo non in elenco: scegline uno dal catalogo.')+'</span>';
+    return '<span class="inv-live-manual">'+tr('Scegli un asset dall\'elenco.')+'</span>';
+  }
+  function dl(){return cat.map(function(a){return '<option value="'+esc(a.symbol)+'">'+esc(a.name||'')+'</option>';}).join('');}
+  function accChips(){return '<div class="field-group"><label class="field-label">'+tr('Conto di partenza')+'</label><div class="chip-row">'+state.accounts.map(function(a){return'<button class="chip'+(a.id===m.accountId?' selected':'')+'" data-pac-acc="'+a.id+'"><span class="dot" style="background:'+colorHex(a.color)+'"></span>'+esc(a.name)+'</button>';}).join('')+'</div></div>';}
+  function cadChips(){return '<div class="field-group"><label class="field-label">'+tr('Frequenza')+'</label><div class="segmented small">'+CADENCES.map(function(c){return'<button class="'+(m.cadence===c.id?'active':'')+'" data-pac-cad="'+c.id+'">'+tr(c.label)+'</button>';}).join('')+'</div></div>';}
+  function bodyHTML(){
+    var delBtn=m.isEdit?'<button class="btn-danger full-width" id="pacDel">'+tr('Elimina piano')+'</button>':'';
+    return (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
+      '<p class="hint">'+tr('Ogni periodo l\'app sposta l\'importo dal conto scelto e compra quote dell\'asset al prezzo del giorno.')+'</p>'+
+      '<div class="field-group"><label class="field-label">'+tr('Asset')+'</label><input id="pacSym" class="text-input" list="pacCatalog" type="text" autocapitalize="characters" value="'+esc(m.symbol)+'" placeholder="VWCE, SWDA, BTC"><datalist id="pacCatalog">'+dl()+'</datalist></div>'+
+      '<div id="pacLive" class="inv-live">'+liveHint()+'</div>'+
+      '<div class="field-group"><label class="field-label">'+tr('Importo per periodo')+'</label><div class="amount-field"><span class="amount-cur">€</span><input type="text" inputmode="decimal" id="pacAmount" class="text-input amount-input" value="'+esc(m.amountStr)+'" placeholder="100,00"></div></div>'+
+      accChips()+cadChips()+
+      '<div class="field-group"><label class="field-label">'+tr('Primo acquisto')+'</label><input type="date" id="pacDate" class="text-input" value="'+esc(m.nextDate)+'"></div>'+
+      '<label class="toggle-row" style="padding:2px 2px;"><span>'+tr('Esegui in automatico all\'apertura dell\'app')+'</span><input type="checkbox" id="pacAuto" '+(m.auto?'checked':'')+'></label>'+
+      '<label class="toggle-row" style="padding:2px 2px;"><span>'+tr('In pausa')+'</span><input type="checkbox" id="pacPaused" '+(m.status==='paused'?'checked':'')+'></label>'+
+      delBtn+
+      '<button class="btn-primary full-width sticky-save" id="pacSave">'+(m.isEdit?tr('Salva modifiche'):tr('Crea piano di accumulo'))+'</button>';
+  }
+  function sheetHTML(){return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;font-family:var(--font-display);font-size:18px;letter-spacing:-0.01em;">'+(m.isEdit?tr('Modifica piano di accumulo'):tr('Nuovo piano di accumulo'))+'</h3><div id="pacBody" style="display:flex;flex-direction:column;gap:16px;">'+bodyHTML()+'</div></div>';}
+  function rerender(){var b=document.getElementById('pacBody');if(b){b.innerHTML=bodyHTML();wire();}}
+  function wire(){
+    var sy=document.getElementById('pacSym');if(sy)sy.oninput=function(){m.symbol=sy.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};
+    var am=document.getElementById('pacAmount');if(am)am.oninput=function(){m.amountStr=am.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};
+    var dt=document.getElementById('pacDate');if(dt)dt.onchange=function(){m.nextDate=dt.value||todayISO();};
+    var au=document.getElementById('pacAuto');if(au)au.onchange=function(){m.auto=au.checked;};
+    var pz=document.getElementById('pacPaused');if(pz)pz.onchange=function(){m.status=pz.checked?'paused':'active';};
+    document.querySelectorAll('[data-pac-acc]').forEach(function(b){b.onclick=function(){m.accountId=b.dataset.pacAcc;document.querySelectorAll('[data-pac-acc]').forEach(function(q){q.classList.toggle('selected',q===b);});};});
+    document.querySelectorAll('[data-pac-cad]').forEach(function(b){b.onclick=function(){m.cadence=b.dataset.pacCad;document.querySelectorAll('[data-pac-cad]').forEach(function(q){q.classList.toggle('active',q===b);});};});
+    var del=document.getElementById('pacDel');if(del)del.onclick=function(){confirmDialog(tr('Eliminare questo piano di accumulo? Gli acquisti già registrati restano.'),function(){state.recurring=(state.recurring||[]).filter(function(r){return r.id!==m.id;});saveState();closeModal();showToast(tr('Piano eliminato'));renderActiveTab();},tr('Elimina'));};
+    var sv=document.getElementById('pacSave');if(sv)sv.onclick=onSave;
+  }
+  function onSave(){
+    var symbol=(m.symbol||'').trim().toUpperCase();
+    if(!symbol){m.err=tr('Scegli un asset.');rerender();return;}
+    var amount=parseAmount(String(m.amountStr).replace(',','.'));
+    if(!(amount>0)){m.err=tr('Inserisci un importo valido.');rerender();return;}
+    if(!m.accountId&&state.accounts[0])m.accountId=state.accounts[0].id;
+    var name='PAC '+symbol;
+    if(m.isEdit){
+      var it=(state.recurring||[]).find(function(r){return r.id===m.id;});
+      if(it){it.name=name;it.assetSymbol=symbol;it.amount=amount;it.accountId=m.accountId;it.cadence=m.cadence;it.nextDate=m.nextDate||todayISO();it.auto=m.auto;it.status=m.status;it.categoryId=ensureInvestCategory();}
+      saveState();closeModal();showToast(tr('Piano aggiornato'));
+    }else{
+      if(!pacHolding(symbol)&&!canAdd('investments')){premiumBlock('investments');return;}
+      state.recurring.push({id:uid('rec'),kind:'pac',name:name,type:'expense',assetSymbol:symbol,amount:amount,categoryId:ensureInvestCategory(),accountId:m.accountId,cadence:m.cadence,nextDate:m.nextDate||todayISO(),note:'',auto:m.auto,status:m.status,lastPaidDate:null,createdAt:Date.now()});
+      saveState();closeModal();showToast(tr('Piano di accumulo creato'));
+    }
+    renderActiveTab();
+    setTimeout(function(){autoRunDuePacs();},60);
+  }
+  openModal('<div class="sheet"></div>');
+  var wrap=document.querySelector('#modal-root .sheet-wrap');if(wrap)wrap.innerHTML=sheetHTML();
+  var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+  wire();
 }
 
 function openRecurringSheet(opts){
@@ -6820,6 +7215,7 @@ async function init(){
   applyStaticI18n();
   renderActiveTab();
   updateAvatarFab();
+  loadPrices();
   document.querySelectorAll('.nav-btn').forEach(function(b){b.onclick=function(){
     if(b.dataset.tab===ui.activeTab)return;
     var oi=TAB_ORDER.indexOf(ui.activeTab),ni=TAB_ORDER.indexOf(b.dataset.tab);
