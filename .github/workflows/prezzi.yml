@@ -37,6 +37,7 @@ jobs:
       - name: Aggiorna i prezzi
         env:
           TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
         run: python scripts/aggiorna_prezzi.py
 
       - name: Salva prezzi.json se cambiato
