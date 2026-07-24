@@ -578,6 +578,29 @@ main#content{overscroll-behavior-y:contain;position:relative;}
 .inv-live-manual{color:var(--ink-soft);}
 .inv-chart{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-bottom:12px;}
 .inv-chart-head{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--ink-soft);}
+/* --- Pagina Investimenti (v35) --- */
+.invp{position:fixed;inset:0;z-index:36;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px calc(96px + env(safe-area-inset-bottom));}
+.invp-head{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;gap:10px;padding:14px 0 10px;z-index:2;}
+.invp-back{width:36px;height:36px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:22px;line-height:1;color:var(--ink);display:flex;align-items:center;justify-content:center;}
+.invp-title{font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:-0.01em;}
+.invp-sum-val{font-size:34px;font-weight:800;font-family:var(--font-display);letter-spacing:-0.02em;margin-top:2px;}
+.invp-price-big{font-size:32px;font-weight:800;font-family:var(--font-display);letter-spacing:-0.02em;margin-top:2px;}
+.invp-sum-row{display:flex;gap:14px;font-size:13px;color:var(--ink-soft);margin-top:6px;flex-wrap:wrap;align-items:center;}
+.invp-chart-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;margin-top:14px;}
+.invp-sec{margin-top:18px;}
+.invp-sec h4{margin:0 0 8px;font-size:14px;color:var(--ink-soft);font-weight:600;}
+.invp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;text-align:left;color:var(--ink);}
+.invp-row-l{display:flex;flex-direction:column;min-width:0;}
+.invp-tick{font-weight:700;}
+.invp-name{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.invp-chg{font-weight:700;font-size:14px;white-space:nowrap;}
+.invp-search{width:100%;}
+.invp-kv{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--border);}
+.invp-kv:last-child{border-bottom:none;}
+.invp-asof{font-size:11px;color:var(--ink-soft);margin-top:8px;opacity:.85;}
+.invp-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--border);z-index:37;}
+.invp-bar .btn-primary,.invp-bar .btn-secondary{flex:1;}
+.ip-nochart{font-size:12.5px;color:var(--ink-soft);padding:26px 0;text-align:center;}
 </style>
 </head>
 <body>
@@ -1941,6 +1964,34 @@ Object.assign(TR.fr,{
 Object.assign(TR.en,{'Valore del portafoglio':'Portfolio value'});
 Object.assign(TR.es,{'Valore del portafoglio':'Valor de la cartera'});
 Object.assign(TR.fr,{'Valore del portafoglio':'Valeur du portefeuille'});
+/* i18n pagina Investimenti (v35) */
+Object.assign(TR.en,{
+'Oggi':'Today','Totale':'Total','I tuoi titoli':'Your holdings','Mercato':'Market','Cerca azioni, ETF, cripto…':'Search stocks, ETFs, crypto…',
+'Nessun risultato per':'No results for','Catalogo non ancora caricato.':'Catalog not loaded yet.','Storico non ancora disponibile':'History not available yet',
+'La tua posizione':'Your position','Quote':'Shares','Valore':'Value','Prezzo medio':'Average price','Informazioni':'About','Dati chiave':'Key data',
+'Tipo':'Type','Valuta':'Currency','Prezzo aggiornato':'Price as of','Aggiornato al':'As of','Accumula':'Save plan','Compra':'Buy',
+'Quanto vuoi investire?':'How much do you want to invest?','Data':'Date','Conferma acquisto':'Confirm purchase',
+'Registra la spesa dal conto e aggiunge le quote al portafoglio. Non è un ordine reale né consulenza finanziaria.':'Records the expense from the account and adds the shares to your portfolio. Not a real order nor financial advice.',
+'Acquistate':'Bought','quote di':'shares of','Azioni':'Stocks','Cripto':'Crypto','Altro':'Other','Solo monitoraggio · non è consulenza finanziaria.':'Tracking only · not financial advice.'
+});
+Object.assign(TR.es,{
+'Oggi':'Hoy','Totale':'Total','I tuoi titoli':'Tus posiciones','Mercato':'Mercado','Cerca azioni, ETF, cripto…':'Busca acciones, ETF, cripto…',
+'Nessun risultato per':'Sin resultados para','Catalogo non ancora caricato.':'Catálogo aún no cargado.','Storico non ancora disponibile':'Histórico aún no disponible',
+'La tua posizione':'Tu posición','Quote':'Participaciones','Valore':'Valor','Prezzo medio':'Precio medio','Informazioni':'Información','Dati chiave':'Datos clave',
+'Tipo':'Tipo','Valuta':'Divisa','Prezzo aggiornato':'Precio a fecha','Aggiornato al':'A fecha','Accumula':'Plan periódico','Compra':'Comprar',
+'Quanto vuoi investire?':'¿Cuánto quieres invertir?','Data':'Fecha','Conferma acquisto':'Confirmar compra',
+'Registra la spesa dal conto e aggiunge le quote al portafoglio. Non è un ordine reale né consulenza finanziaria.':'Registra el gasto desde la cuenta y añade las participaciones a la cartera. No es una orden real ni asesoramiento financiero.',
+'Acquistate':'Compradas','quote di':'participaciones de','Azioni':'Acciones','Cripto':'Cripto','Altro':'Otros','Solo monitoraggio · non è consulenza finanziaria.':'Solo seguimiento · no es asesoramiento financiero.'
+});
+Object.assign(TR.fr,{
+'Oggi':'Aujourd\'hui','Totale':'Total','I tuoi titoli':'Vos positions','Mercato':'Marché','Cerca azioni, ETF, cripto…':'Cherchez actions, ETF, crypto…',
+'Nessun risultato per':'Aucun résultat pour','Catalogo non ancora caricato.':'Catalogue pas encore chargé.','Storico non ancora disponibile':'Historique pas encore disponible',
+'La tua posizione':'Votre position','Quote':'Parts','Valore':'Valeur','Prezzo medio':'Prix moyen','Informazioni':'À propos','Dati chiave':'Données clés',
+'Tipo':'Type','Valuta':'Devise','Prezzo aggiornato':'Prix au','Aggiornato al':'Au','Accumula':'Plan d\'épargne','Compra':'Acheter',
+'Quanto vuoi investire?':'Combien voulez-vous investir ?','Data':'Date','Conferma acquisto':'Confirmer l\'achat',
+'Registra la spesa dal conto e aggiunge le quote al portafoglio. Non è un ordine reale né consulenza finanziaria.':'Enregistre la dépense depuis le compte et ajoute les parts au portefeuille. Ni ordre réel ni conseil financier.',
+'Acquistate':'Acheté','quote di':'parts de','Azioni':'Actions','Cripto':'Crypto','Altro':'Autres','Solo monitoraggio · non è consulenza finanziaria.':'Suivi uniquement · pas un conseil financier.'
+});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -2223,7 +2274,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v34';
+var APP_VERSION='v35';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3594,6 +3645,7 @@ async function loadPrices(){
   }catch(e){}
   try{if(typeof autoRunDuePacs==='function')autoRunDuePacs();}catch(e){}
   try{if(typeof updatePortfolioHistory==='function')updatePortfolioHistory();}catch(e){}
+  try{if(typeof invPageRerender==='function')invPageRerender();}catch(e){}
 }
 
 function invNum(v){v=parseFloat(String(v==null?'':v).replace(',','.'));return isNaN(v)?0:v;}
@@ -3676,6 +3728,253 @@ function updatePortfolioHistory(){
   if(!((state.portfolioHistory||[]).length))backfillPortfolioHistory();
   recordPortfolioSnapshot();
   saveState();
+}
+
+/* ================================================================
+   PAGINA INVESTIMENTI (stile broker)
+   Pagina intera aperta dal menu profilo: riepilogo del portafoglio con
+   grafico e periodi (1S/1M/1A/Max), elenco dei propri titoli, mercato
+   con ricerca intelligente, scheda per ogni asset con grafico grande,
+   descrizione e dati chiave, e i tasti Accumula (crea un PAC) e Compra
+   (acquisto una tantum: inserisci gli euro, le quote si calcolano da
+   sole). Solo monitoraggio: non e' consulenza finanziaria.
+================================================================ */
+var IPAGE=null;
+var IP_RANGES=[{id:'1S',days:7},{id:'1M',days:31},{id:'1A',days:366},{id:'Max',days:null}];
+function ipRangeDays(id){for(var i=0;i<IP_RANGES.length;i++)if(IP_RANGES[i].id===id)return IP_RANGES[i].days;return 31;}
+function normTxt(s){try{return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}catch(e){return String(s||'').toLowerCase();}}
+function searchCatalog(q){
+  var toks=normTxt(q).split(/\s+/).filter(Boolean);
+  if(!toks.length)return [];
+  return (PRICES.catalog||[]).filter(function(a){
+    var hay=normTxt(a.symbol+' '+(a.name||'')+' '+(a.kind||''));
+    return toks.every(function(t){return hay.indexOf(t)>=0;});
+  });
+}
+function histRange(hist,days){
+  hist=hist||[];
+  if(!days)return hist;
+  var cut=new Date();cut.setDate(cut.getDate()-days);
+  var iso=cut.toISOString().slice(0,10);
+  return hist.filter(function(p){return p&&p[0]>=iso;});
+}
+function assetHist(sym){var e=priceEntry(sym);return (e&&Array.isArray(e.history))?e.history:[];}
+function assetDayChangePct(sym){
+  var h=assetHist(sym);if(h.length<2)return null;
+  var a=h[h.length-2][1],b=h[h.length-1][1];
+  return (typeof a==='number'&&a>0&&typeof b==='number')?((b-a)/a*100):null;
+}
+function rangeChangePct(hist){
+  hist=(hist||[]).filter(function(p){return p&&typeof p[1]==='number';});
+  if(hist.length<2)return null;
+  var a=hist[0][1],b=hist[hist.length-1][1];
+  return a>0?((b-a)/a*100):null;
+}
+function ipPct(x){if(x==null)return '<span class="invp-chg" style="color:var(--ink-soft);">—</span>';var c=x>=0?'inv-up':'inv-down',s=x>=0?'▲ ':'▼ ';return '<span class="invp-chg '+c+'">'+s+Math.abs(x).toFixed(2).replace('.',',')+' %</span>';}
+function ipQty(u){u=Number(u)||0;return (u>=1?u.toFixed(4):u.toFixed(6)).replace('.',',');}
+function ipNumS(v){v=Number(v)||0;return v>=1000?String(Math.round(v)):(v>=100?v.toFixed(1):(v>=1?v.toFixed(2):v.toFixed(4)));}
+function ipKindName(k){return k==='stock'?tr('Azioni'):(k==='etf'?'ETF':(k==='crypto'?tr('Cripto'):tr('Altro')));}
+function invBigChartSVG(hist){
+  hist=(hist||[]).filter(function(p){return p&&typeof p[1]==='number';});
+  if(hist.length<2)return '<div class="ip-nochart">'+tr('Storico non ancora disponibile')+'</div>';
+  var W=360,H=170,PL=6,PR=52,PT=14,PB=12,n=hist.length;
+  var vals=hist.map(function(p){return p[1];});
+  var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=(max-min)||1;
+  function X(i){return PL+(i/(n-1))*(W-PL-PR);}
+  function Y(v){return PT+(1-((v-min)/rng))*(H-PT-PB);}
+  var pts=hist.map(function(p,i){return X(i).toFixed(1)+','+Y(p[1]).toFixed(1);});
+  var up=vals[n-1]>=vals[0],col=up?'var(--accent)':'var(--red)';
+  var y0=Y(vals[0]).toFixed(1);
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;">'+
+    '<line x1="'+PL+'" y1="'+y0+'" x2="'+(W-PR)+'" y2="'+y0+'" stroke="var(--ink-soft)" stroke-width="1" stroke-dasharray="1 5" opacity="0.6"/>'+
+    '<path d="M'+PL+','+(H-PB)+' L'+pts.join(' L')+' L'+(W-PR)+','+(H-PB)+' Z" fill="'+col+'" opacity="0.10"/>'+
+    '<path d="M'+pts.join(' L')+'" fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<text x="'+(W-PR+6)+'" y="'+(Y(max)+4).toFixed(1)+'" font-size="11" fill="var(--ink-soft)">'+ipNumS(max)+'</text>'+
+    '<text x="'+(W-PR+6)+'" y="'+(Y(min)+4).toFixed(1)+'" font-size="11" fill="var(--ink-soft)">'+ipNumS(min)+'</text>'+
+  '</svg>';
+}
+function ipRangeChips(){
+  return '<div class="segmented small" style="margin-bottom:8px;">'+IP_RANGES.map(function(r){
+    return '<button class="'+(IPAGE.range===r.id?'active':'')+'" data-ip-range="'+r.id+'">'+r.id+'</button>';
+  }).join('')+'</div>';
+}
+/* --- Acquisto una tantum --- */
+function buyOnce(symbol,amount,accountId,dateISO){
+  symbol=String(symbol||'').toUpperCase();
+  var u=pacUnits(amount,symbol);if(!u)return null;
+  var isNew=!pacHolding(symbol);
+  if(isNew&&!canAdd('investments'))return 'limit';
+  var ce=catalogEntry(symbol)||{};
+  state.transactions.push({id:uid('tx'),type:'expense',amount:amount,accountId:accountId,categoryId:ensureInvestCategory(),merchant:'Acquisto '+symbol,note:ce.name||'',date:dateISO||todayISO(),tags:[],createdAt:Date.now(),source:'buy'});
+  var h=pacHolding(symbol);
+  if(h){
+    var oq=invNum(h.qty),ob=invNum(h.buyPrice),nq=oq+u.units;
+    h.qty=nq;h.buyPrice=nq>0?((oq*ob)+(u.units*u.price))/nq:u.price;
+    h.currency=u.currency;h.updatedAt=Date.now();
+    if(!h.name&&ce.name)h.name=ce.name;
+  }else{
+    state.investments=state.investments||[];
+    state.investments.push({id:uid('inv'),ticker:symbol,name:ce.name||symbol,kind:ce.kind||'etf',qty:u.units,buyPrice:u.price,price:null,currency:u.currency,date:dateISO||todayISO(),createdAt:Date.now(),updatedAt:Date.now()});
+  }
+  saveState();
+  return {symbol:symbol,units:u.units,amount:amount,price:u.price,currency:u.currency};
+}
+function openBuySheet(sym){
+  sym=String(sym||'').toUpperCase();
+  var b={amountStr:'',accountId:(state.accounts[0]||{}).id,date:todayISO()};
+  function prev(){
+    var amt=parseAmount(String(b.amountStr).replace(',','.'))||0;
+    var lp=pacLastPrice(sym);
+    if(!lp)return '<span class="inv-live-manual">'+tr('Prezzo non disponibile: riprova più tardi')+'</span>';
+    var s='<span class="inv-live-ok">'+tr('Prezzo automatico')+': <b>'+invFmt(lp.price,lp.currency)+'</b>';
+    if(amt>0){var u=pacUnits(amt,sym);if(u)s+=' · ≈ <b>'+ipQty(u.units)+'</b> '+tr('quote');}
+    return s+'</span>';
+  }
+  function accChips(){return '<div class="field-group"><label class="field-label">'+tr('Conto di partenza')+'</label><div class="chip-row">'+state.accounts.map(function(a){return'<button class="chip'+(a.id===b.accountId?' selected':'')+'" data-ipb-acc="'+a.id+'"><span class="dot" style="background:'+colorHex(a.color)+'"></span>'+esc(a.name)+'</button>';}).join('')+'</div></div>';}
+  function html(){
+    return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 10px;">'+tr('Compra')+' '+esc(sym)+'</h3>'+
+      '<div id="ipPrev" class="inv-live" style="margin:0 0 10px;">'+prev()+'</div>'+
+      '<div class="field-group"><label class="field-label">'+tr('Quanto vuoi investire?')+'</label><div class="amount-field"><span class="amount-cur">€</span><input type="text" inputmode="decimal" id="ipAmt" class="text-input amount-input" value="'+esc(b.amountStr)+'" placeholder="100,00"></div></div>'+
+      accChips()+
+      '<div class="field-group"><label class="field-label">'+tr('Data')+'</label><input type="date" id="ipDate" class="text-input" value="'+esc(b.date)+'"></div>'+
+      '<button class="btn-primary full-width" id="ipGo">'+tr('Conferma acquisto')+'</button>'+
+      '<p class="inv-disc">'+tr('Registra la spesa dal conto e aggiunge le quote al portafoglio. Non è un ordine reale né consulenza finanziaria.')+'</p>'+
+    '</div>';
+  }
+  function wire(){
+    var am=document.getElementById('ipAmt');if(am)am.oninput=function(){b.amountStr=am.value;var p=document.getElementById('ipPrev');if(p)p.innerHTML=prev();};
+    var dt=document.getElementById('ipDate');if(dt)dt.onchange=function(){b.date=dt.value||todayISO();};
+    document.querySelectorAll('[data-ipb-acc]').forEach(function(x){x.onclick=function(){b.accountId=x.dataset.ipbAcc;document.querySelectorAll('[data-ipb-acc]').forEach(function(q){q.classList.toggle('selected',q===x);});};});
+    var go=document.getElementById('ipGo');if(go)go.onclick=function(){
+      var amt=parseAmount(String(b.amountStr).replace(',','.'));
+      if(!(amt>0)){showToast(tr('Inserisci un importo valido.'));return;}
+      var r=buyOnce(sym,amt,b.accountId,b.date);
+      if(r===null){showToast(tr('Prezzo non disponibile: riprova più tardi'));return;}
+      if(r==='limit'){premiumBlock('investments');return;}
+      try{updatePortfolioHistory();}catch(e){}
+      closeModal();
+      showToast(tr('Acquistate')+' '+ipQty(r.units)+' '+tr('quote di')+' '+r.symbol);
+      invPageRerender();
+    };
+  }
+  openModal('<div class="sheet"></div>');
+  var w=document.querySelector('#modal-root .sheet-wrap');if(w)w.innerHTML=html();
+  var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+  wire();
+}
+/* --- Pagina --- */
+function openInvestPage(){
+  var old=document.getElementById('invPage');if(old)old.remove();
+  IPAGE={view:'home',sym:null,range:'1M',q:''};
+  var el=document.createElement('div');el.id='invPage';el.className='invp';
+  document.body.appendChild(el);
+  renderInvestPage();
+}
+function closeInvestPage(){var el=document.getElementById('invPage');if(el)el.remove();IPAGE=null;}
+function invPageRerender(){if(document.getElementById('invPage')&&IPAGE)renderInvestPage();}
+function ipHomeHTML(){
+  var list=state.investments||[],t=invTotalsEur(list),hidden=balHidden();
+  var ph=state.portfolioHistory||[];
+  var dayPct=null,dayEur=null;
+  if(ph.length>=2){var a=ph[ph.length-2][1],bv=ph[ph.length-1][1];if(a>0){dayPct=(bv-a)/a*100;dayEur=bv-a;}}
+  var gCls=t.gain>=0?'inv-up':'inv-down',gs=t.gain>=0?'+':'';
+  var sum='<div class="invp-sum"><div class="hero-label">'+tr('Valore totale')+'</div>'+
+    '<div class="invp-sum-val">'+(hidden?'••••':fmt(t.value))+'</div>'+
+    '<div class="invp-sum-row">'+
+      '<span>'+tr('Oggi')+': '+(dayPct==null?'—':((hidden?'':((dayEur>=0?'+':'')+fmt(dayEur))+' · ')+ipPct(dayPct)))+'</span>'+
+      '<span class="'+gCls+'">'+tr('Totale')+': <b>'+(hidden?'••••':(gs+fmt(t.gain)))+'</b> ('+gs+t.gainPct.toFixed(1).replace('.',',')+'%)</span>'+
+    '</div></div>';
+  var chart='<div class="invp-chart-card">'+ipRangeChips()+invBigChartSVG(histRange(ph,ipRangeDays(IPAGE.range)))+'</div>';
+  var mine='';
+  if(list.length){
+    var rows=list.slice().sort(function(x,y){return invValueEur(y)-invValueEur(x);}).map(function(h){
+      var g=invGainPctH(h),cls=invGainEur(h)>=0?'inv-up':'inv-down',s2=invGainEur(h)>=0?'+':'';
+      return '<button class="invp-row" data-ip-open="'+esc(h.ticker)+'"><div class="invp-row-l">'+
+        '<span class="invp-tick">'+esc(h.ticker)+'</span><span class="invp-name">'+esc(h.name||'')+' · '+ipQty(h.qty)+' '+tr('quote')+'</span></div>'+
+        '<div style="text-align:right;"><div style="font-weight:700;">'+(hidden?'••••':fmt(invValueEur(h)))+'</div>'+
+        '<div class="invp-chg '+cls+'" style="font-size:12px;">'+s2+g.toFixed(1).replace('.',',')+'%</div></div></button>';
+    }).join('');
+    mine='<div class="invp-sec"><h4>'+tr('I tuoi titoli')+'</h4>'+rows+'</div>';
+  }
+  var srch='<div class="invp-sec"><h4>'+tr('Mercato')+'</h4>'+
+    '<input id="ipSearch" class="text-input invp-search" type="search" placeholder="'+tr('Cerca azioni, ETF, cripto…')+'" value="'+esc(IPAGE.q)+'">'+
+    '<div id="ipMarket" style="margin-top:10px;">'+ipMarketHTML()+'</div></div>';
+  var upd='<div class="invp-asof">'+(PRICES.updatedAt?tr('Prezzi aggiornati il')+' '+esc(String(PRICES.updatedAt)):tr('Prezzi non ancora disponibili'))+'</div>';
+  return '<div class="invp-head"><button class="invp-back" id="ipBack">‹</button><span class="invp-title">'+tr('Investimenti')+'</span></div>'+
+    sum+chart+mine+srch+upd+
+    '<p class="inv-disc">'+tr('Solo monitoraggio · non è consulenza finanziaria.')+'</p>';
+}
+function ipMarketRow(a){
+  return '<button class="invp-row" data-ip-open="'+esc(a.symbol)+'"><div class="invp-row-l">'+
+    '<span class="invp-tick">'+esc(a.symbol)+'</span><span class="invp-name">'+esc(a.name||'')+'</span></div>'+
+    ipPct(assetDayChangePct(a.symbol))+'</button>';
+}
+function ipMarketHTML(){
+  var q=(IPAGE.q||'').trim();
+  if(q){
+    var res=searchCatalog(q);
+    if(!res.length)return '<p class="empty-note">'+tr('Nessun risultato per')+' “'+esc(q)+'”.</p>';
+    return res.map(ipMarketRow).join('');
+  }
+  var order=['stock','etf','crypto','other'],out='';
+  order.forEach(function(k){
+    var items=(PRICES.catalog||[]).filter(function(a){return (a.kind||'other')===k;});
+    if(!items.length)return;
+    out+='<h4 style="margin:14px 0 8px;font-size:13px;color:var(--ink-soft);">'+ipKindName(k)+'</h4>'+items.map(ipMarketRow).join('');
+  });
+  return out||'<p class="empty-note">'+tr('Catalogo non ancora caricato.')+'</p>';
+}
+function ipDetailHTML(sym){
+  var ce=catalogEntry(sym)||{},pe=priceEntry(sym)||{};
+  var lp=pacLastPrice(sym);
+  var day=assetDayChangePct(sym);
+  var hist=histRange(assetHist(sym),ipRangeDays(IPAGE.range));
+  var rPct=rangeChangePct(hist);
+  var asof=pe.asof||((assetHist(sym).length)?assetHist(sym)[assetHist(sym).length-1][0]:null);
+  var head='<div class="invp-head"><button class="invp-back" id="ipBack">‹</button><span class="invp-title">'+esc(sym)+'</span></div>';
+  var priceHtml=lp?'<div class="invp-price-big">'+invFmt(lp.price,lp.currency)+'</div>':'<div class="invp-price-big" style="color:var(--ink-soft);">—</div>';
+  var top='<div class="hero-label">'+esc(ce.name||sym)+'</div>'+priceHtml+
+    '<div class="invp-sum-row"><span>'+tr('Oggi')+': '+ipPct(day)+'</span>'+(rPct!=null?'<span>'+esc(IPAGE.range)+': '+ipPct(rPct)+'</span>':'')+'</div>';
+  var chart='<div class="invp-chart-card">'+ipRangeChips()+invBigChartSVG(hist)+
+    (asof?'<div class="invp-asof">'+tr('Aggiornato al')+' '+esc(String(asof))+'</div>':'')+'</div>';
+  var pos='';
+  var h=pacHolding(sym);
+  if(h){
+    var hidden=balHidden(),g=invGainEur(h),gp=invGainPctH(h),cls=g>=0?'inv-up':'inv-down',s2=g>=0?'+':'';
+    pos='<div class="invp-sec"><h4>'+tr('La tua posizione')+'</h4><div class="invp-chart-card" style="margin-top:0;">'+
+      '<div class="invp-kv"><span>'+tr('Quote')+'</span><b>'+ipQty(h.qty)+'</b></div>'+
+      '<div class="invp-kv"><span>'+tr('Valore')+'</span><b>'+(hidden?'••••':fmt(invValueEur(h)))+'</b></div>'+
+      '<div class="invp-kv"><span>'+tr('Prezzo medio')+'</span><b>'+invFmt(invNum(h.buyPrice),h.currency||invAssetCur(h))+'</b></div>'+
+      '<div class="invp-kv"><span>'+tr('Guadagno/Perdita')+'</span><b class="'+cls+'">'+(hidden?'••••':(s2+fmt(g)))+' ('+s2+gp.toFixed(1).replace('.',',')+'%)</b></div>'+
+    '</div></div>';
+  }
+  var info=ce.desc?'<div class="invp-sec"><h4>'+tr('Informazioni')+'</h4><p style="font-size:14px;line-height:1.5;margin:0;">'+esc(ce.desc)+'</p></div>':'';
+  var kv='<div class="invp-sec"><h4>'+tr('Dati chiave')+'</h4><div class="invp-chart-card" style="margin-top:0;">'+
+    '<div class="invp-kv"><span>'+tr('Tipo')+'</span><b>'+invKindLabel(ce.kind||(h&&h.kind)||'other')+'</b></div>'+
+    '<div class="invp-kv"><span>'+tr('Valuta')+'</span><b>'+esc(ce.currency||(lp&&lp.currency)||'—')+'</b></div>'+
+    (asof?'<div class="invp-kv"><span>'+tr('Prezzo aggiornato')+'</span><b>'+esc(String(asof))+'</b></div>':'')+
+  '</div></div>';
+  var bar='<div class="invp-bar"><button class="btn-secondary" id="ipAcc">🔁 '+tr('Accumula')+'</button><button class="btn-primary" id="ipBuy">+ '+tr('Compra')+'</button></div>';
+  return head+top+chart+pos+info+kv+
+    '<p class="inv-disc">'+tr('Solo monitoraggio · non è consulenza finanziaria.')+'</p>'+bar;
+}
+function ipWireRows(scope){
+  (scope||document).querySelectorAll('[data-ip-open]').forEach(function(b){
+    b.onclick=function(){IPAGE.view='detail';IPAGE.sym=b.dataset.ipOpen;IPAGE.range='1M';renderInvestPage();};
+  });
+}
+function renderInvestPage(){
+  var el=document.getElementById('invPage');if(!el||!IPAGE)return;
+  el.innerHTML=(IPAGE.view==='detail')?ipDetailHTML(IPAGE.sym):ipHomeHTML();
+  el.scrollTop=0;
+  var back=document.getElementById('ipBack');
+  if(back)back.onclick=function(){if(IPAGE.view==='detail'){IPAGE.view='home';IPAGE.sym=null;renderInvestPage();}else closeInvestPage();};
+  el.querySelectorAll('[data-ip-range]').forEach(function(b){b.onclick=function(){IPAGE.range=b.dataset.ipRange;renderInvestPage();};});
+  ipWireRows(el);
+  var s=document.getElementById('ipSearch');
+  if(s)s.oninput=function(){IPAGE.q=s.value;var mk=document.getElementById('ipMarket');if(mk){mk.innerHTML=ipMarketHTML();ipWireRows(mk);}};
+  var ac=document.getElementById('ipAcc');if(ac)ac.onclick=function(){openPacSheet({symbol:IPAGE.sym});};
+  var by=document.getElementById('ipBuy');if(by)by.onclick=function(){openBuySheet(IPAGE.sym);};
 }
 
 function openInvestmentsSheet(){
@@ -4140,7 +4439,7 @@ function openProfileSheet(){
     document.querySelectorAll('[data-theme-pref]').forEach(function(b){
       b.onclick=function(){setThemePref(b.dataset.themePref);render();};
     });
-    var minv=document.getElementById('menuInvest');if(minv)minv.onclick=openInvestmentsSheet;
+    var minv=document.getElementById('menuInvest');if(minv)minv.onclick=function(){closeModal();openInvestPage();};
     var mb=document.getElementById('menuBudget');if(mb)mb.onclick=openBudgetSheet;
     var mct=document.getElementById('menuCats');if(mct)mct.onclick=openCatsTagsSheet;
     var mlg=document.getElementById('menuLang');if(mlg)mlg.onclick=openLangSheet;
@@ -6811,12 +7110,16 @@ function ensureInvestCategory(){
 }
 function pacLastPrice(symbol){
   var e=priceEntry(symbol);
-  if(e&&typeof e.price==='number')return {price:e.price,currency:e.currency||'EUR'};
-  if(e&&Array.isArray(e.history)&&e.history.length){var last=e.history[e.history.length-1];if(last&&typeof last[1]==='number')return {price:last[1],currency:e.currency||'EUR'};}
+  if(!e)return null;
+  var d=e.asof||null;
+  if(!d&&Array.isArray(e.history)&&e.history.length&&e.history[e.history.length-1])d=e.history[e.history.length-1][0];
+  if(typeof e.price==='number')return {price:e.price,currency:e.currency||'EUR',date:d};
+  if(Array.isArray(e.history)&&e.history.length){var last=e.history[e.history.length-1];if(last&&typeof last[1]==='number')return {price:last[1],currency:e.currency||'EUR',date:d};}
   return null;
 }
 function pacUnits(amountEur,symbol){
   var p=pacLastPrice(symbol);if(!p)return null;
+  if(p.date&&/^\d{4}-\d{2}-\d{2}/.test(String(p.date))&&daysUntil(String(p.date).slice(0,10))<-10)return null;
   var priceEur=p.price*fxToEur(p.currency);
   if(!(priceEur>0))return null;
   return {units:amountEur/priceEur, price:p.price, currency:p.currency, priceEur:priceEur};
