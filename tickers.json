@@ -1,537 +1,1990 @@
 {
- "_nota": "Catalogo asset seguiti dal robot dei prezzi. 'symbol' e' quello mostrato nell'app; 'apiSymbol' e' quello inviato a Twelve Data; 'exchange'/'mic' servono per i listini europei; 'desc' e' la descrizione mostrata nella scheda. Gli asset europei (XETRA/MTA) potrebbero richiedere il piano a pagamento di Twelve Data.",
+ "_nota": "Catalogo asset. 'source' indica da quale servizio il robot prende i prezzi: 'twelvedata' (USA e cripto, aggiornamento quotidiano) o 'alphavantage' (Europa, aggiornamento a rotazione). Per gli asset europei il robot trova da solo il simbolo giusto usando 'avQuery' e lo memorizza in prezzi.json.",
  "assets": [
   {
    "symbol": "AAPL",
    "name": "Apple",
    "kind": "stock",
-   "apiSymbol": "AAPL",
    "currency": "USD",
-   "desc": "Apple Inc. progetta e vende iPhone, Mac, iPad, indossabili e servizi digitali.",
+   "desc": "Progetta e vende iPhone, Mac, iPad, indossabili e servizi digitali.",
+   "source": "twelvedata",
+   "apiSymbol": "AAPL",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "MSFT",
    "name": "Microsoft",
    "kind": "stock",
-   "apiSymbol": "MSFT",
    "currency": "USD",
-   "desc": "Software (Windows, Office), cloud Azure e intelligenza artificiale.",
+   "desc": "Software Windows e Office, cloud Azure e intelligenza artificiale.",
+   "source": "twelvedata",
+   "apiSymbol": "MSFT",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "NVDA",
    "name": "NVIDIA",
    "kind": "stock",
-   "apiSymbol": "NVDA",
    "currency": "USD",
    "desc": "Chip grafici e processori per intelligenza artificiale e data center.",
+   "source": "twelvedata",
+   "apiSymbol": "NVDA",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "GOOGL",
    "name": "Alphabet (Google)",
    "kind": "stock",
-   "apiSymbol": "GOOGL",
    "currency": "USD",
-   "desc": "Motore di ricerca Google, YouTube, Android e cloud.",
+   "desc": "Motore di ricerca Google, YouTube, Android e servizi cloud.",
+   "source": "twelvedata",
+   "apiSymbol": "GOOGL",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "AMZN",
    "name": "Amazon",
    "kind": "stock",
-   "apiSymbol": "AMZN",
    "currency": "USD",
-   "desc": "E-commerce mondiale e cloud AWS.",
+   "desc": "Il più grande negozio online del mondo e il cloud AWS.",
+   "source": "twelvedata",
+   "apiSymbol": "AMZN",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "META",
    "name": "Meta Platforms",
    "kind": "stock",
-   "apiSymbol": "META",
    "currency": "USD",
-   "desc": "Facebook, Instagram e WhatsApp; pubblicità digitale.",
+   "desc": "Facebook, Instagram e WhatsApp; vive di pubblicità digitale.",
+   "source": "twelvedata",
+   "apiSymbol": "META",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "TSLA",
    "name": "Tesla",
    "kind": "stock",
-   "apiSymbol": "TSLA",
    "currency": "USD",
-   "desc": "Auto elettriche, batterie ed energia solare.",
+   "desc": "Auto elettriche, batterie e pannelli solari.",
+   "source": "twelvedata",
+   "apiSymbol": "TSLA",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "BRK.B",
    "name": "Berkshire Hathaway B",
    "kind": "stock",
-   "apiSymbol": "BRK.B",
    "currency": "USD",
    "desc": "La holding di Warren Buffett: assicurazioni e partecipazioni.",
+   "source": "twelvedata",
+   "apiSymbol": "BRK.B",
    "exchange": "NYSE"
+  },
+  {
+   "symbol": "AVGO",
+   "name": "Broadcom",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Semiconduttori per reti, telefoni e infrastrutture.",
+   "source": "twelvedata",
+   "apiSymbol": "AVGO",
+   "exchange": "NASDAQ"
   },
   {
    "symbol": "JPM",
    "name": "JPMorgan Chase",
    "kind": "stock",
-   "apiSymbol": "JPM",
    "currency": "USD",
    "desc": "La più grande banca degli Stati Uniti.",
+   "source": "twelvedata",
+   "apiSymbol": "JPM",
    "exchange": "NYSE"
   },
   {
    "symbol": "V",
    "name": "Visa",
    "kind": "stock",
-   "apiSymbol": "V",
    "currency": "USD",
-   "desc": "Circuito mondiale di pagamenti con carta.",
+   "desc": "Il circuito di pagamenti con carta più diffuso al mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "V",
    "exchange": "NYSE"
   },
   {
    "symbol": "MA",
    "name": "Mastercard",
    "kind": "stock",
-   "apiSymbol": "MA",
    "currency": "USD",
    "desc": "Pagamenti digitali e carte in tutto il mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "MA",
    "exchange": "NYSE"
   },
   {
    "symbol": "UNH",
    "name": "UnitedHealth",
    "kind": "stock",
-   "apiSymbol": "UNH",
    "currency": "USD",
-   "desc": "Assicurazioni e servizi sanitari negli USA.",
+   "desc": "Assicurazioni sanitarie e servizi medici negli USA.",
+   "source": "twelvedata",
+   "apiSymbol": "UNH",
    "exchange": "NYSE"
   },
   {
    "symbol": "XOM",
    "name": "Exxon Mobil",
    "kind": "stock",
-   "apiSymbol": "XOM",
    "currency": "USD",
-   "desc": "Colosso petrolifero ed energetico.",
+   "desc": "Colosso del petrolio e del gas.",
+   "source": "twelvedata",
+   "apiSymbol": "XOM",
    "exchange": "NYSE"
   },
   {
    "symbol": "JNJ",
    "name": "Johnson & Johnson",
    "kind": "stock",
-   "apiSymbol": "JNJ",
    "currency": "USD",
-   "desc": "Farmaceutica e dispositivi medici.",
+   "desc": "Farmaci e dispositivi medici.",
+   "source": "twelvedata",
+   "apiSymbol": "JNJ",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "LLY",
+   "name": "Eli Lilly",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaceutica: diabete, obesità e malattie neurologiche.",
+   "source": "twelvedata",
+   "apiSymbol": "LLY",
    "exchange": "NYSE"
   },
   {
    "symbol": "PG",
    "name": "Procter & Gamble",
    "kind": "stock",
-   "apiSymbol": "PG",
    "currency": "USD",
-   "desc": "Beni di consumo: Gillette, Pampers, Dash.",
+   "desc": "Prodotti per la casa e la persona: Gillette, Pampers, Dash.",
+   "source": "twelvedata",
+   "apiSymbol": "PG",
    "exchange": "NYSE"
   },
   {
    "symbol": "KO",
    "name": "Coca-Cola",
    "kind": "stock",
-   "apiSymbol": "KO",
    "currency": "USD",
    "desc": "Bevande vendute in tutto il mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "KO",
    "exchange": "NYSE"
   },
   {
    "symbol": "PEP",
    "name": "PepsiCo",
    "kind": "stock",
-   "apiSymbol": "PEP",
    "currency": "USD",
-   "desc": "Bevande e snack (Pepsi, Lay's, Gatorade).",
+   "desc": "Bevande e snack: Pepsi, Lay's, Gatorade.",
+   "source": "twelvedata",
+   "apiSymbol": "PEP",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "COST",
    "name": "Costco",
    "kind": "stock",
-   "apiSymbol": "COST",
    "currency": "USD",
-   "desc": "Catena di ipermercati all'ingrosso su abbonamento.",
+   "desc": "Ipermercati all'ingrosso con tessera associativa.",
+   "source": "twelvedata",
+   "apiSymbol": "COST",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "WMT",
    "name": "Walmart",
    "kind": "stock",
-   "apiSymbol": "WMT",
    "currency": "USD",
-   "desc": "La più grande catena di supermercati al mondo.",
+   "desc": "La più grande catena di supermercati del mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "WMT",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "HD",
+   "name": "Home Depot",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Catena americana di fai-da-te e materiali per la casa.",
+   "source": "twelvedata",
+   "apiSymbol": "HD",
    "exchange": "NYSE"
   },
   {
    "symbol": "DIS",
    "name": "Walt Disney",
    "kind": "stock",
-   "apiSymbol": "DIS",
    "currency": "USD",
-   "desc": "Parchi, cinema e streaming Disney+.",
+   "desc": "Parchi, film, TV e streaming Disney+.",
+   "source": "twelvedata",
+   "apiSymbol": "DIS",
    "exchange": "NYSE"
   },
   {
    "symbol": "NFLX",
    "name": "Netflix",
    "kind": "stock",
-   "apiSymbol": "NFLX",
    "currency": "USD",
-   "desc": "Streaming di film e serie TV.",
+   "desc": "Streaming di film e serie TV in abbonamento.",
+   "source": "twelvedata",
+   "apiSymbol": "NFLX",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "AMD",
    "name": "AMD",
    "kind": "stock",
-   "apiSymbol": "AMD",
    "currency": "USD",
-   "desc": "Processori e chip per PC, console e data center.",
+   "desc": "Processori e schede grafiche per PC, console e server.",
+   "source": "twelvedata",
+   "apiSymbol": "AMD",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "INTC",
    "name": "Intel",
    "kind": "stock",
-   "apiSymbol": "INTC",
    "currency": "USD",
    "desc": "Storico produttore di microprocessori.",
+   "source": "twelvedata",
+   "apiSymbol": "INTC",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "QCOM",
+   "name": "Qualcomm",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Chip e brevetti per la telefonia mobile.",
+   "source": "twelvedata",
+   "apiSymbol": "QCOM",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "TXN",
+   "name": "Texas Instruments",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Semiconduttori analogici per industria e auto.",
+   "source": "twelvedata",
+   "apiSymbol": "TXN",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "MU",
+   "name": "Micron",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Memorie e chip di archiviazione.",
+   "source": "twelvedata",
+   "apiSymbol": "MU",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "CRM",
    "name": "Salesforce",
    "kind": "stock",
-   "apiSymbol": "CRM",
    "currency": "USD",
-   "desc": "Software cloud per la gestione dei clienti.",
+   "desc": "Software cloud per gestire clienti e vendite.",
+   "source": "twelvedata",
+   "apiSymbol": "CRM",
    "exchange": "NYSE"
   },
   {
    "symbol": "ORCL",
    "name": "Oracle",
    "kind": "stock",
-   "apiSymbol": "ORCL",
    "currency": "USD",
    "desc": "Database e servizi cloud per le aziende.",
+   "source": "twelvedata",
+   "apiSymbol": "ORCL",
    "exchange": "NYSE"
   },
   {
    "symbol": "ADBE",
    "name": "Adobe",
    "kind": "stock",
-   "apiSymbol": "ADBE",
    "currency": "USD",
-   "desc": "Photoshop, PDF e software creativo in abbonamento.",
+   "desc": "Photoshop, PDF e software creativi in abbonamento.",
+   "source": "twelvedata",
+   "apiSymbol": "ADBE",
    "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "CSCO",
+   "name": "Cisco",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Apparati di rete e sicurezza informatica.",
+   "source": "twelvedata",
+   "apiSymbol": "CSCO",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "IBM",
+   "name": "IBM",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Servizi informatici, cloud ibrido e intelligenza artificiale.",
+   "source": "twelvedata",
+   "apiSymbol": "IBM",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "NOW",
+   "name": "ServiceNow",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Software per automatizzare i processi aziendali.",
+   "source": "twelvedata",
+   "apiSymbol": "NOW",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "INTU",
+   "name": "Intuit",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Software di contabilità e dichiarazioni fiscali.",
+   "source": "twelvedata",
+   "apiSymbol": "INTU",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "UBER",
+   "name": "Uber",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Corse con autista e consegne a domicilio.",
+   "source": "twelvedata",
+   "apiSymbol": "UBER",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "ABNB",
+   "name": "Airbnb",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Affitti brevi e case vacanza in tutto il mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "ABNB",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "PYPL",
+   "name": "PayPal",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Pagamenti online e trasferimenti di denaro.",
+   "source": "twelvedata",
+   "apiSymbol": "PYPL",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "SQ",
+   "name": "Block (Square)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Pagamenti per negozi e app Cash App.",
+   "source": "twelvedata",
+   "apiSymbol": "SQ",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SHOP",
+   "name": "Shopify",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Piattaforma per creare negozi online.",
+   "source": "twelvedata",
+   "apiSymbol": "SHOP",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SPOT",
+   "name": "Spotify",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Streaming musicale e podcast in abbonamento.",
+   "source": "twelvedata",
+   "apiSymbol": "SPOT",
+   "exchange": "NYSE"
   },
   {
    "symbol": "MCD",
    "name": "McDonald's",
    "kind": "stock",
-   "apiSymbol": "MCD",
    "currency": "USD",
    "desc": "La catena di fast food più grande al mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "MCD",
    "exchange": "NYSE"
+  },
+  {
+   "symbol": "SBUX",
+   "name": "Starbucks",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Caffetterie in tutto il mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "SBUX",
+   "exchange": "NASDAQ"
   },
   {
    "symbol": "NKE",
    "name": "Nike",
    "kind": "stock",
-   "apiSymbol": "NKE",
    "currency": "USD",
-   "desc": "Abbigliamento e scarpe sportive.",
+   "desc": "Scarpe e abbigliamento sportivo.",
+   "source": "twelvedata",
+   "apiSymbol": "NKE",
    "exchange": "NYSE"
   },
   {
    "symbol": "BA",
    "name": "Boeing",
    "kind": "stock",
-   "apiSymbol": "BA",
    "currency": "USD",
-   "desc": "Aerei civili e difesa.",
+   "desc": "Aerei civili, difesa e spazio.",
+   "source": "twelvedata",
+   "apiSymbol": "BA",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "CAT",
+   "name": "Caterpillar",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Macchine per costruzioni e miniere.",
+   "source": "twelvedata",
+   "apiSymbol": "CAT",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "GE",
+   "name": "GE Aerospace",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Motori per aerei e servizi aeronautici.",
+   "source": "twelvedata",
+   "apiSymbol": "GE",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "HON",
+   "name": "Honeywell",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Tecnologie per industria, aerospazio ed edifici.",
+   "source": "twelvedata",
+   "apiSymbol": "HON",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "LMT",
+   "name": "Lockheed Martin",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Difesa e aerospazio.",
+   "source": "twelvedata",
+   "apiSymbol": "LMT",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "RTX",
+   "name": "RTX (Raytheon)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Difesa, missili e motori aeronautici.",
+   "source": "twelvedata",
+   "apiSymbol": "RTX",
    "exchange": "NYSE"
   },
   {
    "symbol": "PFE",
    "name": "Pfizer",
    "kind": "stock",
-   "apiSymbol": "PFE",
    "currency": "USD",
    "desc": "Farmaceutica globale.",
+   "source": "twelvedata",
+   "apiSymbol": "PFE",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "MRK",
+   "name": "Merck",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaci oncologici e vaccini.",
+   "source": "twelvedata",
+   "apiSymbol": "MRK",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "ABBV",
+   "name": "AbbVie",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaci per immunologia e oncologia.",
+   "source": "twelvedata",
+   "apiSymbol": "ABBV",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "TMO",
+   "name": "Thermo Fisher",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Strumenti e reagenti per laboratori.",
+   "source": "twelvedata",
+   "apiSymbol": "TMO",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "ABT",
+   "name": "Abbott",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Dispositivi medici e diagnostica.",
+   "source": "twelvedata",
+   "apiSymbol": "ABT",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "DHR",
+   "name": "Danaher",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Strumenti scientifici e diagnostica.",
+   "source": "twelvedata",
+   "apiSymbol": "DHR",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "AMGN",
+   "name": "Amgen",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaci biotecnologici.",
+   "source": "twelvedata",
+   "apiSymbol": "AMGN",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "GILD",
+   "name": "Gilead",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaci antivirali e oncologici.",
+   "source": "twelvedata",
+   "apiSymbol": "GILD",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "BMY",
+   "name": "Bristol-Myers Squibb",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaci oncologici e cardiovascolari.",
+   "source": "twelvedata",
+   "apiSymbol": "BMY",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "CVX",
+   "name": "Chevron",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Petrolio, gas ed energia.",
+   "source": "twelvedata",
+   "apiSymbol": "CVX",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "COP",
+   "name": "ConocoPhillips",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Estrazione di petrolio e gas.",
+   "source": "twelvedata",
+   "apiSymbol": "COP",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SLB",
+   "name": "SLB (Schlumberger)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Servizi per l'industria petrolifera.",
+   "source": "twelvedata",
+   "apiSymbol": "SLB",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "NEE",
+   "name": "NextEra Energy",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Elettricità e rinnovabili negli USA.",
+   "source": "twelvedata",
+   "apiSymbol": "NEE",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "DUK",
+   "name": "Duke Energy",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Utility elettrica americana.",
+   "source": "twelvedata",
+   "apiSymbol": "DUK",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SO",
+   "name": "Southern Company",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Elettricità e gas nel sud degli USA.",
+   "source": "twelvedata",
+   "apiSymbol": "SO",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "BAC",
+   "name": "Bank of America",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Una delle maggiori banche americane.",
+   "source": "twelvedata",
+   "apiSymbol": "BAC",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "WFC",
+   "name": "Wells Fargo",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Banca americana al dettaglio e commerciale.",
+   "source": "twelvedata",
+   "apiSymbol": "WFC",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "GS",
+   "name": "Goldman Sachs",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Banca d'affari e gestione patrimoniale.",
+   "source": "twelvedata",
+   "apiSymbol": "GS",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "MS",
+   "name": "Morgan Stanley",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Banca d'investimento e gestione del risparmio.",
+   "source": "twelvedata",
+   "apiSymbol": "MS",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "C",
+   "name": "Citigroup",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Banca globale con forte presenza internazionale.",
+   "source": "twelvedata",
+   "apiSymbol": "C",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SCHW",
+   "name": "Charles Schwab",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Intermediazione e gestione del risparmio.",
+   "source": "twelvedata",
+   "apiSymbol": "SCHW",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "BLK",
+   "name": "BlackRock",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Il più grande gestore di fondi al mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "BLK",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "AXP",
+   "name": "American Express",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Carte di credito e servizi di pagamento premium.",
+   "source": "twelvedata",
+   "apiSymbol": "AXP",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SPGI",
+   "name": "S&P Global",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Indici di borsa, rating e dati finanziari.",
+   "source": "twelvedata",
+   "apiSymbol": "SPGI",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "CME",
+   "name": "CME Group",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Le principali borse di derivati americane.",
+   "source": "twelvedata",
+   "apiSymbol": "CME",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "PLTR",
+   "name": "Palantir",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Software di analisi dati per governi e aziende.",
+   "source": "twelvedata",
+   "apiSymbol": "PLTR",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "SNOW",
+   "name": "Snowflake",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Piattaforma cloud per archiviare e analizzare dati.",
+   "source": "twelvedata",
+   "apiSymbol": "SNOW",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "CRWD",
+   "name": "CrowdStrike",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Sicurezza informatica basata su cloud.",
+   "source": "twelvedata",
+   "apiSymbol": "CRWD",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "PANW",
+   "name": "Palo Alto Networks",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Sicurezza delle reti aziendali.",
+   "source": "twelvedata",
+   "apiSymbol": "PANW",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "ZS",
+   "name": "Zscaler",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Sicurezza per l'accesso a internet aziendale.",
+   "source": "twelvedata",
+   "apiSymbol": "ZS",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "DDOG",
+   "name": "Datadog",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Monitoraggio di applicazioni e infrastrutture cloud.",
+   "source": "twelvedata",
+   "apiSymbol": "DDOG",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "MDB",
+   "name": "MongoDB",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Database moderni per applicazioni.",
+   "source": "twelvedata",
+   "apiSymbol": "MDB",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "TEAM",
+   "name": "Atlassian",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Strumenti per team di sviluppo: Jira, Confluence.",
+   "source": "twelvedata",
+   "apiSymbol": "TEAM",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "ADSK",
+   "name": "Autodesk",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Software di progettazione: AutoCAD.",
+   "source": "twelvedata",
+   "apiSymbol": "ADSK",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "ANET",
+   "name": "Arista Networks",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Apparati di rete per grandi data center.",
+   "source": "twelvedata",
+   "apiSymbol": "ANET",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "LRCX",
+   "name": "Lam Research",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Macchinari per produrre semiconduttori.",
+   "source": "twelvedata",
+   "apiSymbol": "LRCX",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "AMAT",
+   "name": "Applied Materials",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Macchinari per l'industria dei chip.",
+   "source": "twelvedata",
+   "apiSymbol": "AMAT",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "KLAC",
+   "name": "KLA",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Controllo qualità nella produzione di chip.",
+   "source": "twelvedata",
+   "apiSymbol": "KLAC",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "ARM",
+   "name": "Arm Holdings",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Progetta architetture di processori per smartphone.",
+   "source": "twelvedata",
+   "apiSymbol": "ARM",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "TSM",
+   "name": "TSMC (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "La più grande fonderia di chip al mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "TSM",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "BABA",
+   "name": "Alibaba (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Il grande e-commerce cinese.",
+   "source": "twelvedata",
+   "apiSymbol": "BABA",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "TM",
+   "name": "Toyota (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Il maggiore produttore di auto al mondo.",
+   "source": "twelvedata",
+   "apiSymbol": "TM",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "SONY",
+   "name": "Sony (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Elettronica, PlayStation, musica e cinema.",
+   "source": "twelvedata",
+   "apiSymbol": "SONY",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "NVO",
+   "name": "Novo Nordisk (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaci per diabete e obesità.",
+   "source": "twelvedata",
+   "apiSymbol": "NVO",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "AZN",
+   "name": "AstraZeneca (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Farmaceutica britannico-svedese.",
+   "source": "twelvedata",
+   "apiSymbol": "AZN",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "SHEL",
+   "name": "Shell (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Energia, petrolio e gas.",
+   "source": "twelvedata",
+   "apiSymbol": "SHEL",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "BP",
+   "name": "BP (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Petrolio, gas e rinnovabili.",
+   "source": "twelvedata",
+   "apiSymbol": "BP",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "HSBC",
+   "name": "HSBC (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Banca globale con radici britanniche e asiatiche.",
+   "source": "twelvedata",
+   "apiSymbol": "HSBC",
+   "exchange": "NYSE"
+  },
+  {
+   "symbol": "UL",
+   "name": "Unilever (ADR)",
+   "kind": "stock",
+   "currency": "USD",
+   "desc": "Alimentari e prodotti per la casa.",
+   "source": "twelvedata",
+   "apiSymbol": "UL",
    "exchange": "NYSE"
   },
   {
    "symbol": "SPY",
    "name": "SPDR S&P 500",
    "kind": "etf",
-   "apiSymbol": "SPY",
    "currency": "USD",
-   "desc": "Replica l'indice S&P 500: le 500 maggiori aziende USA.",
+   "desc": "Le 500 maggiori aziende americane in un solo strumento.",
+   "source": "twelvedata",
+   "apiSymbol": "SPY",
    "exchange": "ARCA"
   },
   {
    "symbol": "VOO",
    "name": "Vanguard S&P 500",
    "kind": "etf",
-   "apiSymbol": "VOO",
    "currency": "USD",
-   "desc": "S&P 500 a costi bassissimi, di Vanguard.",
+   "desc": "S&P 500 con costi molto bassi, di Vanguard.",
+   "source": "twelvedata",
+   "apiSymbol": "VOO",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "IVV",
+   "name": "iShares Core S&P 500",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "S&P 500 nella versione iShares.",
+   "source": "twelvedata",
+   "apiSymbol": "IVV",
    "exchange": "ARCA"
   },
   {
    "symbol": "QQQ",
    "name": "Invesco Nasdaq 100",
    "kind": "etf",
-   "apiSymbol": "QQQ",
    "currency": "USD",
    "desc": "Le 100 maggiori aziende tecnologiche del Nasdaq.",
+   "source": "twelvedata",
+   "apiSymbol": "QQQ",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "VTI",
    "name": "Vanguard Total US",
    "kind": "etf",
-   "apiSymbol": "VTI",
    "currency": "USD",
-   "desc": "Tutto il mercato azionario americano in un solo ETF.",
+   "desc": "Tutto il mercato azionario americano.",
+   "source": "twelvedata",
+   "apiSymbol": "VTI",
    "exchange": "ARCA"
   },
   {
    "symbol": "VT",
    "name": "Vanguard Total World",
    "kind": "etf",
-   "apiSymbol": "VT",
    "currency": "USD",
    "desc": "Azionario mondiale: migliaia di aziende di tutto il pianeta.",
+   "source": "twelvedata",
+   "apiSymbol": "VT",
    "exchange": "ARCA"
   },
   {
    "symbol": "VXUS",
-   "name": "Vanguard ex-US",
+   "name": "Vanguard ex-USA",
    "kind": "etf",
-   "apiSymbol": "VXUS",
    "currency": "USD",
    "desc": "Azioni mondiali escludendo gli Stati Uniti.",
+   "source": "twelvedata",
+   "apiSymbol": "VXUS",
    "exchange": "NASDAQ"
   },
   {
    "symbol": "VEA",
-   "name": "Vanguard Developed",
+   "name": "Vanguard Paesi Sviluppati",
    "kind": "etf",
-   "apiSymbol": "VEA",
    "currency": "USD",
-   "desc": "Paesi sviluppati (Europa, Giappone) esclusi gli USA.",
+   "desc": "Europa, Giappone e altri sviluppati, senza USA.",
+   "source": "twelvedata",
+   "apiSymbol": "VEA",
    "exchange": "ARCA"
   },
   {
    "symbol": "VWO",
-   "name": "Vanguard Emerging",
+   "name": "Vanguard Mercati Emergenti",
    "kind": "etf",
+   "currency": "USD",
+   "desc": "Cina, India, Brasile e altri emergenti.",
+   "source": "twelvedata",
    "apiSymbol": "VWO",
-   "currency": "USD",
-   "desc": "Mercati emergenti: Cina, India, Brasile e altri.",
    "exchange": "ARCA"
   },
   {
-   "symbol": "AGG",
-   "name": "iShares US Bond",
+   "symbol": "IEFA",
+   "name": "iShares Core MSCI EAFE",
    "kind": "etf",
-   "apiSymbol": "AGG",
    "currency": "USD",
-   "desc": "Obbligazioni americane di alta qualità.",
+   "desc": "Sviluppati fuori dal Nord America.",
+   "source": "twelvedata",
+   "apiSymbol": "IEFA",
    "exchange": "ARCA"
   },
   {
-   "symbol": "BND",
-   "name": "Vanguard Total Bond",
+   "symbol": "IEMG",
+   "name": "iShares Core Emergenti",
    "kind": "etf",
-   "apiSymbol": "BND",
    "currency": "USD",
-   "desc": "Tutto il mercato obbligazionario USA.",
-   "exchange": "NASDAQ"
-  },
-  {
-   "symbol": "TLT",
-   "name": "iShares 20+ Treasury",
-   "kind": "etf",
-   "apiSymbol": "TLT",
-   "currency": "USD",
-   "desc": "Titoli di Stato USA a lunghissima scadenza.",
-   "exchange": "NASDAQ"
-  },
-  {
-   "symbol": "GLD",
-   "name": "SPDR Gold",
-   "kind": "etf",
-   "apiSymbol": "GLD",
-   "currency": "USD",
-   "desc": "Replica il prezzo dell'oro fisico.",
-   "exchange": "ARCA"
-  },
-  {
-   "symbol": "SLV",
-   "name": "iShares Silver",
-   "kind": "etf",
-   "apiSymbol": "SLV",
-   "currency": "USD",
-   "desc": "Replica il prezzo dell'argento.",
-   "exchange": "ARCA"
-  },
-  {
-   "symbol": "SCHD",
-   "name": "Schwab Dividend",
-   "kind": "etf",
-   "apiSymbol": "SCHD",
-   "currency": "USD",
-   "desc": "Aziende USA solide che pagano dividendi.",
-   "exchange": "ARCA"
-  },
-  {
-   "symbol": "IWM",
-   "name": "iShares Russell 2000",
-   "kind": "etf",
-   "apiSymbol": "IWM",
-   "currency": "USD",
-   "desc": "Piccole e medie aziende americane.",
+   "desc": "Mercati emergenti in versione ampia.",
+   "source": "twelvedata",
+   "apiSymbol": "IEMG",
    "exchange": "ARCA"
   },
   {
    "symbol": "EFA",
    "name": "iShares EAFE",
    "kind": "etf",
-   "apiSymbol": "EFA",
    "currency": "USD",
-   "desc": "Azioni di Europa, Australia ed Estremo Oriente.",
+   "desc": "Europa, Australia ed Estremo Oriente.",
+   "source": "twelvedata",
+   "apiSymbol": "EFA",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "IWM",
+   "name": "iShares Russell 2000",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Piccole e medie aziende americane.",
+   "source": "twelvedata",
+   "apiSymbol": "IWM",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "DIA",
+   "name": "SPDR Dow Jones",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Le 30 grandi aziende del Dow Jones.",
+   "source": "twelvedata",
+   "apiSymbol": "DIA",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "VUG",
+   "name": "Vanguard Growth",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Aziende americane in forte crescita.",
+   "source": "twelvedata",
+   "apiSymbol": "VUG",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "VTV",
+   "name": "Vanguard Value",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Aziende americane a prezzi contenuti.",
+   "source": "twelvedata",
+   "apiSymbol": "VTV",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "SCHD",
+   "name": "Schwab Dividendi",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Aziende americane solide che pagano dividendi.",
+   "source": "twelvedata",
+   "apiSymbol": "SCHD",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "VYM",
+   "name": "Vanguard Alto Dividendo",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Azioni USA con dividendi elevati.",
+   "source": "twelvedata",
+   "apiSymbol": "VYM",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "AGG",
+   "name": "iShares Obbligazioni USA",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Obbligazioni americane di alta qualità.",
+   "source": "twelvedata",
+   "apiSymbol": "AGG",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "BND",
+   "name": "Vanguard Obbligazionario Totale",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Tutto il mercato obbligazionario americano.",
+   "source": "twelvedata",
+   "apiSymbol": "BND",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "BNDX",
+   "name": "Vanguard Obbligazioni Internazionali",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Obbligazioni fuori dagli USA con cambio coperto.",
+   "source": "twelvedata",
+   "apiSymbol": "BNDX",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "TLT",
+   "name": "iShares Treasury 20+",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Titoli di Stato USA a lunghissima scadenza.",
+   "source": "twelvedata",
+   "apiSymbol": "TLT",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "IEF",
+   "name": "iShares Treasury 7-10",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Titoli di Stato USA a media scadenza.",
+   "source": "twelvedata",
+   "apiSymbol": "IEF",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "SHY",
+   "name": "iShares Treasury 1-3",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Titoli di Stato USA a breve scadenza.",
+   "source": "twelvedata",
+   "apiSymbol": "SHY",
+   "exchange": "NASDAQ"
+  },
+  {
+   "symbol": "TIP",
+   "name": "iShares TIPS",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Obbligazioni USA protette dall'inflazione.",
+   "source": "twelvedata",
+   "apiSymbol": "TIP",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "LQD",
+   "name": "iShares Corporate Bond",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Obbligazioni di grandi aziende americane.",
+   "source": "twelvedata",
+   "apiSymbol": "LQD",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "HYG",
+   "name": "iShares High Yield",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Obbligazioni ad alto rendimento e più rischiose.",
+   "source": "twelvedata",
+   "apiSymbol": "HYG",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "GLD",
+   "name": "SPDR Gold",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Segue il prezzo dell'oro fisico.",
+   "source": "twelvedata",
+   "apiSymbol": "GLD",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "IAU",
+   "name": "iShares Gold",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Oro fisico con commissioni ridotte.",
+   "source": "twelvedata",
+   "apiSymbol": "IAU",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "SLV",
+   "name": "iShares Silver",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Segue il prezzo dell'argento.",
+   "source": "twelvedata",
+   "apiSymbol": "SLV",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "XLK",
+   "name": "Settore Tecnologia",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Le aziende tecnologiche dell'S&P 500.",
+   "source": "twelvedata",
+   "apiSymbol": "XLK",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "XLF",
+   "name": "Settore Finanza",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Banche e assicurazioni dell'S&P 500.",
+   "source": "twelvedata",
+   "apiSymbol": "XLF",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "XLE",
+   "name": "Settore Energia",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Aziende energetiche dell'S&P 500.",
+   "source": "twelvedata",
+   "apiSymbol": "XLE",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "XLV",
+   "name": "Settore Salute",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Sanità e farmaceutica dell'S&P 500.",
+   "source": "twelvedata",
+   "apiSymbol": "XLV",
+   "exchange": "ARCA"
+  },
+  {
+   "symbol": "VNQ",
+   "name": "Vanguard Immobiliare",
+   "kind": "etf",
+   "currency": "USD",
+   "desc": "Società immobiliari quotate americane.",
+   "source": "twelvedata",
+   "apiSymbol": "VNQ",
    "exchange": "ARCA"
   },
   {
    "symbol": "BTC",
    "name": "Bitcoin",
    "kind": "crypto",
-   "apiSymbol": "BTC/USD",
    "currency": "USD",
-   "desc": "La prima e più grande criptovaluta."
+   "desc": "La prima e più grande criptovaluta.",
+   "source": "twelvedata",
+   "apiSymbol": "BTC/USD"
   },
   {
    "symbol": "ETH",
    "name": "Ethereum",
    "kind": "crypto",
-   "apiSymbol": "ETH/USD",
    "currency": "USD",
-   "desc": "La piattaforma degli smart contract."
+   "desc": "La piattaforma degli smart contract.",
+   "source": "twelvedata",
+   "apiSymbol": "ETH/USD"
   },
   {
    "symbol": "SOL",
    "name": "Solana",
    "kind": "crypto",
-   "apiSymbol": "SOL/USD",
    "currency": "USD",
-   "desc": "Blockchain veloce per app decentralizzate."
-  },
-  {
-   "symbol": "ADA",
-   "name": "Cardano",
-   "kind": "crypto",
-   "apiSymbol": "ADA/USD",
-   "currency": "USD",
-   "desc": "Blockchain accademica a basso consumo."
+   "desc": "Blockchain veloce per applicazioni decentralizzate.",
+   "source": "twelvedata",
+   "apiSymbol": "SOL/USD"
   },
   {
    "symbol": "XRP",
    "name": "XRP (Ripple)",
    "kind": "crypto",
-   "apiSymbol": "XRP/USD",
    "currency": "USD",
-   "desc": "Pagamenti internazionali rapidi."
+   "desc": "Pensata per i pagamenti internazionali rapidi.",
+   "source": "twelvedata",
+   "apiSymbol": "XRP/USD"
+  },
+  {
+   "symbol": "ADA",
+   "name": "Cardano",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Blockchain a basso consumo di impostazione accademica.",
+   "source": "twelvedata",
+   "apiSymbol": "ADA/USD"
   },
   {
    "symbol": "DOGE",
    "name": "Dogecoin",
    "kind": "crypto",
-   "apiSymbol": "DOGE/USD",
    "currency": "USD",
-   "desc": "La criptovaluta nata per scherzo, oggi popolare."
+   "desc": "Nata per scherzo, oggi molto diffusa.",
+   "source": "twelvedata",
+   "apiSymbol": "DOGE/USD"
+  },
+  {
+   "symbol": "AVAX",
+   "name": "Avalanche",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Blockchain veloce per finanza decentralizzata.",
+   "source": "twelvedata",
+   "apiSymbol": "AVAX/USD"
+  },
+  {
+   "symbol": "DOT",
+   "name": "Polkadot",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Collega tra loro blockchain diverse.",
+   "source": "twelvedata",
+   "apiSymbol": "DOT/USD"
+  },
+  {
+   "symbol": "LINK",
+   "name": "Chainlink",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Porta dati del mondo reale dentro le blockchain.",
+   "source": "twelvedata",
+   "apiSymbol": "LINK/USD"
   },
   {
    "symbol": "LTC",
    "name": "Litecoin",
    "kind": "crypto",
-   "apiSymbol": "LTC/USD",
    "currency": "USD",
-   "desc": "Una delle cripto storiche, veloce ed economica."
+   "desc": "Una delle cripto storiche, veloce ed economica.",
+   "source": "twelvedata",
+   "apiSymbol": "LTC/USD"
   },
   {
    "symbol": "BNB",
    "name": "BNB",
    "kind": "crypto",
-   "apiSymbol": "BNB/USD",
    "currency": "USD",
-   "desc": "La moneta dell'ecosistema Binance."
+   "desc": "La moneta dell'ecosistema Binance.",
+   "source": "twelvedata",
+   "apiSymbol": "BNB/USD"
+  },
+  {
+   "symbol": "MATIC",
+   "name": "Polygon",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Rete che rende Ethereum più veloce ed economico.",
+   "source": "twelvedata",
+   "apiSymbol": "MATIC/USD"
+  },
+  {
+   "symbol": "UNI",
+   "name": "Uniswap",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Il principale scambio decentralizzato.",
+   "source": "twelvedata",
+   "apiSymbol": "UNI/USD"
+  },
+  {
+   "symbol": "ATOM",
+   "name": "Cosmos",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Ecosistema di blockchain interconnesse.",
+   "source": "twelvedata",
+   "apiSymbol": "ATOM/USD"
+  },
+  {
+   "symbol": "XLM",
+   "name": "Stellar",
+   "kind": "crypto",
+   "currency": "USD",
+   "desc": "Trasferimenti di valore rapidi e a basso costo.",
+   "source": "twelvedata",
+   "apiSymbol": "XLM/USD"
   },
   {
    "symbol": "VWCE",
    "name": "Vanguard FTSE All-World Acc",
    "kind": "etf",
-   "apiSymbol": "VWCE",
    "currency": "EUR",
    "desc": "Azionario mondiale ad accumulazione, quotato in euro.",
-   "exchange": "XETRA"
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Vanguard FTSE All-World UCITS ETF"
+  },
+  {
+   "symbol": "VWRL",
+   "name": "Vanguard FTSE All-World Dist",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Azionario mondiale che distribuisce i dividendi.",
+   "source": "alphavantage",
+   "region": "Paesi Bassi",
+   "avQuery": "Vanguard FTSE All-World UCITS ETF Distributing"
   },
   {
    "symbol": "SWDA",
    "name": "iShares Core MSCI World Acc",
    "kind": "etf",
-   "apiSymbol": "SWDA",
    "currency": "EUR",
-   "desc": "Paesi sviluppati mondiali, ad accumulazione, in euro.",
-   "exchange": "MTA"
+   "desc": "I paesi sviluppati del mondo, ad accumulazione.",
+   "source": "alphavantage",
+   "region": "Regno Unito",
+   "avQuery": "iShares Core MSCI World UCITS ETF"
   },
   {
-   "symbol": "SPY5",
-   "name": "SPDR S&P 500 UCITS",
+   "symbol": "EUNL",
+   "name": "iShares Core MSCI World (Xetra)",
    "kind": "etf",
-   "apiSymbol": "SPY5",
    "currency": "EUR",
-   "desc": "S&P 500 quotato a Milano in euro.",
-   "exchange": "MTA"
+   "desc": "Stesso fondo mondiale, quotato in Germania.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares Core MSCI World UCITS ETF Xetra"
+  },
+  {
+   "symbol": "VUSA",
+   "name": "Vanguard S&P 500 UCITS",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "L'S&P 500 americano acquistabile in Europa.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Vanguard S&P 500 UCITS ETF"
+  },
+  {
+   "symbol": "SXR8",
+   "name": "iShares Core S&P 500 Acc",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "S&P 500 ad accumulazione, molto usato in Europa.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares Core S&P 500 UCITS ETF"
+  },
+  {
+   "symbol": "EIMI",
+   "name": "iShares Core MSCI EM IMI",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Mercati emergenti in versione molto ampia.",
+   "source": "alphavantage",
+   "region": "Regno Unito",
+   "avQuery": "iShares Core MSCI Emerging Markets IMI UCITS ETF"
+  },
+  {
+   "symbol": "IS3N",
+   "name": "iShares MSCI EM IMI (Xetra)",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Emergenti quotati in Germania.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares Core MSCI Emerging Markets IMI Xetra"
+  },
+  {
+   "symbol": "XDWD",
+   "name": "Xtrackers MSCI World",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Azionario mondiale sviluppato di Xtrackers.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Xtrackers MSCI World UCITS ETF"
+  },
+  {
+   "symbol": "SPPW",
+   "name": "SPDR MSCI World",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Azionario mondiale sviluppato di SPDR.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "SPDR MSCI World UCITS ETF"
+  },
+  {
+   "symbol": "IUSQ",
+   "name": "iShares MSCI ACWI",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Mondo intero: sviluppati ed emergenti insieme.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares MSCI ACWI UCITS ETF"
+  },
+  {
+   "symbol": "VHYL",
+   "name": "Vanguard All-World High Dividend",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Azioni mondiali che pagano dividendi alti.",
+   "source": "alphavantage",
+   "region": "Paesi Bassi",
+   "avQuery": "Vanguard FTSE All-World High Dividend Yield UCITS ETF"
   },
   {
    "symbol": "AGGH",
    "name": "iShares Global Aggregate Bond",
    "kind": "etf",
-   "apiSymbol": "AGGH",
    "currency": "EUR",
    "desc": "Obbligazioni mondiali con cambio coperto in euro.",
-   "exchange": "MTA"
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged"
+  },
+  {
+   "symbol": "EXS1",
+   "name": "iShares Core DAX",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Le principali 40 aziende tedesche.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares Core DAX UCITS ETF"
+  },
+  {
+   "symbol": "EXW1",
+   "name": "iShares EURO STOXX 50",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Le 50 maggiori aziende dell'area euro.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "iShares EURO STOXX 50 UCITS ETF"
+  },
+  {
+   "symbol": "XEON",
+   "name": "Xtrackers Overnight Rate",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Liquidità in euro remunerata al tasso di mercato.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Xtrackers II EUR Overnight Rate Swap UCITS ETF"
+  },
+  {
+   "symbol": "SGLD",
+   "name": "Invesco Physical Gold",
+   "kind": "etf",
+   "currency": "EUR",
+   "desc": "Oro fisico acquistabile in Europa.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Invesco Physical Gold ETC"
   },
   {
    "symbol": "ENEL",
    "name": "Enel",
    "kind": "stock",
-   "apiSymbol": "ENEL",
    "currency": "EUR",
-   "desc": "Utility italiana di elettricità e rinnovabili.",
-   "exchange": "MTA"
+   "desc": "La maggiore utility elettrica italiana.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Enel SpA"
   },
   {
    "symbol": "ISP",
    "name": "Intesa Sanpaolo",
    "kind": "stock",
-   "apiSymbol": "ISP",
    "currency": "EUR",
    "desc": "La principale banca italiana.",
-   "exchange": "MTA"
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Intesa Sanpaolo SpA"
+  },
+  {
+   "symbol": "UCG",
+   "name": "UniCredit",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Grande banca italiana con presenza europea.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "UniCredit SpA"
+  },
+  {
+   "symbol": "ENI",
+   "name": "Eni",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Il colosso italiano di petrolio ed energia.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Eni SpA"
+  },
+  {
+   "symbol": "STLAM",
+   "name": "Stellantis",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Fiat, Peugeot, Jeep e altri marchi automobilistici.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Stellantis NV"
+  },
+  {
+   "symbol": "RACE",
+   "name": "Ferrari",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Auto sportive di lusso di Maranello.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Ferrari NV"
+  },
+  {
+   "symbol": "G",
+   "name": "Generali",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Il maggiore gruppo assicurativo italiano.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Assicurazioni Generali SpA"
+  },
+  {
+   "symbol": "MONC",
+   "name": "Moncler",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Abbigliamento di lusso, celebre per i piumini.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Moncler SpA"
+  },
+  {
+   "symbol": "LDO",
+   "name": "Leonardo",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Difesa, elicotteri ed elettronica italiana.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Leonardo SpA"
+  },
+  {
+   "symbol": "PST",
+   "name": "Poste Italiane",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Poste, servizi finanziari e assicurativi.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Poste Italiane SpA"
+  },
+  {
+   "symbol": "SRG",
+   "name": "Snam",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Rete di trasporto del gas in Italia.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Snam SpA"
+  },
+  {
+   "symbol": "TRN",
+   "name": "Terna",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Rete elettrica nazionale italiana.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Terna SpA"
+  },
+  {
+   "symbol": "CPR",
+   "name": "Campari",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Bevande e liquori celebri nel mondo.",
+   "source": "alphavantage",
+   "region": "Italia",
+   "avQuery": "Davide Campari-Milano NV"
+  },
+  {
+   "symbol": "SAP",
+   "name": "SAP",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Software gestionale per grandi aziende.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "SAP SE"
+  },
+  {
+   "symbol": "SIE",
+   "name": "Siemens",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Industria, automazione e infrastrutture.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Siemens AG"
+  },
+  {
+   "symbol": "ALV",
+   "name": "Allianz",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Uno dei maggiori assicuratori del mondo.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Allianz SE"
+  },
+  {
+   "symbol": "BMW",
+   "name": "BMW",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Auto di fascia alta e motociclette.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Bayerische Motoren Werke AG"
+  },
+  {
+   "symbol": "MBG",
+   "name": "Mercedes-Benz",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Auto di lusso e veicoli commerciali.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Mercedes-Benz Group AG"
+  },
+  {
+   "symbol": "VOW3",
+   "name": "Volkswagen",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Il maggiore gruppo automobilistico europeo.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Volkswagen AG"
+  },
+  {
+   "symbol": "DTE",
+   "name": "Deutsche Telekom",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Telefonia tedesca, proprietaria di T-Mobile.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Deutsche Telekom AG"
+  },
+  {
+   "symbol": "BAS",
+   "name": "BASF",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Il più grande gruppo chimico del mondo.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "BASF SE"
+  },
+  {
+   "symbol": "ADS",
+   "name": "Adidas",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Abbigliamento e scarpe sportive.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "adidas AG"
+  },
+  {
+   "symbol": "RHM",
+   "name": "Rheinmetall",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Difesa e componentistica per veicoli.",
+   "source": "alphavantage",
+   "region": "Germania",
+   "avQuery": "Rheinmetall AG"
+  },
+  {
+   "symbol": "MC",
+   "name": "LVMH",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Il gruppo del lusso: Louis Vuitton, Dior.",
+   "source": "alphavantage",
+   "region": "Francia",
+   "avQuery": "LVMH Moet Hennessy Louis Vuitton"
+  },
+  {
+   "symbol": "OR",
+   "name": "L'Oréal",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Cosmetici e prodotti di bellezza.",
+   "source": "alphavantage",
+   "region": "Francia",
+   "avQuery": "L'Oreal SA"
+  },
+  {
+   "symbol": "TTE",
+   "name": "TotalEnergies",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Energia, petrolio e rinnovabili.",
+   "source": "alphavantage",
+   "region": "Francia",
+   "avQuery": "TotalEnergies SE"
+  },
+  {
+   "symbol": "SAN",
+   "name": "Sanofi",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Farmaceutica francese.",
+   "source": "alphavantage",
+   "region": "Francia",
+   "avQuery": "Sanofi SA"
+  },
+  {
+   "symbol": "AIR",
+   "name": "Airbus",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Aerei civili, elicotteri e spazio.",
+   "source": "alphavantage",
+   "region": "Francia",
+   "avQuery": "Airbus SE"
+  },
+  {
+   "symbol": "ASML",
+   "name": "ASML",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Macchine indispensabili per produrre i chip.",
+   "source": "alphavantage",
+   "region": "Paesi Bassi",
+   "avQuery": "ASML Holding NV"
+  },
+  {
+   "symbol": "ADYEN",
+   "name": "Adyen",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Piattaforma di pagamenti per grandi aziende.",
+   "source": "alphavantage",
+   "region": "Paesi Bassi",
+   "avQuery": "Adyen NV"
+  },
+  {
+   "symbol": "ITX",
+   "name": "Inditex (Zara)",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Il gruppo di Zara e altri marchi di moda.",
+   "source": "alphavantage",
+   "region": "Spagna",
+   "avQuery": "Industria de Diseno Textil SA"
+  },
+  {
+   "symbol": "IBE",
+   "name": "Iberdrola",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Elettricità e rinnovabili in Spagna e nel mondo.",
+   "source": "alphavantage",
+   "region": "Spagna",
+   "avQuery": "Iberdrola SA"
+  },
+  {
+   "symbol": "SAN.MC",
+   "name": "Banco Santander",
+   "kind": "stock",
+   "currency": "EUR",
+   "desc": "Grande banca spagnola con presenza globale.",
+   "source": "alphavantage",
+   "region": "Spagna",
+   "avQuery": "Banco Santander SA"
   }
  ]
 }
