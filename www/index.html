@@ -608,6 +608,7 @@ main#content{overscroll-behavior-y:contain;position:relative;}
 .invp-cat-chev{color:var(--ink-soft);font-size:13px;}
 .invp-cat-body{padding:0 10px 8px;}
 .invp-cat-body .invp-row{background:var(--bg);}
+.invp-warn{background:var(--amber-soft);color:var(--amber-ink);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.45;}
 </style>
 </head>
 <body>
@@ -2012,6 +2013,10 @@ Object.assign(TR.fr,{
 'Elimina posizione':'Supprimer la position','Eliminare la posizione su':'Supprimer la position sur','Verrà eliminato anche il piano di accumulo collegato.':'Le plan programmé lié sera aussi supprimé.',
 'Posizione eliminata':'Position supprimée','La sezione Investimenti è una funzione Premium. Passa a Premium per usarla.':'La section Investissements est une fonction Premium. Passez à Premium pour l\'utiliser.'
 });
+/* i18n v39 */
+Object.assign(TR.en,{'Prezzo non ancora disponibile: arriverà col prossimo aggiornamento.':'Price not available yet: it will arrive with the next update.','I prezzi non sono ancora stati scaricati. Il robot li aggiorna una volta al giorno.':'Prices have not been downloaded yet. The robot updates them once a day.'});
+Object.assign(TR.es,{'Prezzo non ancora disponibile: arriverà col prossimo aggiornamento.':'Precio aún no disponible: llegará con la próxima actualización.','I prezzi non sono ancora stati scaricati. Il robot li aggiorna una volta al giorno.':'Los precios aún no se han descargado. El robot los actualiza una vez al día.'});
+Object.assign(TR.fr,{'Prezzo non ancora disponibile: arriverà col prossimo aggiornamento.':'Prix pas encore disponible : il arrivera à la prochaine mise à jour.','I prezzi non sono ancora stati scaricati. Il robot li aggiorna una volta al giorno.':'Les prix n\'ont pas encore été téléchargés. Le robot les met à jour une fois par jour.'});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -2294,7 +2299,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v38';
+var APP_VERSION='v39';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3767,15 +3772,18 @@ var IP_RANGES=[{id:'1S',days:7},{id:'1M',days:31},{id:'1A',days:366},{id:'Max',d
 function ipRangeDays(id){for(var i=0;i<IP_RANGES.length;i++)if(IP_RANGES[i].id===id)return IP_RANGES[i].days;return 31;}
 function normTxt(s){try{return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}catch(e){return String(s||'').toLowerCase();}}
 function searchCatalog(q){
-  var toks=normTxt(q).split(/\s+/).filter(Boolean);
+  var qn=normTxt(q);
+  if(/^[a-z]{2}[a-z0-9\s]{9,20}$/.test(qn)&&/\d/.test(qn)){var j=qn.replace(/\s+/g,'');if(j.length>=10)qn=j;}
+  var toks=qn.split(/\s+/).filter(Boolean);
   if(!toks.length)return [];
   var out=[];
   (PRICES.catalog||[]).forEach(function(a){
-    var sym=normTxt(a.symbol),nam=normTxt(a.name||''),kin=normTxt(a.kind||''),des=normTxt(a.desc||'');
-    var hay=sym+' '+nam+' '+kin+' '+des;
+    var sym=normTxt(a.symbol),nam=normTxt(a.name||''),kin=normTxt(a.kind||''),des=normTxt(a.desc||''),isin=normTxt(a.isin||'');
+    var hay=sym+' '+nam+' '+kin+' '+des+' '+isin;
     if(!toks.every(function(t){return hay.indexOf(t)>=0;}))return;
     var sc=0;
     toks.forEach(function(t){
+      if(isin&&isin===t)sc+=300;else if(isin&&isin.indexOf(t)===0&&t.length>=4)sc+=150;
       if(sym===t)sc+=100;else if(sym.indexOf(t)===0)sc+=60;else if(sym.indexOf(t)>=0)sc+=30;
       if(nam.indexOf(t)===0)sc+=40;else if(nam.indexOf(t)>=0)sc+=25;
       if(kin.indexOf(t)>=0)sc+=10;
@@ -3935,9 +3943,12 @@ function ipHomeHTML(){
   var srch='<div class="invp-sec"><h4>'+tr('Mercato')+'</h4>'+
     '<input id="ipSearch" class="text-input invp-search" type="search" placeholder="'+tr('Cerca azioni, ETF, cripto…')+'" value="'+esc(IPAGE.q)+'">'+
     '<div id="ipMarket" style="margin-top:10px;">'+ipMarketHTML()+'</div></div>';
+  var _cat=PRICES.catalog||[],_senza=0;
+  _cat.forEach(function(a){var e=priceEntry(a.symbol);if(!e||typeof e.price!=='number')_senza++;});
+  var avviso=(_cat.length&&_senza>_cat.length/2)?'<div class="invp-warn">⏳ '+tr('I prezzi non sono ancora stati scaricati. Il robot li aggiorna una volta al giorno.')+'</div>':'';
   var upd='<div class="invp-asof">'+(PRICES.updatedAt?tr('Prezzi aggiornati il')+' '+esc(String(PRICES.updatedAt)):tr('Prezzi non ancora disponibili'))+'</div>';
   return '<div class="invp-head"><button class="invp-back" id="ipBack">‹</button><span class="invp-title">'+tr('Investimenti')+'</span></div>'+
-    sum+chart+mine+srch+upd+
+    avviso+sum+chart+mine+srch+upd+
     '<p class="inv-disc">'+tr('Solo monitoraggio · non è consulenza finanziaria.')+'</p>';
 }
 function ipMarketRow(a){
@@ -3974,7 +3985,7 @@ function ipDetailHTML(sym){
   var rPct=rangeChangePct(hist);
   var asof=pe.asof||((assetHist(sym).length)?assetHist(sym)[assetHist(sym).length-1][0]:null);
   var head='<div class="invp-head"><button class="invp-back" id="ipBack">‹</button><span class="invp-title">'+esc(sym)+'</span></div>';
-  var priceHtml=lp?'<div class="invp-price-big">'+invFmt(lp.price,lp.currency)+'</div>':'<div class="invp-price-big" style="color:var(--ink-soft);">—</div>';
+  var priceHtml=lp?'<div class="invp-price-big">'+invFmt(lp.price,lp.currency)+'</div>':'<div class="invp-price-big" style="color:var(--ink-soft);">—</div><p class="hint" style="margin:6px 0 0;">'+tr('Prezzo non ancora disponibile: arriverà col prossimo aggiornamento.')+'</p>';
   var top='<div class="hero-label">'+esc(ce.name||sym)+'</div>'+priceHtml+
     '<div class="invp-sum-row"><span>'+tr('Oggi')+': '+ipPct(day)+'</span>'+(rPct!=null?'<span>'+esc(IPAGE.range)+': '+ipPct(rPct)+'</span>':'')+'</div>';
   var chart='<div class="invp-chart-card">'+ipRangeChips()+invBigChartSVG(hist)+
@@ -3994,6 +4005,7 @@ function ipDetailHTML(sym){
   var kv='<div class="invp-sec"><h4>'+tr('Dati chiave')+'</h4><div class="invp-chart-card" style="margin-top:0;">'+
     '<div class="invp-kv"><span>'+tr('Tipo')+'</span><b>'+invKindLabel(ce.kind||(h&&h.kind)||'other')+'</b></div>'+
     '<div class="invp-kv"><span>'+tr('Valuta')+'</span><b>'+esc(ce.currency||(lp&&lp.currency)||'—')+'</b></div>'+
+    (ce.isin?'<div class="invp-kv"><span>ISIN</span><b>'+esc(ce.isin)+'</b></div>':'')+
     (asof?'<div class="invp-kv"><span>'+tr('Prezzo aggiornato')+'</span><b>'+esc(String(asof))+'</b></div>':'')+
   '</div></div>';
   var bar='<div class="invp-bar"><button class="btn-secondary" id="ipAcc">🔁 '+tr('Accumula')+'</button><button class="btn-primary" id="ipBuy">+ '+tr('Compra')+'</button></div>';
