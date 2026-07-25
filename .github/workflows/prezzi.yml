@@ -1,19 +1,38 @@
-# Robot dei PREZZI: una volta al giorno scarica i prezzi degli asset del
-# catalogo (tickers.json) e i cambi valuta, e aggiorna prezzi.json alla
-# radice del repo. L'app legge prezzi.json e mostra i valori aggiornati.
+# Robot dei PREZZI di Spendy.
 #
-# SERVE (una volta sola): in GitHub -> Settings -> Secrets and variables ->
-# Actions -> "New repository secret" con nome  TWELVE_DATA_KEY  e come valore
-# la chiave gratuita di Twelve Data. Vedi GUIDA-PREZZI-AUTOMATICI.md.
+# Ogni notte aggiorna prezzi.json (alla radice del repository) con i prezzi
+# degli asset elencati in tickers.json. L'app legge quel file.
 #
-# NOTA: scrive solo /prezzi.json (radice), quindi NON fa ripartire le build
-# di app/sito (che guardano solo la cartella www/).
+# Puoi anche lanciarlo a mano da "Actions -> Robot prezzi -> Run workflow",
+# scegliendo COME farlo girare:
+#
+#   modo = veloce    -> prende SOLO il prezzo del giorno (niente storico).
+#                       Serve per verificare in fretta che tutto funzioni.
+#   modo = completo  -> prende anche un anno di storico per i grafici.
+#                       Piu' lento, da lanciare quando la verifica e' andata bene.
+#
+#   solo_mancanti = si -> lavora SOLO gli asset senza prezzo o non ancora
+#                         aggiornati oggi. Velocissimo per completare i buchi.
+#
+# Chiavi necessarie (Settings -> Secrets and variables -> Actions):
+#   TWELVE_DATA_KEY   (USA e cripto)      ALPHA_VANTAGE_KEY  (Europa)
 name: Robot prezzi (aggiorna prezzi.json)
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # ogni giorno alle 06:00 UTC
-  workflow_dispatch: {}    # + pulsante per lanciarlo a mano
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'Cosa scaricare'
+        type: choice
+        default: veloce
+        options: [veloce, completo]
+      solo_mancanti:
+        description: 'Solo gli asset senza prezzo o non aggiornati oggi'
+        type: choice
+        default: 'si'
+        options: ['si', 'no']
 
 permissions:
   contents: write
@@ -25,6 +44,7 @@ concurrency:
 jobs:
   aggiorna:
     runs-on: ubuntu-latest
+    timeout-minutes: 330
     steps:
       - name: Scarica il repository
         uses: actions/checkout@v5
@@ -38,6 +58,9 @@ jobs:
         env:
           TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
           ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+          # da cron: giro completo. A mano: quello che scegli nel menu.
+          MODO: ${{ github.event.inputs.modo || 'completo' }}
+          SOLO_MANCANTI: ${{ github.event.inputs.solo_mancanti == 'si' && '1' || '0' }}
         run: python scripts/aggiorna_prezzi.py
 
       - name: Salva prezzi.json se cambiato
@@ -46,9 +69,11 @@ jobs:
             git config user.name  "spendy-price-bot"
             git config user.email "bot@users.noreply.github.com"
             git add prezzi.json
-            git commit -m "Aggiornamento prezzi $(date -u +%Y-%m-%d)"
+            git commit -m "Aggiornamento prezzi $(date -u +%Y-%m-%d) (${MODO:-completo})"
             git push
-            echo "prezzi.json aggiornato e salvato."
+            echo "prezzi.json aggiornato."
           else
             echo "Nessuna modifica ai prezzi."
           fi
+        env:
+          MODO: ${{ github.event.inputs.modo || 'completo' }}
