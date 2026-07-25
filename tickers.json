@@ -1,5 +1,5 @@
 {
- "_nota": "Catalogo asset. 'source' indica da quale servizio il robot prende i prezzi: 'twelvedata' (USA e cripto, aggiornamento quotidiano) o 'alphavantage' (Europa, aggiornamento a rotazione). Per gli asset europei il robot trova da solo il simbolo giusto usando 'avQuery' e lo memorizza in prezzi.json.",
+ "_nota": "Catalogo asset. 'source' indica l'ordine delle fonti: 'twelvedata' oppure 'twelvedata+alphavantage' (prova prima Twelve Data col codice di borsa 'mic', poi Alpha Vantage). 'isin' serve per la ricerca nell'app. Verifica/correggi qui se un ISIN non fosse esatto.",
  "assets": [
   {
    "symbol": "AAPL",
@@ -9,7 +9,8 @@
    "desc": "Progetta e vende iPhone, Mac, iPad, indossabili e servizi digitali.",
    "source": "twelvedata",
    "apiSymbol": "AAPL",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US0378331005"
   },
   {
    "symbol": "MSFT",
@@ -19,7 +20,8 @@
    "desc": "Software Windows e Office, cloud Azure e intelligenza artificiale.",
    "source": "twelvedata",
    "apiSymbol": "MSFT",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US5949181045"
   },
   {
    "symbol": "NVDA",
@@ -29,7 +31,8 @@
    "desc": "Chip grafici e processori per intelligenza artificiale e data center.",
    "source": "twelvedata",
    "apiSymbol": "NVDA",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US67066G1040"
   },
   {
    "symbol": "GOOGL",
@@ -39,7 +42,8 @@
    "desc": "Motore di ricerca Google, YouTube, Android e servizi cloud.",
    "source": "twelvedata",
    "apiSymbol": "GOOGL",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US02079K3059"
   },
   {
    "symbol": "AMZN",
@@ -49,7 +53,8 @@
    "desc": "Il più grande negozio online del mondo e il cloud AWS.",
    "source": "twelvedata",
    "apiSymbol": "AMZN",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US0231351067"
   },
   {
    "symbol": "META",
@@ -59,7 +64,8 @@
    "desc": "Facebook, Instagram e WhatsApp; vive di pubblicità digitale.",
    "source": "twelvedata",
    "apiSymbol": "META",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US30303M1027"
   },
   {
    "symbol": "TSLA",
@@ -69,7 +75,8 @@
    "desc": "Auto elettriche, batterie e pannelli solari.",
    "source": "twelvedata",
    "apiSymbol": "TSLA",
-   "exchange": "NASDAQ"
+   "exchange": "NASDAQ",
+   "isin": "US88160R1014"
   },
   {
    "symbol": "BRK.B",
@@ -79,7 +86,8 @@
    "desc": "La holding di Warren Buffett: assicurazioni e partecipazioni.",
    "source": "twelvedata",
    "apiSymbol": "BRK.B",
-   "exchange": "NYSE"
+   "exchange": "NYSE",
+   "isin": "US0846707026"
   },
   {
    "symbol": "AVGO",
@@ -99,7 +107,8 @@
    "desc": "La più grande banca degli Stati Uniti.",
    "source": "twelvedata",
    "apiSymbol": "JPM",
-   "exchange": "NYSE"
+   "exchange": "NYSE",
+   "isin": "US46625H1005"
   },
   {
    "symbol": "V",
@@ -109,7 +118,8 @@
    "desc": "Il circuito di pagamenti con carta più diffuso al mondo.",
    "source": "twelvedata",
    "apiSymbol": "V",
-   "exchange": "NYSE"
+   "exchange": "NYSE",
+   "isin": "US92826C8394"
   },
   {
    "symbol": "MA",
@@ -149,7 +159,8 @@
    "desc": "Farmaci e dispositivi medici.",
    "source": "twelvedata",
    "apiSymbol": "JNJ",
-   "exchange": "NYSE"
+   "exchange": "NYSE",
+   "isin": "US4781601046"
   },
   {
    "symbol": "LLY",
@@ -179,7 +190,8 @@
    "desc": "Bevande vendute in tutto il mondo.",
    "source": "twelvedata",
    "apiSymbol": "KO",
-   "exchange": "NYSE"
+   "exchange": "NYSE",
+   "isin": "US1912161007"
   },
   {
    "symbol": "PEP",
@@ -1492,9 +1504,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azionario mondiale ad accumulazione, quotato in euro.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Vanguard FTSE All-World UCITS ETF"
+   "avQuery": "Vanguard FTSE All-World UCITS ETF",
+   "isin": "IE00BK5BQT80",
+   "mic": "XETR"
   },
   {
    "symbol": "VWRL",
@@ -1502,9 +1516,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azionario mondiale che distribuisce i dividendi.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Paesi Bassi",
-   "avQuery": "Vanguard FTSE All-World UCITS ETF Distributing"
+   "avQuery": "Vanguard FTSE All-World UCITS ETF Distributing",
+   "isin": "IE00B3RBWM25",
+   "mic": "XAMS"
   },
   {
    "symbol": "SWDA",
@@ -1512,9 +1528,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "I paesi sviluppati del mondo, ad accumulazione.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Regno Unito",
-   "avQuery": "iShares Core MSCI World UCITS ETF"
+   "avQuery": "iShares Core MSCI World UCITS ETF",
+   "isin": "IE00B4L5Y983",
+   "mic": "XLON"
   },
   {
    "symbol": "EUNL",
@@ -1522,9 +1540,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Stesso fondo mondiale, quotato in Germania.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares Core MSCI World UCITS ETF Xetra"
+   "avQuery": "iShares Core MSCI World UCITS ETF Xetra",
+   "isin": "IE00B4L5Y983",
+   "mic": "XETR"
   },
   {
    "symbol": "VUSA",
@@ -1532,9 +1552,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "L'S&P 500 americano acquistabile in Europa.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Vanguard S&P 500 UCITS ETF"
+   "avQuery": "Vanguard S&P 500 UCITS ETF",
+   "isin": "IE00B3XXRP09",
+   "mic": "XETR"
   },
   {
    "symbol": "SXR8",
@@ -1542,9 +1564,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "S&P 500 ad accumulazione, molto usato in Europa.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares Core S&P 500 UCITS ETF"
+   "avQuery": "iShares Core S&P 500 UCITS ETF",
+   "isin": "IE00B5BMR087",
+   "mic": "XETR"
   },
   {
    "symbol": "EIMI",
@@ -1552,9 +1576,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Mercati emergenti in versione molto ampia.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Regno Unito",
-   "avQuery": "iShares Core MSCI Emerging Markets IMI UCITS ETF"
+   "avQuery": "iShares Core MSCI Emerging Markets IMI UCITS ETF",
+   "isin": "IE00BKM4GZ66",
+   "mic": "XLON"
   },
   {
    "symbol": "IS3N",
@@ -1562,9 +1588,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Emergenti quotati in Germania.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares Core MSCI Emerging Markets IMI Xetra"
+   "avQuery": "iShares Core MSCI Emerging Markets IMI Xetra",
+   "isin": "IE00BKM4GZ66",
+   "mic": "XETR"
   },
   {
    "symbol": "XDWD",
@@ -1572,9 +1600,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azionario mondiale sviluppato di Xtrackers.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Xtrackers MSCI World UCITS ETF"
+   "avQuery": "Xtrackers MSCI World UCITS ETF",
+   "isin": "IE00BJ0KDQ92",
+   "mic": "XETR"
   },
   {
    "symbol": "SPPW",
@@ -1582,9 +1612,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azionario mondiale sviluppato di SPDR.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "SPDR MSCI World UCITS ETF"
+   "avQuery": "SPDR MSCI World UCITS ETF",
+   "isin": "IE00BFY0GT14",
+   "mic": "XETR"
   },
   {
    "symbol": "IUSQ",
@@ -1592,9 +1624,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Mondo intero: sviluppati ed emergenti insieme.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares MSCI ACWI UCITS ETF"
+   "avQuery": "iShares MSCI ACWI UCITS ETF",
+   "isin": "IE00B6R52259",
+   "mic": "XETR"
   },
   {
    "symbol": "VHYL",
@@ -1602,9 +1636,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azioni mondiali che pagano dividendi alti.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Paesi Bassi",
-   "avQuery": "Vanguard FTSE All-World High Dividend Yield UCITS ETF"
+   "avQuery": "Vanguard FTSE All-World High Dividend Yield UCITS ETF",
+   "isin": "IE00B8GKDB10",
+   "mic": "XAMS"
   },
   {
    "symbol": "AGGH",
@@ -1612,9 +1648,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Obbligazioni mondiali con cambio coperto in euro.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged"
+   "avQuery": "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged",
+   "isin": "IE00BDBRDM35",
+   "mic": "XETR"
   },
   {
    "symbol": "EXS1",
@@ -1622,9 +1660,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Le principali 40 aziende tedesche.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares Core DAX UCITS ETF"
+   "avQuery": "iShares Core DAX UCITS ETF",
+   "isin": "DE0005933931",
+   "mic": "XETR"
   },
   {
    "symbol": "EXW1",
@@ -1632,9 +1672,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Le 50 maggiori aziende dell'area euro.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "iShares EURO STOXX 50 UCITS ETF"
+   "avQuery": "iShares EURO STOXX 50 UCITS ETF",
+   "isin": "DE0005933956",
+   "mic": "XETR"
   },
   {
    "symbol": "XEON",
@@ -1642,9 +1684,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Liquidità in euro remunerata al tasso di mercato.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Xtrackers II EUR Overnight Rate Swap UCITS ETF"
+   "avQuery": "Xtrackers II EUR Overnight Rate Swap UCITS ETF",
+   "isin": "LU0290358497",
+   "mic": "XETR"
   },
   {
    "symbol": "SGLD",
@@ -1652,9 +1696,11 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Oro fisico acquistabile in Europa.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Invesco Physical Gold ETC"
+   "avQuery": "Invesco Physical Gold ETC",
+   "isin": "IE00B579F325",
+   "mic": "XETR"
   },
   {
    "symbol": "ENEL",
@@ -1662,9 +1708,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "La maggiore utility elettrica italiana.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Enel SpA"
+   "avQuery": "Enel SpA",
+   "isin": "IT0003128367",
+   "mic": "XMIL"
   },
   {
    "symbol": "ISP",
@@ -1672,9 +1720,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "La principale banca italiana.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Intesa Sanpaolo SpA"
+   "avQuery": "Intesa Sanpaolo SpA",
+   "isin": "IT0000072618",
+   "mic": "XMIL"
   },
   {
    "symbol": "UCG",
@@ -1682,9 +1732,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Grande banca italiana con presenza europea.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "UniCredit SpA"
+   "avQuery": "UniCredit SpA",
+   "isin": "IT0005239360",
+   "mic": "XMIL"
   },
   {
    "symbol": "ENI",
@@ -1692,9 +1744,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il colosso italiano di petrolio ed energia.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Eni SpA"
+   "avQuery": "Eni SpA",
+   "isin": "IT0003132476",
+   "mic": "XMIL"
   },
   {
    "symbol": "STLAM",
@@ -1702,9 +1756,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Fiat, Peugeot, Jeep e altri marchi automobilistici.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Stellantis NV"
+   "avQuery": "Stellantis NV",
+   "isin": "NL00150001Q9",
+   "mic": "XMIL"
   },
   {
    "symbol": "RACE",
@@ -1712,9 +1768,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Auto sportive di lusso di Maranello.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Ferrari NV"
+   "avQuery": "Ferrari NV",
+   "isin": "NL0011585146",
+   "mic": "XMIL"
   },
   {
    "symbol": "G",
@@ -1722,9 +1780,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il maggiore gruppo assicurativo italiano.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Assicurazioni Generali SpA"
+   "avQuery": "Assicurazioni Generali SpA",
+   "isin": "IT0000062072",
+   "mic": "XMIL"
   },
   {
    "symbol": "MONC",
@@ -1732,9 +1792,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Abbigliamento di lusso, celebre per i piumini.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Moncler SpA"
+   "avQuery": "Moncler SpA",
+   "isin": "IT0004965148",
+   "mic": "XMIL"
   },
   {
    "symbol": "LDO",
@@ -1742,9 +1804,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Difesa, elicotteri ed elettronica italiana.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Leonardo SpA"
+   "avQuery": "Leonardo SpA",
+   "isin": "IT0003856405",
+   "mic": "XMIL"
   },
   {
    "symbol": "PST",
@@ -1752,9 +1816,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Poste, servizi finanziari e assicurativi.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Poste Italiane SpA"
+   "avQuery": "Poste Italiane SpA",
+   "isin": "IT0003796171",
+   "mic": "XMIL"
   },
   {
    "symbol": "SRG",
@@ -1762,9 +1828,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Rete di trasporto del gas in Italia.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Snam SpA"
+   "avQuery": "Snam SpA",
+   "isin": "IT0003153415",
+   "mic": "XMIL"
   },
   {
    "symbol": "TRN",
@@ -1772,9 +1840,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Rete elettrica nazionale italiana.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Terna SpA"
+   "avQuery": "Terna SpA",
+   "isin": "IT0003242622",
+   "mic": "XMIL"
   },
   {
    "symbol": "CPR",
@@ -1782,9 +1852,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Bevande e liquori celebri nel mondo.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Italia",
-   "avQuery": "Davide Campari-Milano NV"
+   "avQuery": "Davide Campari-Milano NV",
+   "isin": "NL0015435975",
+   "mic": "XMIL"
   },
   {
    "symbol": "SAP",
@@ -1792,9 +1864,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Software gestionale per grandi aziende.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "SAP SE"
+   "avQuery": "SAP SE",
+   "isin": "DE0007164600",
+   "mic": "XETR"
   },
   {
    "symbol": "SIE",
@@ -1802,9 +1876,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Industria, automazione e infrastrutture.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Siemens AG"
+   "avQuery": "Siemens AG",
+   "isin": "DE0007236101",
+   "mic": "XETR"
   },
   {
    "symbol": "ALV",
@@ -1812,9 +1888,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Uno dei maggiori assicuratori del mondo.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Allianz SE"
+   "avQuery": "Allianz SE",
+   "isin": "DE0008404005",
+   "mic": "XETR"
   },
   {
    "symbol": "BMW",
@@ -1822,9 +1900,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Auto di fascia alta e motociclette.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Bayerische Motoren Werke AG"
+   "avQuery": "Bayerische Motoren Werke AG",
+   "isin": "DE0005190003",
+   "mic": "XETR"
   },
   {
    "symbol": "MBG",
@@ -1832,9 +1912,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Auto di lusso e veicoli commerciali.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Mercedes-Benz Group AG"
+   "avQuery": "Mercedes-Benz Group AG",
+   "isin": "DE0007100000",
+   "mic": "XETR"
   },
   {
    "symbol": "VOW3",
@@ -1842,9 +1924,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il maggiore gruppo automobilistico europeo.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Volkswagen AG"
+   "avQuery": "Volkswagen AG",
+   "isin": "DE0007664039",
+   "mic": "XETR"
   },
   {
    "symbol": "DTE",
@@ -1852,9 +1936,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Telefonia tedesca, proprietaria di T-Mobile.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Deutsche Telekom AG"
+   "avQuery": "Deutsche Telekom AG",
+   "isin": "DE0005557508",
+   "mic": "XETR"
   },
   {
    "symbol": "BAS",
@@ -1862,9 +1948,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il più grande gruppo chimico del mondo.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "BASF SE"
+   "avQuery": "BASF SE",
+   "isin": "DE000BASF111",
+   "mic": "XETR"
   },
   {
    "symbol": "ADS",
@@ -1872,9 +1960,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Abbigliamento e scarpe sportive.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "adidas AG"
+   "avQuery": "adidas AG",
+   "isin": "DE000A1EWWW0",
+   "mic": "XETR"
   },
   {
    "symbol": "RHM",
@@ -1882,9 +1972,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Difesa e componentistica per veicoli.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Germania",
-   "avQuery": "Rheinmetall AG"
+   "avQuery": "Rheinmetall AG",
+   "isin": "DE0007030009",
+   "mic": "XETR"
   },
   {
    "symbol": "MC",
@@ -1892,9 +1984,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il gruppo del lusso: Louis Vuitton, Dior.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Francia",
-   "avQuery": "LVMH Moet Hennessy Louis Vuitton"
+   "avQuery": "LVMH Moet Hennessy Louis Vuitton",
+   "isin": "FR0000121014",
+   "mic": "XPAR"
   },
   {
    "symbol": "OR",
@@ -1902,9 +1996,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Cosmetici e prodotti di bellezza.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Francia",
-   "avQuery": "L'Oreal SA"
+   "avQuery": "L'Oreal SA",
+   "isin": "FR0000120321",
+   "mic": "XPAR"
   },
   {
    "symbol": "TTE",
@@ -1912,9 +2008,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Energia, petrolio e rinnovabili.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Francia",
-   "avQuery": "TotalEnergies SE"
+   "avQuery": "TotalEnergies SE",
+   "isin": "FR0000120271",
+   "mic": "XPAR"
   },
   {
    "symbol": "SAN",
@@ -1922,9 +2020,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Farmaceutica francese.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Francia",
-   "avQuery": "Sanofi SA"
+   "avQuery": "Sanofi SA",
+   "isin": "FR0000120578",
+   "mic": "XPAR"
   },
   {
    "symbol": "AIR",
@@ -1932,9 +2032,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Aerei civili, elicotteri e spazio.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Francia",
-   "avQuery": "Airbus SE"
+   "avQuery": "Airbus SE",
+   "isin": "NL0000235190",
+   "mic": "XPAR"
   },
   {
    "symbol": "ASML",
@@ -1942,9 +2044,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Macchine indispensabili per produrre i chip.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Paesi Bassi",
-   "avQuery": "ASML Holding NV"
+   "avQuery": "ASML Holding NV",
+   "isin": "NL0010273215",
+   "mic": "XAMS"
   },
   {
    "symbol": "ADYEN",
@@ -1952,9 +2056,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Piattaforma di pagamenti per grandi aziende.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Paesi Bassi",
-   "avQuery": "Adyen NV"
+   "avQuery": "Adyen NV",
+   "isin": "NL0012969182",
+   "mic": "XAMS"
   },
   {
    "symbol": "ITX",
@@ -1962,9 +2068,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il gruppo di Zara e altri marchi di moda.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Spagna",
-   "avQuery": "Industria de Diseno Textil SA"
+   "avQuery": "Industria de Diseno Textil SA",
+   "isin": "ES0148396007",
+   "mic": "XMAD"
   },
   {
    "symbol": "IBE",
@@ -1972,9 +2080,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Elettricità e rinnovabili in Spagna e nel mondo.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Spagna",
-   "avQuery": "Iberdrola SA"
+   "avQuery": "Iberdrola SA",
+   "isin": "ES0144580Y14",
+   "mic": "XMAD"
   },
   {
    "symbol": "SAN.MC",
@@ -1982,9 +2092,11 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Grande banca spagnola con presenza globale.",
-   "source": "alphavantage",
+   "source": "twelvedata+alphavantage",
    "region": "Spagna",
-   "avQuery": "Banco Santander SA"
+   "avQuery": "Banco Santander SA",
+   "isin": "ES0113900J37",
+   "mic": "XMAD"
   }
  ]
 }
