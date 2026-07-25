@@ -29,6 +29,8 @@ TD_ATTESA_LIMITE  = 65     # attesa quando il servizio dice "limite raggiunto"
 TD_BUDGET         = int(os.environ.get("TD_BUDGET", "700"))
 AV_PAUSA          = 13
 AV_BUDGET         = int(os.environ.get("AV_BUDGET", "25"))
+MODO              = os.environ.get("MODO", "completo").strip().lower()   # 'veloce' | 'completo'
+SOLO_MANCANTI     = os.environ.get("SOLO_MANCANTI", "0").strip() == "1"
 CTX = ssl.create_default_context()
 
 def get_json(url):
@@ -59,17 +61,24 @@ def td_varianti(a):
     simboli = [base] + [x for x in (a.get("alt") or []) if x != base]
     out = []
     for sim in simboli:
-        p = {"symbol": sim, "apikey": TD_KEY}
-        if a.get("exchange"): p["exchange"] = a["exchange"]
-        if a.get("mic"):      p["mic_code"] = a["mic"]
-        if len(p) > 2: out.append(p)                       # 1) con la borsa
-        out.append({"symbol": sim, "apikey": TD_KEY})       # 2) senza la borsa
+        b = {"symbol": sim, "apikey": TD_KEY}
+        if a.get("exchange"):     out.append(dict(b, exchange=a["exchange"]))       # borsa USA
+        if a.get("mic"):          out.append(dict(b, mic_code=a["mic"]))            # codice MIC
+        if a.get("exchangeName"): out.append(dict(b, exchange=a["exchangeName"]))   # nome borsa
+        if a.get("country"):      out.append(dict(b, country=a["country"]))         # paese
+        out.append(dict(b))                                                          # solo simbolo
     # elimina i doppioni mantenendo l'ordine
     viste, uniche = set(), []
     for p in out:
         k = (p.get("symbol"), p.get("exchange"), p.get("mic_code"))
         if k not in viste: viste.add(k); uniche.append(p)
     return uniche
+
+def descrivi(p):
+    if p.get("mic_code"):  return "borsa " + p["mic_code"]
+    if p.get("exchange"):  return "borsa " + p["exchange"]
+    if p.get("country"):   return "paese " + p["country"]
+    return "solo sigla"
 
 def valuta_ok(a, trovata):
     """Se il servizio dice in che valuta quota, controlla che sia quella attesa:
@@ -108,7 +117,7 @@ def td_price(a, cache=None):
         v, u = td_quote_una(a, p); tot += u
         if v is not None:
             idx = td_varianti(a).index(p)
-            if i > 0: print("  \u21bb %s: riuscito senza/altra borsa (%s)" % (a["symbol"], p.get("symbol")))
+            if i > 0: print("  \u21bb %s: riuscito con %s (%s)" % (a["symbol"], descrivi(p), p.get("symbol")))
             return v, idx, tot
         time.sleep(TD_PAUSA)
     print("  ! %s (TD): nessuna variante ha funzionato" % a["symbol"])
@@ -150,7 +159,7 @@ def td_series(a, cache=None):
         s, u = td_series_una(a, p); tot += u
         if s:
             idx = td_varianti(a).index(p)
-            if i > 0: print("  \u21bb %s: storico riuscito senza/altra borsa (%s)" % (a["symbol"], p.get("symbol")))
+            if i > 0: print("  \u21bb %s: storico riuscito con %s (%s)" % (a["symbol"], descrivi(p), p.get("symbol")))
             return s, idx, tot
         time.sleep(TD_PAUSA)
     print("  ! %s (TD): nessuna variante ha funzionato per lo storico" % a["symbol"])
@@ -194,6 +203,22 @@ def av_resolve(a):
         return best
     except Exception as e:
         print("  ! %s (AV): errore ricerca %s" % (a["symbol"], e))
+    return None
+
+def av_quote(sym):
+    """Solo il prezzo di oggi: 1 richiesta invece dello storico."""
+    url = ("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
+           + urllib.parse.quote(sym) + "&apikey=" + AV_KEY)
+    try:
+        d = get_json(url)
+        if av_limit_hit(d): return "LIMIT"
+        q = d.get("Global Quote") or {}
+        pr = q.get("05. price"); day = q.get("07. latest trading day")
+        if pr and day:
+            return [[str(day)[:10], float(pr)]]
+        print("  ! %s (AV): quotazione non disponibile" % sym)
+    except Exception as e:
+        print("  ! %s (AV): errore %s" % (sym, e))
     return None
 
 def av_series(sym):
@@ -252,9 +277,19 @@ def main():
             "history":  list(old.get("history", [])),
         }
 
+    def priorita(a):
+        e = prices[a["symbol"].upper()]
+        manca = 0 if not isinstance(e.get("price"), (int, float)) else 1
+        return (manca, e.get("asof") or "0000-00-00")
+
     td = [a for a in assets if a.get("source", "twelvedata").startswith("twelvedata")]
+    if SOLO_MANCANTI:
+        td = [a for a in td if not isinstance(prices[a["symbol"].upper()].get("price"), (int, float))
+              or prices[a["symbol"].upper()].get("asof") != today]
+    td.sort(key=priorita)
     av_riserva = []   # asset europei per cui Twelve Data non ha dato prezzo
-    print("== Twelve Data: %d asset (europei inclusi, si prova prima qui) ==" % len(td))
+    print("== MODALITA': %s%s ==" % (MODO, " (solo mancanti/non aggiornati)" if SOLO_MANCANTI else ""))
+    print("== Twelve Data: %d asset da lavorare (prima quelli senza prezzo) ==" % len(td))
     used = 0
     if not TD_KEY:
         print("  (TWELVE_DATA_KEY assente: salto, mantengo i prezzi esistenti)")
@@ -263,7 +298,7 @@ def main():
             if used >= TD_BUDGET:
                 print("  (budget giornaliero Twelve Data esaurito)"); break
             sym = a["symbol"].upper(); e = prices[sym]
-            if len(e["history"]) < BACKFILL_IF_UNDER:
+            if MODO != "veloce" and len(e["history"]) < BACKFILL_IF_UNDER:
                 s, var, u = td_series(a, e.get("tdVar")); used += u; time.sleep(TD_PAUSA)
                 if s:
                     e["tdVar"] = var
@@ -309,7 +344,8 @@ def main():
                 if not r: continue
                 e["avSymbol"] = r
                 if used >= AV_BUDGET: continue
-            s = av_series(e["avSymbol"]); used += 1; time.sleep(AV_PAUSA)
+            s = (av_quote(e["avSymbol"]) if MODO == "veloce" else av_series(e["avSymbol"]))
+            used += 1; time.sleep(AV_PAUSA)
             if s == "LIMIT":
                 print("  (limite Alpha Vantage raggiunto)"); break
             if not s:
@@ -330,6 +366,12 @@ def main():
     vuoti = sum(1 for v in prices.values() if v.get("price") is None)
     print("OK: prezzi.json scritto - %d asset (%d aggiornati oggi, %d senza prezzo), valute %s"
           % (len(prices), agg, vuoti, ",".join(sorted(fx.keys()))))
+    mancanti = sorted(s for s, v in prices.items() if v.get("price") is None)
+    if mancanti:
+        print("ANCORA SENZA PREZZO (%d): %s" % (len(mancanti), ", ".join(mancanti)))
+    senza_storico = sorted(s for s, v in prices.items() if len(v.get("history", [])) < 5)
+    if senza_storico:
+        print("SENZA STORICO (%d): serve un giro in modalita' completa" % len(senza_storico))
 
 if __name__ == "__main__":
     main()
