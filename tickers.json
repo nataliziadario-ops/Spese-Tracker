@@ -1020,8 +1020,7 @@
    "currency": "USD",
    "desc": "Le 500 maggiori aziende americane in un solo strumento.",
    "source": "twelvedata",
-   "apiSymbol": "SPY",
-   "exchange": "ARCA"
+   "apiSymbol": "SPY"
   },
   {
    "symbol": "VOO",
@@ -1030,8 +1029,7 @@
    "currency": "USD",
    "desc": "S&P 500 con costi molto bassi, di Vanguard.",
    "source": "twelvedata",
-   "apiSymbol": "VOO",
-   "exchange": "ARCA"
+   "apiSymbol": "VOO"
   },
   {
    "symbol": "IVV",
@@ -1040,8 +1038,7 @@
    "currency": "USD",
    "desc": "S&P 500 nella versione iShares.",
    "source": "twelvedata",
-   "apiSymbol": "IVV",
-   "exchange": "ARCA"
+   "apiSymbol": "IVV"
   },
   {
    "symbol": "QQQ",
@@ -1060,8 +1057,7 @@
    "currency": "USD",
    "desc": "Tutto il mercato azionario americano.",
    "source": "twelvedata",
-   "apiSymbol": "VTI",
-   "exchange": "ARCA"
+   "apiSymbol": "VTI"
   },
   {
    "symbol": "VT",
@@ -1070,8 +1066,7 @@
    "currency": "USD",
    "desc": "Azionario mondiale: migliaia di aziende di tutto il pianeta.",
    "source": "twelvedata",
-   "apiSymbol": "VT",
-   "exchange": "ARCA"
+   "apiSymbol": "VT"
   },
   {
    "symbol": "VXUS",
@@ -1090,8 +1085,7 @@
    "currency": "USD",
    "desc": "Europa, Giappone e altri sviluppati, senza USA.",
    "source": "twelvedata",
-   "apiSymbol": "VEA",
-   "exchange": "ARCA"
+   "apiSymbol": "VEA"
   },
   {
    "symbol": "VWO",
@@ -1100,8 +1094,7 @@
    "currency": "USD",
    "desc": "Cina, India, Brasile e altri emergenti.",
    "source": "twelvedata",
-   "apiSymbol": "VWO",
-   "exchange": "ARCA"
+   "apiSymbol": "VWO"
   },
   {
    "symbol": "IEFA",
@@ -1110,8 +1103,7 @@
    "currency": "USD",
    "desc": "Sviluppati fuori dal Nord America.",
    "source": "twelvedata",
-   "apiSymbol": "IEFA",
-   "exchange": "ARCA"
+   "apiSymbol": "IEFA"
   },
   {
    "symbol": "IEMG",
@@ -1120,8 +1112,7 @@
    "currency": "USD",
    "desc": "Mercati emergenti in versione ampia.",
    "source": "twelvedata",
-   "apiSymbol": "IEMG",
-   "exchange": "ARCA"
+   "apiSymbol": "IEMG"
   },
   {
    "symbol": "EFA",
@@ -1130,8 +1121,7 @@
    "currency": "USD",
    "desc": "Europa, Australia ed Estremo Oriente.",
    "source": "twelvedata",
-   "apiSymbol": "EFA",
-   "exchange": "ARCA"
+   "apiSymbol": "EFA"
   },
   {
    "symbol": "IWM",
@@ -1140,8 +1130,7 @@
    "currency": "USD",
    "desc": "Piccole e medie aziende americane.",
    "source": "twelvedata",
-   "apiSymbol": "IWM",
-   "exchange": "ARCA"
+   "apiSymbol": "IWM"
   },
   {
    "symbol": "DIA",
@@ -1150,8 +1139,7 @@
    "currency": "USD",
    "desc": "Le 30 grandi aziende del Dow Jones.",
    "source": "twelvedata",
-   "apiSymbol": "DIA",
-   "exchange": "ARCA"
+   "apiSymbol": "DIA"
   },
   {
    "symbol": "VUG",
@@ -1160,8 +1148,7 @@
    "currency": "USD",
    "desc": "Aziende americane in forte crescita.",
    "source": "twelvedata",
-   "apiSymbol": "VUG",
-   "exchange": "ARCA"
+   "apiSymbol": "VUG"
   },
   {
    "symbol": "VTV",
@@ -1170,8 +1157,7 @@
    "currency": "USD",
    "desc": "Aziende americane a prezzi contenuti.",
    "source": "twelvedata",
-   "apiSymbol": "VTV",
-   "exchange": "ARCA"
+   "apiSymbol": "VTV"
   },
   {
    "symbol": "SCHD",
@@ -1180,8 +1166,7 @@
    "currency": "USD",
    "desc": "Aziende americane solide che pagano dividendi.",
    "source": "twelvedata",
-   "apiSymbol": "SCHD",
-   "exchange": "ARCA"
+   "apiSymbol": "SCHD"
   },
   {
    "symbol": "VYM",
@@ -1190,8 +1175,7 @@
    "currency": "USD",
    "desc": "Azioni USA con dividendi elevati.",
    "source": "twelvedata",
-   "apiSymbol": "VYM",
-   "exchange": "ARCA"
+   "apiSymbol": "VYM"
   },
   {
    "symbol": "AGG",
@@ -1200,8 +1184,7 @@
    "currency": "USD",
    "desc": "Obbligazioni americane di alta qualità.",
    "source": "twelvedata",
-   "apiSymbol": "AGG",
-   "exchange": "ARCA"
+   "apiSymbol": "AGG"
   },
   {
    "symbol": "BND",
@@ -1260,8 +1243,7 @@
    "currency": "USD",
    "desc": "Obbligazioni USA protette dall'inflazione.",
    "source": "twelvedata",
-   "apiSymbol": "TIP",
-   "exchange": "ARCA"
+   "apiSymbol": "TIP"
   },
   {
    "symbol": "LQD",
@@ -1270,8 +1252,7 @@
    "currency": "USD",
    "desc": "Obbligazioni di grandi aziende americane.",
    "source": "twelvedata",
-   "apiSymbol": "LQD",
-   "exchange": "ARCA"
+   "apiSymbol": "LQD"
   },
   {
    "symbol": "HYG",
@@ -1280,8 +1261,7 @@
    "currency": "USD",
    "desc": "Obbligazioni ad alto rendimento e più rischiose.",
    "source": "twelvedata",
-   "apiSymbol": "HYG",
-   "exchange": "ARCA"
+   "apiSymbol": "HYG"
   },
   {
    "symbol": "GLD",
@@ -1290,8 +1270,7 @@
    "currency": "USD",
    "desc": "Segue il prezzo dell'oro fisico.",
    "source": "twelvedata",
-   "apiSymbol": "GLD",
-   "exchange": "ARCA"
+   "apiSymbol": "GLD"
   },
   {
    "symbol": "IAU",
@@ -1300,8 +1279,7 @@
    "currency": "USD",
    "desc": "Oro fisico con commissioni ridotte.",
    "source": "twelvedata",
-   "apiSymbol": "IAU",
-   "exchange": "ARCA"
+   "apiSymbol": "IAU"
   },
   {
    "symbol": "SLV",
@@ -1310,8 +1288,7 @@
    "currency": "USD",
    "desc": "Segue il prezzo dell'argento.",
    "source": "twelvedata",
-   "apiSymbol": "SLV",
-   "exchange": "ARCA"
+   "apiSymbol": "SLV"
   },
   {
    "symbol": "XLK",
@@ -1320,8 +1297,7 @@
    "currency": "USD",
    "desc": "Le aziende tecnologiche dell'S&P 500.",
    "source": "twelvedata",
-   "apiSymbol": "XLK",
-   "exchange": "ARCA"
+   "apiSymbol": "XLK"
   },
   {
    "symbol": "XLF",
@@ -1330,8 +1306,7 @@
    "currency": "USD",
    "desc": "Banche e assicurazioni dell'S&P 500.",
    "source": "twelvedata",
-   "apiSymbol": "XLF",
-   "exchange": "ARCA"
+   "apiSymbol": "XLF"
   },
   {
    "symbol": "XLE",
@@ -1340,8 +1315,7 @@
    "currency": "USD",
    "desc": "Aziende energetiche dell'S&P 500.",
    "source": "twelvedata",
-   "apiSymbol": "XLE",
-   "exchange": "ARCA"
+   "apiSymbol": "XLE"
   },
   {
    "symbol": "XLV",
@@ -1350,8 +1324,7 @@
    "currency": "USD",
    "desc": "Sanità e farmaceutica dell'S&P 500.",
    "source": "twelvedata",
-   "apiSymbol": "XLV",
-   "exchange": "ARCA"
+   "apiSymbol": "XLV"
   },
   {
    "symbol": "VNQ",
@@ -1360,8 +1333,7 @@
    "currency": "USD",
    "desc": "Società immobiliari quotate americane.",
    "source": "twelvedata",
-   "apiSymbol": "VNQ",
-   "exchange": "ARCA"
+   "apiSymbol": "VNQ"
   },
   {
    "symbol": "BTC",
@@ -1464,12 +1436,16 @@
   },
   {
    "symbol": "MATIC",
-   "name": "Polygon",
+   "name": "Polygon (POL)",
    "kind": "crypto",
    "currency": "USD",
    "desc": "Rete che rende Ethereum più veloce ed economico.",
    "source": "twelvedata",
-   "apiSymbol": "MATIC/USD"
+   "apiSymbol": "MATIC/USD",
+   "alt": [
+    "POL/USD",
+    "MATIC/USD"
+   ]
   },
   {
    "symbol": "UNI",
@@ -1712,7 +1688,10 @@
    "region": "Italia",
    "avQuery": "Enel SpA",
    "isin": "IT0003128367",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "ENEL.MI"
+   ]
   },
   {
    "symbol": "ISP",
@@ -1724,7 +1703,10 @@
    "region": "Italia",
    "avQuery": "Intesa Sanpaolo SpA",
    "isin": "IT0000072618",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "ISP.MI"
+   ]
   },
   {
    "symbol": "UCG",
@@ -1736,7 +1718,10 @@
    "region": "Italia",
    "avQuery": "UniCredit SpA",
    "isin": "IT0005239360",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "UCG.MI"
+   ]
   },
   {
    "symbol": "ENI",
@@ -1748,7 +1733,10 @@
    "region": "Italia",
    "avQuery": "Eni SpA",
    "isin": "IT0003132476",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "ENI.MI"
+   ]
   },
   {
    "symbol": "STLAM",
@@ -1760,7 +1748,10 @@
    "region": "Italia",
    "avQuery": "Stellantis NV",
    "isin": "NL00150001Q9",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "STLAM.MI"
+   ]
   },
   {
    "symbol": "RACE",
@@ -1772,7 +1763,10 @@
    "region": "Italia",
    "avQuery": "Ferrari NV",
    "isin": "NL0011585146",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "RACE.MI"
+   ]
   },
   {
    "symbol": "G",
@@ -1784,7 +1778,10 @@
    "region": "Italia",
    "avQuery": "Assicurazioni Generali SpA",
    "isin": "IT0000062072",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "G.MI"
+   ]
   },
   {
    "symbol": "MONC",
@@ -1796,7 +1793,10 @@
    "region": "Italia",
    "avQuery": "Moncler SpA",
    "isin": "IT0004965148",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "MONC.MI"
+   ]
   },
   {
    "symbol": "LDO",
@@ -1808,7 +1808,10 @@
    "region": "Italia",
    "avQuery": "Leonardo SpA",
    "isin": "IT0003856405",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "LDO.MI"
+   ]
   },
   {
    "symbol": "PST",
@@ -1820,7 +1823,10 @@
    "region": "Italia",
    "avQuery": "Poste Italiane SpA",
    "isin": "IT0003796171",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "PST.MI"
+   ]
   },
   {
    "symbol": "SRG",
@@ -1832,7 +1838,10 @@
    "region": "Italia",
    "avQuery": "Snam SpA",
    "isin": "IT0003153415",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "SRG.MI"
+   ]
   },
   {
    "symbol": "TRN",
@@ -1844,7 +1853,10 @@
    "region": "Italia",
    "avQuery": "Terna SpA",
    "isin": "IT0003242622",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "TRN.MI"
+   ]
   },
   {
    "symbol": "CPR",
@@ -1856,7 +1868,10 @@
    "region": "Italia",
    "avQuery": "Davide Campari-Milano NV",
    "isin": "NL0015435975",
-   "mic": "XMIL"
+   "mic": "XMIL",
+   "alt": [
+    "CPR.MI"
+   ]
   },
   {
    "symbol": "SAP",
