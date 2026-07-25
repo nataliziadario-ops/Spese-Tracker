@@ -51,51 +51,110 @@ def merge_hist(old, new):
     return [[d, m[d]] for d in sorted(m)][-MAX_HISTORY:]
 
 # ---------------------------------------------------------------- TWELVE DATA
-def td_params(a):
-    p = {"symbol": a.get("apiSymbol") or a["symbol"], "apikey": TD_KEY}
-    if a.get("exchange"): p["exchange"] = a["exchange"]
-    if a.get("mic"):      p["mic_code"] = a["mic"]
-    return p
+def td_varianti(a):
+    """Combinazioni da provare, in ordine: con la borsa indicata, poi senza,
+    poi eventuali simboli alternativi. Serve perche' alcuni codici di borsa
+    non sono riconosciuti dal servizio."""
+    base = a.get("apiSymbol") or a["symbol"]
+    simboli = [base] + [x for x in (a.get("alt") or []) if x != base]
+    out = []
+    for sim in simboli:
+        p = {"symbol": sim, "apikey": TD_KEY}
+        if a.get("exchange"): p["exchange"] = a["exchange"]
+        if a.get("mic"):      p["mic_code"] = a["mic"]
+        if len(p) > 2: out.append(p)                       # 1) con la borsa
+        out.append({"symbol": sim, "apikey": TD_KEY})       # 2) senza la borsa
+    # elimina i doppioni mantenendo l'ordine
+    viste, uniche = set(), []
+    for p in out:
+        k = (p.get("symbol"), p.get("exchange"), p.get("mic_code"))
+        if k not in viste: viste.add(k); uniche.append(p)
+    return uniche
 
-def td_price(a, tentativi=2):
-    url = "https://api.twelvedata.com/price?" + urllib.parse.urlencode(td_params(a))
-    for n in range(tentativi + 1):
-        try:
-            d = get_json(url)
-            if isinstance(d, dict) and "price" in d:
-                return float(d["price"])
-            if td_limit_hit(d) and n < tentativi:
-                print("  ~ limite Twelve Data: attendo %ds e riprovo" % TD_ATTESA_LIMITE)
-                time.sleep(TD_ATTESA_LIMITE); continue
-            print("  ! %s (TD): %s" % (a["symbol"], str(d)[:110]))
-            return None
-        except Exception as e:
-            print("  ! %s (TD): errore %s" % (a["symbol"], e))
-            return None
-    return None
+def valuta_ok(a, trovata):
+    """Se il servizio dice in che valuta quota, controlla che sia quella attesa:
+    evita di prendere un titolo omonimo su un'altra borsa."""
+    attesa = (a.get("currency") or "").upper()
+    return (not trovata) or (not attesa) or (str(trovata).upper() == attesa)
 
-def td_series(a):
-    p = td_params(a); p["interval"] = "1day"; p["outputsize"] = "380"
-    url = "https://api.twelvedata.com/time_series?" + urllib.parse.urlencode(p)
+def td_quote_una(a, params):
+    """Una singola richiesta 'quote': ritorna (prezzo, richieste_usate) oppure (None, n)."""
+    url = "https://api.twelvedata.com/quote?" + urllib.parse.urlencode(params)
+    usate = 0
     for n in range(3):
         try:
-            d = get_json(url)
+            d = get_json(url); usate += 1
+            if isinstance(d, dict) and d.get("close") not in (None, ""):
+                if not valuta_ok(a, d.get("currency")):
+                    print("  ! %s (TD): valuta %s diversa da %s, scarto"
+                          % (a["symbol"], d.get("currency"), a.get("currency")))
+                    return None, usate
+                return float(d["close"]), usate
+            if td_limit_hit(d) and n < 2:
+                print("  ~ limite Twelve Data: attendo %ds e riprovo" % TD_ATTESA_LIMITE)
+                time.sleep(TD_ATTESA_LIMITE); continue
+            return None, usate
+        except Exception as e:
+            print("  ! %s (TD): errore %s" % (a["symbol"], e)); return None, usate
+    return None, usate
+
+def td_price(a, cache=None):
+    """Prova le varianti finche' una risponde. Ritorna (prezzo, variante, richieste)."""
+    varianti = td_varianti(a)
+    if cache is not None and 0 <= cache < len(varianti):
+        varianti = [varianti[cache]] + [v for i, v in enumerate(varianti) if i != cache]
+    tot = 0
+    for i, p in enumerate(varianti):
+        v, u = td_quote_una(a, p); tot += u
+        if v is not None:
+            idx = td_varianti(a).index(p)
+            if i > 0: print("  \u21bb %s: riuscito senza/altra borsa (%s)" % (a["symbol"], p.get("symbol")))
+            return v, idx, tot
+        time.sleep(TD_PAUSA)
+    print("  ! %s (TD): nessuna variante ha funzionato" % a["symbol"])
+    return None, None, tot
+
+def td_series_una(a, params):
+    p = dict(params); p["interval"] = "1day"; p["outputsize"] = "380"
+    url = "https://api.twelvedata.com/time_series?" + urllib.parse.urlencode(p)
+    usate = 0
+    for n in range(3):
+        try:
+            d = get_json(url); usate += 1
             vals = d.get("values") if isinstance(d, dict) else None
             if vals:
+                meta = d.get("meta") or {}
+                if not valuta_ok(a, meta.get("currency")):
+                    print("  ! %s (TD): valuta %s diversa da %s, scarto"
+                          % (a["symbol"], meta.get("currency"), a.get("currency")))
+                    return None, usate
                 out = []
                 for v in reversed(vals):
                     try: out.append([str(v["datetime"])[:10], float(v["close"])])
                     except Exception: pass
-                return out or None
+                return (out or None), usate
             if td_limit_hit(d) and n < 2:
                 print("  ~ limite Twelve Data: attendo %ds e riprovo" % TD_ATTESA_LIMITE)
                 time.sleep(TD_ATTESA_LIMITE); continue
-            print("  ! %s (TD): nessuno storico: %s" % (a["symbol"], str(d)[:110]))
-            return None
+            return None, usate
         except Exception as e:
-            print("  ! %s (TD): errore storico %s" % (a["symbol"], e))
-            return None
-    return None
+            print("  ! %s (TD): errore storico %s" % (a["symbol"], e)); return None, usate
+    return None, usate
+
+def td_series(a, cache=None):
+    varianti = td_varianti(a)
+    if cache is not None and 0 <= cache < len(varianti):
+        varianti = [varianti[cache]] + [v for i, v in enumerate(varianti) if i != cache]
+    tot = 0
+    for i, p in enumerate(varianti):
+        s, u = td_series_una(a, p); tot += u
+        if s:
+            idx = td_varianti(a).index(p)
+            if i > 0: print("  \u21bb %s: storico riuscito senza/altra borsa (%s)" % (a["symbol"], p.get("symbol")))
+            return s, idx, tot
+        time.sleep(TD_PAUSA)
+    print("  ! %s (TD): nessuna variante ha funzionato per lo storico" % a["symbol"])
+    return None, None, tot
 
 # -------------------------------------------------------------- ALPHA VANTAGE
 def av_limit_hit(d):
@@ -113,10 +172,14 @@ def av_resolve(a):
         d = get_json(url)
         if av_limit_hit(d): return "LIMIT"
         best, score = None, -1
+        attesa = (a.get("currency") or "").upper()
         for m in (d.get("bestMatches") or []):
             sym = m.get("1. symbol", "")
             reg = m.get("4. region", "")
-            cur = m.get("8. currency", "")
+            cur = (m.get("8. currency", "") or "").upper()
+            # scarta chi quota in una valuta diversa da quella attesa
+            if attesa and cur and cur != attesa:
+                continue
             try: ms = float(m.get("9. matchScore", 0))
             except Exception: ms = 0
             s = ms
@@ -185,6 +248,7 @@ def main():
             "currency": a.get("currency", "EUR"),
             "asof":     old.get("asof"),
             "avSymbol": old.get("avSymbol"),
+            "tdVar":    old.get("tdVar"),
             "history":  list(old.get("history", [])),
         }
 
@@ -200,16 +264,18 @@ def main():
                 print("  (budget giornaliero Twelve Data esaurito)"); break
             sym = a["symbol"].upper(); e = prices[sym]
             if len(e["history"]) < BACKFILL_IF_UNDER:
-                s = td_series(a); used += 1; time.sleep(TD_PAUSA)
+                s, var, u = td_series(a, e.get("tdVar")); used += u; time.sleep(TD_PAUSA)
                 if s:
+                    e["tdVar"] = var
                     e["history"] = merge_hist(e["history"], s)
                     e["price"], e["asof"] = e["history"][-1][1], e["history"][-1][0]
-                    print("  \u21ba %s: storico (%d punti)" % (sym, len(e["history"])))
+                    print("  \u21ba %s: storico (%d punti, fino al %s)" % (sym, len(e["history"]), e["asof"]))
                     continue
                 if "alphavantage" in a.get("source", ""):
                     av_riserva.append(a); print("  \u2192 %s: Twelve Data non copre, provo con Alpha Vantage" % sym)
                     continue
-            p = td_price(a); used += 1; time.sleep(TD_PAUSA)
+            p, var, u = td_price(a, e.get("tdVar")); used += u; time.sleep(TD_PAUSA)
+            if p is not None: e["tdVar"] = var
             if p is None:
                 if "alphavantage" in a.get("source", ""):
                     av_riserva.append(a)
