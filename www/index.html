@@ -365,14 +365,35 @@ main#content{flex:1;min-height:0;padding:8px 16px 132px;overflow-y:auto;-webkit-
 /* ---------- Import ---------- */
 textarea.text-input{min-height:80px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;}
 .import-table{display:flex;flex-direction:column;}
-.import-row-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;}
+.import-row-item{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;}
 .import-row-item:last-child{border-bottom:none;}
-.import-row-item .imp-date{width:42px;color:var(--ink-faint);flex-shrink:0;font-variant-numeric:tabular-nums;}
-.import-row-item .imp-desc{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.import-row-item .imp-amt{font-variant-numeric:tabular-nums;font-weight:600;width:68px;text-align:right;flex-shrink:0;}
+.import-row-item.is-off{opacity:.42;}
+.import-row-item .imp-line1{display:flex;align-items:flex-start;gap:8px;}
+.import-row-item .imp-line2{display:flex;align-items:center;gap:6px;padding-left:24px;}
+.import-row-item .imp-date-bad{color:var(--red);width:auto;}
+.import-row-item .imp-date{width:42px;color:var(--ink-faint);flex-shrink:0;font-variant-numeric:tabular-nums;padding-top:1px;}
+.import-row-item .imp-desc{flex:1;min-width:0;line-height:1.34;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;text-decoration:underline;text-decoration-color:var(--hairline);text-underline-offset:3px;}
+.import-row-item .imp-amt{font-variant-numeric:tabular-nums;font-weight:600;width:74px;text-align:right;flex-shrink:0;padding-top:1px;}
 .import-row-item .imp-amt.amt-income{color:var(--accent);}
-.import-row-item select{font-size:11.5px;border-radius:8px;border:1px solid var(--border);padding:4px;max-width:100px;flex-shrink:0;background:var(--surface);}
+.import-row-item select{font-size:11.5px;border-radius:8px;border:1px solid var(--border);padding:5px;flex:1;min-width:0;background:var(--surface);color:var(--ink);}
 .import-row-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);}
+.import-row-item .imp-flip{flex-shrink:0;padding:3px 9px;font-size:11px;}
+.import-row-item .imp-grp{flex-shrink:0;font-size:10.5px;color:var(--ink-faint);border:1px solid var(--border);border-radius:6px;padding:2px 5px;cursor:pointer;}
+.import-row-item .imp-sheet{flex-shrink:0;font-size:10.5px;opacity:.6;}
+.import-row-item .imp-info{flex-shrink:0;width:26px;height:26px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink-faint);font-size:12px;font-style:italic;font-weight:700;cursor:pointer;}
+/* Finestrella con i dettagli completi di una riga dell'import. Vive dentro
+   #modal-root SOPRA il foglio, che resta intatto (non perde lo scorrimento). */
+.imp-detail-wrap{position:absolute;inset:0;z-index:6;display:flex;align-items:flex-end;justify-content:center;}
+.imp-detail-back{position:absolute;inset:0;background:var(--backdrop);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+.imp-detail-box{position:relative;z-index:1;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--app-bg);border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:9px;animation:slideup .3s var(--ease-spring);box-shadow:0 -12px 40px rgba(23,27,24,0.22);}
+@supports (max-height:100dvh){.imp-detail-box{max-height:88dvh;}}
+.imp-detail-desc{margin:0;font-size:14.5px;font-weight:600;line-height:1.4;word-break:break-word;}
+.imp-detail-amt{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+.imp-detail-amt.amt-income{color:var(--accent);}
+.imp-detail-h4{margin:12px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);}
+.imp-kv{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--hairline);}
+.imp-kv span{color:var(--ink-faint);flex-shrink:0;}
+.imp-kv strong{text-align:right;word-break:break-word;font-weight:600;}
 .step-dots{display:flex;gap:6px;justify-content:center;}
 .step-dot{width:6px;height:6px;border-radius:50%;background:var(--handle);transition:background-color .2s ease,transform .2s ease;}
 .step-dot.active{background:var(--accent);transform:scale(1.25);}
@@ -1521,7 +1542,7 @@ Object.assign(TR.en,{
 'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.':'Your accounts with their all-time balance, renamable and colour-coded. Below, the <strong>themed savings goals</strong>: virtual envelopes for goals (a trip, a purchase) with a progress ring, also shown on Home — setting money aside here does not affect your account balances.',
 'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.':'In your Profile (the avatar at the top right) you set a spending limit per category: Home warns you when you get close or go over it.',
 'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.':'Also in your Profile, the dedicated section where you create, rename and delete categories and tags. Tap a category or a tag to see its <strong>trend chart over time</strong>: how it changed month by month and, for expense categories with a budget, a <strong>reference line</strong> that shows at a glance when you went over it.',
-'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'Also in your Profile: sign in with Google or email to keep your data <strong>synced between phone and PC</strong> (it works offline too and syncs by itself). Import your bank statement (CSV, Excel, PDF) with a row-by-row preview, and export everything to PDF, CSV or Excel.',
+'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV o Excel) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'Also in your Profile: sign in with Google or email to keep your data <strong>synced between phone and PC</strong> (it works offline too and syncs by itself). Import your bank statement (CSV, Excel, PDF) with a row-by-row preview, and export everything to PDF, CSV or Excel.',
 'Il tasto +':'The + button',
 'Conti e Salvadanai':'Accounts & Savings goals',
 'Budget':'Budget',
@@ -1583,7 +1604,7 @@ Object.assign(TR.es,{
 'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.':'Tus cuentas con el saldo total de siempre, renombrables y con color. Debajo, las <strong>huchas temáticas</strong>: sobres virtuales para objetivos (un viaje, una compra) con anillo de progreso, que también ves en Inicio — apartar dinero aquí no afecta a los saldos de las cuentas.',
 'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.':'En el Perfil (el avatar arriba a la derecha) fijas un límite de gasto por categoría: Inicio te avisa cuando te acercas o lo superas.',
 'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.':'También en el Perfil, la sección dedicada donde creas, renombras y eliminas categorías y etiquetas. Toca una categoría o etiqueta para ver su <strong>gráfico de evolución en el tiempo</strong>: cómo cambió mes a mes y, para las categorías de gasto con presupuesto, una <strong>línea de referencia</strong> que muestra de un vistazo cuándo lo superaste.',
-'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'También en el Perfil: inicia sesión con Google o email para tener los datos <strong>sincronizados entre el teléfono y el PC</strong> (también funciona sin conexión y se sincroniza solo). Importa el extracto bancario (CSV, Excel, PDF) con vista previa línea por línea, y exporta todo a PDF, CSV o Excel.',
+'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV o Excel) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'También en el Perfil: inicia sesión con Google o email para tener los datos <strong>sincronizados entre el teléfono y el PC</strong> (también funciona sin conexión y se sincroniza solo). Importa el extracto bancario (CSV, Excel, PDF) con vista previa línea por línea, y exporta todo a PDF, CSV o Excel.',
 'Il tasto +':'El botón +',
 'Conti e Salvadanai':'Cuentas y huchas',
 'Budget':'Presupuesto',
@@ -1645,7 +1666,7 @@ Object.assign(TR.fr,{
 'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.':'Vos comptes avec leur solde total de toujours, renommables et colorés. En dessous, les <strong>cagnottes thématiques</strong> : des enveloppes virtuelles pour vos objectifs (un voyage, un achat) avec anneau de progression, visibles aussi sur l\'Accueil — mettre de l\'argent de côté ici ne touche pas aux soldes des comptes.',
 'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.':'Dans le Profil (l\'avatar en haut à droite) vous définissez une limite de dépense par catégorie : l\'Accueil vous prévient quand vous vous en approchez ou la dépassez.',
 'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.':'Toujours dans le Profil, la section dédiée où vous créez, renommez et supprimez catégories et tags. Touchez une catégorie ou un tag pour voir son <strong>graphique d\'évolution dans le temps</strong> : comment il a varié mois par mois et, pour les catégories de dépense avec un budget, une <strong>ligne de référence</strong> qui montre d\'un coup d\'œil quand vous l\'avez dépassé.',
-'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'Toujours dans le Profil : connectez-vous avec Google ou e-mail pour garder vos données <strong>synchronisées entre téléphone et PC</strong> (fonctionne aussi hors ligne et se synchronise tout seul). Importez votre relevé de compte (CSV, Excel, PDF) avec un aperçu ligne par ligne, et exportez tout en PDF, CSV ou Excel.',
+'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV o Excel) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.':'Toujours dans le Profil : connectez-vous avec Google ou e-mail pour garder vos données <strong>synchronisées entre téléphone et PC</strong> (fonctionne aussi hors ligne et se synchronise tout seul). Importez votre relevé de compte (CSV, Excel, PDF) avec un aperçu ligne par ligne, et exportez tout en PDF, CSV ou Excel.',
 'Il tasto +':'Le bouton +',
 'Conti e Salvadanai':'Comptes et cagnottes',
 'Budget':'Budget',
@@ -1700,6 +1721,174 @@ Object.assign(TR.fr,{
 'Collega la password':'Lier le mot de passe'
 });
 Object.assign(TR.en,{'Accedi con Apple':'Sign in with Apple'});
+/* --- messaggi di sistema (v41) --- */
+Object.assign(TR.en,{
+'Scarica dalla banca il file CSV o Excel dei movimenti: sono i formati che si leggono senza errori.':'Download the CSV or Excel file of your transactions from your bank: these are the formats that can be read without errors.',
+'Accesso in corso…':'Signing in…',
+'Accesso non riuscito':'Sign-in failed',
+'Aggiornato':'Updated',
+'Aggiornato dal cloud':'Updated from the cloud',
+'Copiato':'Copied',
+'Dati collegati all\'account':'Data linked to the account',
+'Dati reimpostati':'Data reset',
+'Eliminare il ricorrente':'Delete the recurring item',
+'Eliminare il tag':'Delete the tag',
+'Eliminato':'Deleted',
+'Errore nel salvataggio':'Error while saving',
+'Modifiche caricate nel cloud':'Changes uploaded to the cloud',
+'Notifiche attivate':'Notifications enabled',
+'Riconnessione…':'Reconnecting…',
+'Ricorrente eliminato':'Recurring item deleted',
+'Sincronizzazione connessa':'Sync connected',
+'Uscito dall\'account':'Signed out'
+});
+Object.assign(TR.es,{
+'Scarica dalla banca il file CSV o Excel dei movimenti: sono i formati che si leggono senza errori.':'Descarga del banco el archivo CSV o Excel de los movimientos: son los formatos que se leen sin errores.',
+'Accesso in corso…':'Iniciando sesión…',
+'Accesso non riuscito':'No se pudo iniciar sesión',
+'Aggiornato':'Actualizado',
+'Aggiornato dal cloud':'Actualizado desde la nube',
+'Copiato':'Copiado',
+'Dati collegati all\'account':'Datos vinculados a la cuenta',
+'Dati reimpostati':'Datos restablecidos',
+'Eliminare il ricorrente':'¿Eliminar el recurrente',
+'Eliminare il tag':'¿Eliminar la etiqueta',
+'Eliminato':'Eliminado',
+'Errore nel salvataggio':'Error al guardar',
+'Modifiche caricate nel cloud':'Cambios subidos a la nube',
+'Notifiche attivate':'Notificaciones activadas',
+'Riconnessione…':'Reconectando…',
+'Ricorrente eliminato':'Recurrente eliminado',
+'Sincronizzazione connessa':'Sincronización conectada',
+'Uscito dall\'account':'Sesión cerrada'
+});
+Object.assign(TR.fr,{
+'Scarica dalla banca il file CSV o Excel dei movimenti: sono i formati che si leggono senza errori.':'Téléchargez depuis votre banque le fichier CSV ou Excel des opérations : ce sont les formats lus sans erreur.',
+'Accesso in corso…':'Connexion en cours…',
+'Accesso non riuscito':'Échec de la connexion',
+'Aggiornato':'Mis à jour',
+'Aggiornato dal cloud':'Mis à jour depuis le cloud',
+'Copiato':'Copié',
+'Dati collegati all\'account':'Données liées au compte',
+'Dati reimpostati':'Données réinitialisées',
+'Eliminare il ricorrente':'Supprimer la récurrence',
+'Eliminare il tag':'Supprimer le tag',
+'Eliminato':'Supprimé',
+'Errore nel salvataggio':'Erreur lors de l\'enregistrement',
+'Modifiche caricate nel cloud':'Modifications envoyées au cloud',
+'Notifiche attivate':'Notifications activées',
+'Riconnessione…':'Reconnexion…',
+'Ricorrente eliminato':'Récurrence supprimée',
+'Sincronizzazione connessa':'Synchronisation connectée',
+'Uscito dall\'account':'Déconnecté'
+});
+/* --- date, rimozione import PDF, gesto indietro (v41) --- */
+Object.assign(TR.en,{
+'Asset':'Asset',
+'Come funziona Spendy':'How Spendy works',
+'Date riconosciute':'Dates recognised',
+'Eliminare':'Delete',
+'File (CSV o Excel .xlsx)':'File (CSV or Excel .xlsx)',
+'I PDF non si possono importare. Scarica dalla banca il file CSV o Excel (.xlsx) degli stessi movimenti.':'PDF files cannot be imported. Download the CSV or Excel (.xlsx) file of the same transactions from your bank.',
+'Importa spese ed entrate da un file <strong>CSV</strong> o <strong>Excel (.xlsx)</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.':'Import expenses and income from a <strong>CSV</strong> or <strong>Excel (.xlsx)</strong> file downloaded from your bank. You will see a row-by-row preview before saving.',
+'In pausa':'Paused',
+'La quantità deve essere maggiore di zero.':'The quantity must be greater than zero.',
+'Modifica ricorrente':'Edit recurring item',
+'Prezzo di carico (per unità)':'Purchase price (per unit)',
+'Prova un\'altra colonna: se le date non si leggono, tutti i movimenti finiscono con la data di oggi.':'Try another column: if the dates cannot be read, every transaction ends up with today\'s date.',
+'Quantità':'Quantity',
+'Questa colonna e\' vuota: scegline un\'altra.':'This column is empty: choose another one.',
+'Solo monitoraggio · prezzi inseriti a mano · non è consulenza finanziaria.':'Tracking only · prices entered manually · this is not financial advice.',
+'data non riconosciuta':'date not recognised',
+'formato mese/giorno':'month/day format',
+'numeri di Excel':'Excel numbers',
+'righe senza data leggibile: hanno preso la data della riga precedente o quella di oggi. Torna indietro e controlla la colonna data.':'rows without a readable date: they took the date of the row above or today\'s date. Go back and check the date column.'
+});
+Object.assign(TR.es,{
+'Asset':'Activo',
+'Come funziona Spendy':'Cómo funciona Spendy',
+'Date riconosciute':'Fechas reconocidas',
+'Eliminare':'¿Eliminar',
+'File (CSV o Excel .xlsx)':'Archivo (CSV o Excel .xlsx)',
+'I PDF non si possono importare. Scarica dalla banca il file CSV o Excel (.xlsx) degli stessi movimenti.':'Los PDF no se pueden importar. Descarga del banco el archivo CSV o Excel (.xlsx) de los mismos movimientos.',
+'Importa spese ed entrate da un file <strong>CSV</strong> o <strong>Excel (.xlsx)</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.':'Importa gastos e ingresos desde un archivo <strong>CSV</strong> o <strong>Excel (.xlsx)</strong> descargado del banco. Antes de guardar verás una vista previa línea por línea.',
+'In pausa':'En pausa',
+'La quantità deve essere maggiore di zero.':'La cantidad debe ser mayor que cero.',
+'Modifica ricorrente':'Editar recurrente',
+'Prezzo di carico (per unità)':'Precio de compra (por unidad)',
+'Prova un\'altra colonna: se le date non si leggono, tutti i movimenti finiscono con la data di oggi.':'Prueba otra columna: si las fechas no se leen, todos los movimientos acaban con la fecha de hoy.',
+'Quantità':'Cantidad',
+'Questa colonna e\' vuota: scegline un\'altra.':'Esta columna está vacía: elige otra.',
+'Solo monitoraggio · prezzi inseriti a mano · non è consulenza finanziaria.':'Solo seguimiento · precios introducidos a mano · no es asesoramiento financiero.',
+'data non riconosciuta':'fecha no reconocida',
+'formato mese/giorno':'formato mes/día',
+'numeri di Excel':'números de Excel',
+'righe senza data leggibile: hanno preso la data della riga precedente o quella di oggi. Torna indietro e controlla la colonna data.':'filas sin fecha legible: han tomado la fecha de la fila anterior o la de hoy. Vuelve atrás y revisa la columna de fecha.'
+});
+Object.assign(TR.fr,{
+'Asset':'Actif',
+'Come funziona Spendy':'Comment fonctionne Spendy',
+'Date riconosciute':'Dates reconnues',
+'Eliminare':'Supprimer',
+'File (CSV o Excel .xlsx)':'Fichier (CSV ou Excel .xlsx)',
+'I PDF non si possono importare. Scarica dalla banca il file CSV o Excel (.xlsx) degli stessi movimenti.':'Les PDF ne peuvent pas être importés. Téléchargez depuis votre banque le fichier CSV ou Excel (.xlsx) des mêmes opérations.',
+'Importa spese ed entrate da un file <strong>CSV</strong> o <strong>Excel (.xlsx)</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.':'Importez dépenses et revenus depuis un fichier <strong>CSV</strong> ou <strong>Excel (.xlsx)</strong> téléchargé depuis votre banque. Vous verrez un aperçu ligne par ligne avant d\'enregistrer.',
+'In pausa':'En pause',
+'La quantità deve essere maggiore di zero.':'La quantité doit être supérieure à zéro.',
+'Modifica ricorrente':'Modifier la récurrence',
+'Prezzo di carico (per unità)':'Prix d\'achat (par unité)',
+'Prova un\'altra colonna: se le date non si leggono, tutti i movimenti finiscono con la data di oggi.':'Essayez une autre colonne : si les dates ne sont pas lues, toutes les opérations prennent la date du jour.',
+'Quantità':'Quantité',
+'Questa colonna e\' vuota: scegline un\'altra.':'Cette colonne est vide : choisissez-en une autre.',
+'Solo monitoraggio · prezzi inseriti a mano · non è consulenza finanziaria.':'Suivi uniquement · prix saisis à la main · ceci n\'est pas un conseil financier.',
+'data non riconosciuta':'date non reconnue',
+'formato mese/giorno':'format mois/jour',
+'numeri di Excel':'nombres Excel',
+'righe senza data leggibile: hanno preso la data della riga precedente o quella di oggi. Torna indietro e controlla la colonna data.':'lignes sans date lisible : elles ont pris la date de la ligne précédente ou celle du jour. Revenez en arrière et vérifiez la colonne date.'
+});
+/* --- import: dettagli riga e categorie per esercente (v40) --- */
+Object.assign(TR.en,{
+'righe':'rows','pronte per':'ready for','entrate':'income','spese':'expenses',
+'Tocca la descrizione o il tasto <strong>i</strong> per vedere tutti i dettagli della riga.':'Tap the description or the <strong>i</strong> button to see the full details of a row.',
+'Cambiando categoria, aggiorna tutte le righe dello stesso esercente':'When I change a category, update every row from the same merchant',
+'Importa':'Import','movimenti':'transactions','Importati':'Imported',
+'Entrata':'Income','Spesa':'Expense','Dettagli':'Details',
+'Dettagli del movimento':'Transaction details','Data':'Date','Tipo':'Type','Categoria':'Category',
+'Esercente riconosciuto':'Merchant detected','non riconosciuto':'not detected',
+'Righe che cambiano insieme':'Rows that change together','Foglio':'Sheet','Nel conto':'Into account',
+'Come era scritto nel file':'As written in the file','Colonna':'Column','Riga originale':'Original row',
+'Cambia categoria':'Change category','Trasforma in spesa':'Turn into an expense','Trasforma in entrata':'Turn into income',
+'Escludi questa riga':'Skip this row','Includi questa riga':'Include this row','Chiudi':'Close',
+'Categoria applicata a':'Category applied to','righe di':'rows from','questo esercente':'this merchant'
+});
+Object.assign(TR.es,{
+'righe':'filas','pronte per':'listas para','entrate':'ingresos','spese':'gastos',
+'Tocca la descrizione o il tasto <strong>i</strong> per vedere tutti i dettagli della riga.':'Toca la descripción o el botón <strong>i</strong> para ver todos los detalles de la fila.',
+'Cambiando categoria, aggiorna tutte le righe dello stesso esercente':'Al cambiar una categoría, actualiza todas las filas del mismo comercio',
+'Importa':'Importar','movimenti':'movimientos','Importati':'Importados',
+'Entrata':'Ingreso','Spesa':'Gasto','Dettagli':'Detalles',
+'Dettagli del movimento':'Detalles del movimiento','Data':'Fecha','Tipo':'Tipo','Categoria':'Categoría',
+'Esercente riconosciuto':'Comercio reconocido','non riconosciuto':'no reconocido',
+'Righe che cambiano insieme':'Filas que cambian juntas','Foglio':'Hoja','Nel conto':'En la cuenta',
+'Come era scritto nel file':'Cómo aparecía en el archivo','Colonna':'Columna','Riga originale':'Fila original',
+'Cambia categoria':'Cambiar categoría','Trasforma in spesa':'Convertir en gasto','Trasforma in entrata':'Convertir en ingreso',
+'Escludi questa riga':'Excluir esta fila','Includi questa riga':'Incluir esta fila','Chiudi':'Cerrar',
+'Categoria applicata a':'Categoría aplicada a','righe di':'filas de','questo esercente':'este comercio'
+});
+Object.assign(TR.fr,{
+'righe':'lignes','pronte per':'prêtes pour','entrate':'revenus','spese':'dépenses',
+'Tocca la descrizione o il tasto <strong>i</strong> per vedere tutti i dettagli della riga.':'Touchez la description ou le bouton <strong>i</strong> pour voir tous les détails de la ligne.',
+'Cambiando categoria, aggiorna tutte le righe dello stesso esercente':'Quand je change une catégorie, mettre à jour toutes les lignes du même commerçant',
+'Importa':'Importer','movimenti':'opérations','Importati':'Importées',
+'Entrata':'Revenu','Spesa':'Dépense','Dettagli':'Détails',
+'Dettagli del movimento':'Détails de l\'opération','Data':'Date','Tipo':'Type','Categoria':'Catégorie',
+'Esercente riconosciuto':'Commerçant reconnu','non riconosciuto':'non reconnu',
+'Righe che cambiano insieme':'Lignes qui changent ensemble','Foglio':'Feuille','Nel conto':'Sur le compte',
+'Come era scritto nel file':'Tel quel dans le fichier','Colonna':'Colonne','Riga originale':'Ligne d\'origine',
+'Cambia categoria':'Changer de catégorie','Trasforma in spesa':'Transformer en dépense','Trasforma in entrata':'Transformer en revenu',
+'Escludi questa riga':'Exclure cette ligne','Includi questa riga':'Inclure cette ligne','Chiudi':'Fermer',
+'Categoria applicata a':'Catégorie appliquée à','righe di':'lignes de','questo esercente':'ce commerçant'
+});
 Object.assign(TR.es,{'Accedi con Apple':'Acceder con Apple'});
 Object.assign(TR.fr,{'Accedi con Apple':'Se connecter avec Apple'});
 /* --- Carote Premium: avvisi budget e statistiche avanzate --- */
@@ -2021,12 +2210,14 @@ function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
     categories:DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);}).concat(DEFAULT_INCOME_CATS.map(function(c){return Object.assign({},c);})),
-    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[]
+    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[],merchantRules:{}
   };
 }
 
 function ensureV3Fields(s){
   s.tags=s.tags||[];
+  /* Regole esercente -> categoria imparate durante gli import. */
+  s.merchantRules=s.merchantRules||{};
   s.transactions=s.transactions||[];
   s.transfers=s.transfers||[];
   s.recurring=s.recurring||[];s.portfolioHistory=s.portfolioHistory||[];
@@ -2062,7 +2253,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],merchantRules:raw.merchantRules||{},inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -2172,7 +2363,7 @@ async function maybeClaimLocalData(uid){
       state=migrateFromRaw(anon);
       await saveState();
       await storageRemove(STORAGE_KEY);
-      closeModal();renderActiveTab();showToast('Dati collegati all\'account');resolve();
+      closeModal();renderActiveTab();showToast(tr('Dati collegati all\'account'));resolve();
     };
     document.getElementById('claimNo').onclick=function(){
       try{window.localStorage.setItem(skipKey,'1');}catch(e){}
@@ -2184,7 +2375,7 @@ async function maybeClaimLocalData(uid){
 /* Salvataggio solo locale: NON tocca updatedAt e non spinge nel cloud. */
 async function persistLocal(){
   var ok=await storageSet(currentStateKey(),JSON.stringify(state));
-  if(!ok)showToast('Errore nel salvataggio');
+  if(!ok)showToast(tr('Errore nel salvataggio'));
   return ok;
 }
 
@@ -2299,7 +2490,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v39';
+var APP_VERSION='v41';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -2603,7 +2794,7 @@ async function syncNow(){
   if(sync.status==='unconfigured'){openSyncModal();return;}
   if(sync.status==='configured'||sync.status==='error'){
     if(!isOnline()){showToast(tr('Nessuna connessione: i dati restano in locale'));return;}
-    showToast('Riconnessione…');
+    showToast(tr('Riconnessione…'));
     await initSyncFromSavedConfig();
     return;
   }
@@ -2616,8 +2807,8 @@ async function syncNow(){
   sync.busy=false;
   renderActiveTab();
   if(res==='offline')showToast(tr('Nessuna connessione: i dati restano in locale'));
-  else if(res==='used-remote')showToast('Aggiornato dal cloud');
-  else if(res==='used-local')showToast('Modifiche caricate nel cloud');
+  else if(res==='used-remote')showToast(tr('Aggiornato dal cloud'));
+  else if(res==='used-local')showToast(tr('Modifiche caricate nel cloud'));
   else showToast(tr('Già sincronizzato'));
 }
 
@@ -3111,15 +3302,132 @@ function parseAmount(raw){
   else if(ld>-1){if(s.length-ld-1===3&&s.indexOf('.')===ld)s=s.replace('.','')}
   var n=parseFloat(s);return isNaN(n)?NaN:(neg?-n:n);
 }
-function parseDateFlexible(str){
-  if(!str)return null;
-  str=String(str).trim();
-  var m=str.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];
-  m=str.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{4})/);
-  if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
-  m=str.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2})(?!\d)/);
-  if(m)return '20'+m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+/* ================================================================
+   LETTURA DELLE DATE DAGLI ESTRATTI CONTO
+   Ogni banca scrive le date a modo suo: 28/06/2026, 2026-06-28,
+   28.06.26, "28 giu 2026", "Jun 28, 2026", 20260628, e i fogli Excel
+   a volte le lasciano come numero (46200). Qui si prova tutto, e la
+   scelta fra giorno/mese e mese/giorno NON si fa riga per riga ma
+   guardando l'intera colonna: e' l'unico modo per non sbagliare su
+   date ambigue come 06/07/2026.
+================================================================ */
+var MONTH_W4={juin:6,juil:7,genn:1,febb:2,marz:3,marc:3,mars:3,apri:4,magg:5,giug:6,lugl:7,agos:8,aout:8,sett:9,sept:9,otto:10,octo:10,nove:11,dice:12,dece:12,janv:1,janu:1,juli:7,june:6,july:7,ener:1,abri:4,mayo:5,juni:6,agost:8,dici:12};
+var MONTH_W3={gen:1,jan:1,ene:1,feb:2,fev:2,mar:3,apr:4,abr:4,avr:4,mag:5,may:5,mai:5,giu:6,jun:6,lug:7,jul:7,ago:8,aug:8,aou:8,set:9,sep:9,ott:10,oct:10,nov:11,dic:12,dec:12};
+function deAccent(s){
+  return String(s||'').toLowerCase()
+    .replace(/[àáâä]/g,'a').replace(/[èéêë]/g,'e').replace(/[ìíîï]/g,'i')
+    .replace(/[òóôö]/g,'o').replace(/[ùúûü]/g,'u').replace(/ç/g,'c');
+}
+function monthFromWord(w){
+  w=deAccent(w).replace(/\./g,'');
+  if(w.length>=4&&MONTH_W4[w.slice(0,4)])return MONTH_W4[w.slice(0,4)];
+  if(w.length>=3&&MONTH_W3[w.slice(0,3)])return MONTH_W3[w.slice(0,3)];
+  return 0;
+}
+function daysInMonth(y,m){return new Date(y,m,0).getDate();}
+function fixYear(y){y=+y;if(y<100)return y<70?2000+y:1900+y;return y;}
+/* Costruisce la data solo se esiste davvero: cosi' il 31 febbraio viene
+   scartato invece di diventare 3 marzo. */
+function buildISO(y,m,d){
+  y=+y;m=+m;d=+d;
+  if(!(y>=1970&&y<=2100))return null;
+  if(!(m>=1&&m<=12))return null;
+  if(!(d>=1&&d<=daysInMonth(y,m)))return null;
+  return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+/* order: 'dmy' (europeo, predefinito) oppure 'mdy' (americano). Vale solo
+   quando i numeri da soli non bastano a capirlo. */
+function parseDateFlexible(str,order){
+  if(str==null)return null;
+  var s=String(str).trim();
+  if(!s)return null;
+  var m;
+  /* 2026-06-28 / 2026.06.28 / 2026/06/28 */
+  m=s.match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+  if(m){var r=buildISO(m[1],m[2],m[3]);if(r)return r;}
+  /* 28/06/2026, 6-28-26, 28.06.26 */
+  m=s.match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/);
+  if(m){
+    var a=+m[1],b=+m[2],y=fixYear(m[3]),d,mo;
+    if(a>12&&b<=12){d=a;mo=b;}
+    else if(b>12&&a<=12){d=b;mo=a;}
+    else if(order==='mdy'){mo=a;d=b;}
+    else{d=a;mo=b;}
+    var r2=buildISO(y,mo,d);
+    if(r2)return r2;
+    r2=buildISO(y,d,mo);   // ultimo tentativo con i ruoli scambiati
+    if(r2)return r2;
+  }
+  /* 28 giu 2026 · 28-GIU-26 · 28 giugno */
+  m=s.match(/(\d{1,2})[\s.\-\/]+([A-Za-zÀ-ÿ]{3,12})\.?(?:[\s.\-\/,]+(\d{2,4}))?/);
+  if(m){
+    var mw=monthFromWord(m[2]);
+    if(mw){
+      var yy=m[3]?fixYear(m[3]):new Date().getFullYear();
+      var r3=buildISO(yy,mw,m[1]);
+      if(r3)return r3;
+    }
+  }
+  /* Jun 28, 2026 · giugno 28 2026 */
+  m=s.match(/([A-Za-zÀ-ÿ]{3,12})\.?[\s.\-\/]+(\d{1,2})(?:[\s.\-\/,]+(\d{2,4}))?/);
+  if(m){
+    var mw2=monthFromWord(m[1]);
+    if(mw2){
+      var yy2=m[3]?fixYear(m[3]):new Date().getFullYear();
+      var r4=buildISO(yy2,mw2,m[2]);
+      if(r4)return r4;
+    }
+  }
+  /* 20260628 oppure 28062026 */
+  m=s.match(/(?:^|\D)(\d{8})(?:\D|$)/);
+  if(m){
+    var c=m[1];
+    var r5=buildISO(c.slice(0,4),c.slice(4,6),c.slice(6,8));
+    if(r5)return r5;
+    r5=buildISO(c.slice(4,8),c.slice(2,4),c.slice(0,2));
+    if(r5)return r5;
+  }
   return null;
+}
+/* Numero puro tipico di Excel (46200 = 28/06/2026). Si accetta solo in una
+   colonna dove quasi tutti i valori sono numeri in quell'intervallo, per non
+   scambiare un importo per una data. */
+function serialLooksLikeDate(v){
+  var s=String(v==null?'':v).trim();
+  if(!/^\d{5}(?:[.,]\d+)?$/.test(s))return false;
+  var n=parseFloat(s.replace(',','.'));
+  return n>=25569&&n<=54789;   // dal 1970 al 2050
+}
+/* Guarda TUTTA la colonna prima di decidere l'ordine giorno/mese. */
+function detectDateOrder(values){
+  var dmy=0,mdy=0;
+  values.forEach(function(v){
+    var m=String(v==null?'':v).match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/);
+    if(!m)return;
+    var a=+m[1],b=+m[2];
+    if(a>12&&b<=12)dmy++;
+    else if(b>12&&a<=12)mdy++;
+  });
+  return mdy>dmy?'mdy':'dmy';
+}
+/* Legge un'intera colonna di date e dice quante ne ha capite.
+   Restituisce {dates:[...], ok:n, total:n, order:'dmy'|'mdy', serial:bool} */
+function readDateColumn(rows,start,col){
+  var vals=[];
+  for(var i=start;i<rows.length;i++)vals.push((rows[i]||[])[col]);
+  var filled=vals.filter(function(v){return String(v==null?'':v).trim()!=='';}).length;
+  var order=detectDateOrder(vals);
+  var dates=vals.map(function(v){return parseDateFlexible(v,order);});
+  var ok=dates.filter(Boolean).length;
+  /* Se il testo non ha funzionato, forse sono numeri seriali di Excel. */
+  var serialCount=vals.filter(serialLooksLikeDate).length;
+  var serial=false;
+  if(serialCount>ok&&serialCount>=Math.max(1,filled*0.6)){
+    dates=vals.map(function(v){return serialLooksLikeDate(v)?excelSerialToISO(parseFloat(String(v).replace(',','.'))):null;});
+    ok=dates.filter(Boolean).length;
+    serial=true;
+  }
+  return{dates:dates,ok:ok,total:filled,order:order,serial:serial};
 }
 function splitCSV(line,d){var out=[],cur='',inQ=false;for(var i=0;i<line.length;i++){var c=line[i];if(inQ){if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}else cur+=c;}else{if(c==='"')inQ=true;else if(c===d){out.push(cur);cur='';}else cur+=c;}}out.push(cur);return out.map(function(s){return s.trim();});}
 function detectDelim(h){var s=(h.match(/;/g)||[]).length,c=(h.match(/,/g)||[]).length,t=(h.match(/\t/g)||[]).length;if(t>s&&t>c)return '\t';return s>=c?';':',';}
@@ -3131,6 +3439,51 @@ function guessColMap(headers){var lo=headers.map(function(h){return h.toLowerCas
    esiste davvero fra le categorie del tipo giusto. */
 function normDesc(s){return String(s||'').toLowerCase().replace(/[0-9]+/g,' ').replace(/[^a-zàèéìòù ]+/g,' ').replace(/\s+/g,' ').trim();}
 function descTokens(s){return normDesc(s).split(' ').filter(function(w){return w.length>=4;});}
+/* ---------- RICONOSCIMENTO DELL'ESERCENTE ----------
+   Gli estratti conto scrivono la stessa insegna in mille modi diversi:
+   "PAGAMENTO CARTA ESSELUNGA MILANO 12/06", "Esselunga Spa ore 18:22",
+   "POS ESSELUNGA 4412". merchantKey() toglie numeri e parole di servizio e
+   tiene le prime parole significative: le righe dello stesso negozio
+   finiscono cosi' sotto la stessa chiave e si possono categorizzare insieme. */
+var MERCHANT_NOISE=['pagamento','pagamenti','pagam','pago','pagata','pagato','carta','carte','credito','debito','con','del','della','dello','dei','delle','per','presso','acquisto','acquisti','addebito','accredito','bonifico','bancomat','pos','operazione','operazioni','data','ora','ore','importo','euro','eur','transazione','contactless','disposizione','ordine','ordinante','beneficiario','causale','sepa','ricevuta','estero','italia','italy','www','http','https','com','srl','spa','snc','sas','ltd','inc','the','and','saldo','commissione','commissioni','servizio','divisa','valuta','cambio','riferimento','numero','conto','banca','instant','mandato','avere','dare','rimborso','storno','stornato','reso','rettifica','annullo','prelievo','versamento','ricarica','online','store','shop','mobile','app'];
+function merchantKey(desc){
+  var toks=normDesc(desc).split(' ').filter(function(w){
+    return w.length>=3&&MERCHANT_NOISE.indexOf(w)===-1;
+  });
+  if(!toks.length)return '';
+  /* Una parola lunga basta e avanza a identificare l'insegna (ESSELUNGA,
+     NETFLIX, TRENITALIA): cosi' "ESSELUNGA MILANO" e "ESSELUNGA 4412" restano
+     lo stesso negozio. Servono invece DUE parole quando la prima e' cortissima
+     (BAR, ENI: da sola accorperebbe negozi diversi) e nei bonifici, dove la
+     controparte e' una persona e il solo nome di battesimo non basta. */
+  var two=toks[0].length<4||/bonific|giroconto|beneficiar|ordinant/.test(normDesc(desc));
+  return two?toks.slice(0,2).join(' '):toks[0];
+}
+function merchantLabel(desc){
+  var k=merchantKey(desc);
+  if(!k)return '';
+  return k.replace(/(^|\s)([a-zàèéìòù])/g,function(m,a,b){return a+b.toUpperCase();});
+}
+/* Regola imparata a mano: "questo esercente va in questa categoria".
+   Vale piu' di qualsiasi indovinello automatico. */
+function ruleKey(desc,type){
+  var k=merchantKey(desc);
+  return k?(type+'|'+k):'';
+}
+function ruleCat(desc,type){
+  if(!state.merchantRules)return null;
+  var rk=ruleKey(desc,type);
+  if(!rk)return null;
+  var id=state.merchantRules[rk];
+  if(id&&state.categories.some(function(c){return c.id===id&&c.type===type;}))return id;
+  return null;
+}
+function setMerchantRule(desc,type,catId){
+  var rk=ruleKey(desc,type);
+  if(!rk||!catId)return;
+  if(!state.merchantRules)state.merchantRules={};
+  state.merchantRules[rk]=catId;
+}
 function fallbackCatId(type){
   var altId=type==='income'?'altro_entrata':'altro';
   if(state.categories.some(function(c){return c.id===altId;}))return altId;
@@ -3155,6 +3508,8 @@ function learnedCat(desc,type){
   return null;
 }
 function guessCat(desc,type){
+  var ruled=ruleCat(desc,type);
+  if(ruled)return ruled;
   var learned=learnedCat(desc,type);
   if(learned)return learned;
   var d=(desc||'').toLowerCase();
@@ -4320,7 +4675,7 @@ function openCatsTagsSheet(){
       '<div class="trend-stat"><div class="trend-stat-val">'+fmt(maxV)+'</div><div class="trend-stat-lbl">'+tr('Mese più alto')+'</div></div>'+
       (budget>0?'<div class="trend-stat"><div class="trend-stat-val">'+overCount+'/'+keys.length+'</div><div class="trend-stat-lbl">'+tr('Mesi oltre budget')+'</div></div>':'<div class="trend-stat"><div class="trend-stat-val">'+fmt(tot)+'</div><div class="trend-stat-lbl">'+tr('Totale')+' '+keys.length+' '+tr('mesi')+'</div></div>')+
     '</div>';
-    return '<button class="trend-back" id="trendBack">'+tr('‹ Categorie & Tag')+'</button>'+
+    return '<button class="trend-back" id="trendBack" data-back="1">'+tr('‹ Categorie & Tag')+'</button>'+
       '<h3 style="margin:2px 0 0;font-family:var(--font-display);font-size:18px;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px;">'+title+'</h3>'+
       '<div class="chart-wrap">'+trendChartSVG(keys,values,budget,barHex)+'</div>'+
       statsHTML+noteHTML;
@@ -4394,7 +4749,7 @@ function openCatsTagsSheet(){
     document.querySelectorAll('[data-tag-del]').forEach(function(b){b.onclick=function(){
       var id=b.dataset.tagDel,t=tagById(id),n=tagUsageCount(id);
       var warn=n===0?tr('Nessun movimento usa questo tag.'):(tr('Verrà tolto da')+' '+n+' '+tr('movimenti (i movimenti restano).'));
-      confirmDialog('Eliminare il tag "'+t.name+'"? '+warn,function(){
+      confirmDialog(tr('Eliminare il tag')+' "'+t.name+'"? '+warn,function(){
         state.transactions.forEach(function(x){if(x.tags)x.tags=x.tags.filter(function(g){return g!==id;});});
         state.transfers.forEach(function(x){if(x.tags)x.tags=x.tags.filter(function(g){return g!==id;});});
         state.tags=state.tags.filter(function(x){return x.id!==id;});
@@ -4701,7 +5056,7 @@ function openDataSheet(){
       '<div class="sheet-handle"></div>'+
       '<h3 style="margin:4px 0 0;">Export e sincronizzazione</h3>'+
       syncStatusCardHTML()+
-      '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Importa i tuoi dati</h3><p class="hint">Importa spese ed entrate da un file <strong>CSV</strong>, <strong>Excel (.xlsx)</strong> o <strong>PDF</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
+      '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">'+tr('Importa i tuoi dati')+'</h3><p class="hint">'+tr('Importa spese ed entrate da un file <strong>CSV</strong> o <strong>Excel (.xlsx)</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.')+'</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
       '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">'+tr('Salva i movimenti in un file da conservare, aprire in Excel o inviare.')+'</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
       notifCardHTML()+
       '<div style="text-align:center;"><button class="reset-link" id="resetBtn">'+tr('Reimposta tutti i dati')+'</button></div>'+
@@ -4772,7 +5127,7 @@ function openInfoSheet(){
     {k:'accounts',t:'Conti e Salvadanai',d:'I tuoi conti con il saldo totale di sempre, rinominabili e colorati. Sotto, i <strong>salvadanai tematici</strong>: buste virtuali per obiettivi (un viaggio, un acquisto) con anello di avanzamento, che trovi anche in Home — versare qui non tocca i saldi dei conti.'},
     {k:'budget',t:'Budget mensili',d:'Nel Profilo (l\'avatar in alto a destra) imposti un limite di spesa per categoria: la Home ti avvisa quando ti avvicini o lo superi.'},
     {k:'cats',t:'Categorie & Tag',d:'Sempre nel Profilo, la scheda dedicata dove crei, rinomini ed elimini categorie e tag. Tocca una categoria o un tag per vederne il <strong>grafico dell\'andamento nel tempo</strong>: come è variato mese per mese e, per le categorie di spesa con un budget, una <strong>linea di riferimento</strong> che mostra a colpo d\'occhio quando l\'hai superato.'},
-    {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV, Excel, PDF) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'},
+    {k:'data',t:'Export e sincronizzazione',d:'Sempre nel Profilo: accedi con Google o email per avere i dati <strong>sincronizzati tra telefono e PC</strong> (funziona anche offline, si allinea da solo). Importa l\'estratto conto (CSV o Excel) con anteprima riga per riga, ed esporta tutto in PDF, CSV o Excel.'},
     {k:'invest',t:'Investimenti',d:'Una sezione dedicata (Premium) per <strong>monitorare</strong> azioni, ETF e cripto. I <strong>prezzi si aggiornano da soli</strong> ogni giorno e tutto è convertito in euro. Vedi il <strong>valore del portafoglio</strong> con grafico e periodi (1S/1M/1A/Max), cerchi un asset scrivendo anche solo una parola (es. «world»), e apri la sua scheda con grafico, descrizione e dati chiave. Con <strong>Compra</strong> fai un acquisto una tantum: inserisci gli euro e le quote si calcolano da sole; con <strong>Accumula</strong> crei un <strong>piano di accumulo</strong> che investe in automatico a intervalli regolari. Ogni operazione viene registrata come movimento sui tuoi conti: è monitoraggio, non un broker reale.'},
     {k:'premium',t:'Spendy Premium',d:'Spendy è <strong>gratuita e completa</strong>: movimenti illimitati, categorie predefinite, tema chiaro e scuro, import dei dati ed export in PDF. Nel piano gratuito puoi avere <strong>2 conti, 3 ricorrenti, 1 salvadanaio e 2 categorie personalizzate</strong>: quello che hai già creato resta sempre tuo, anche se supera questi numeri.<br><br>Con <strong>Premium</strong> sblocchi conti, ricorrenti, salvadanai e categorie <strong>illimitati</strong>; l\'<strong>export in Excel e CSV</strong>; le <strong>statistiche avanzate</strong> (confronto con il mese scorso, proiezione di fine mese, dove vanno i tuoi soldi, andamento a 12 mesi, il giorno più costoso); gli <strong>avvisi di budget</strong> quando ti avvicini o superi un limite; e i <strong>widget</strong> nella schermata Home, compresa la <strong>spesa rapida</strong> per registrare un movimento in un tocco.'}
   ];
@@ -5005,15 +5360,23 @@ function syncStatusCardHTML(){
   return '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">'+tr('Sincronizzazione cloud')+'</h3>'+
     '<div id="syncStateLine">'+syncStateLineHTML()+'</div>'+body+'</section>';
 }
+/* Una singola scheda conto. Sta in una funzione a parte perche' viene
+   ridisegnata da sola quando cambia solo quel conto. */
+function accountCardHTML(a){
+  var bal=accBalance(a.id),exp=accMonthExp(a.id),canDel=state.accounts.length>1;
+  return'<div class="card account-card" data-acc-card="'+a.id+'"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="account-name-row"><input class="account-name" data-account-id="'+a.id+'" value="'+esc(a.name)+'"><span class="account-sub">'+tr('Saldo totale · speso questo mese: ')+fmt(exp)+'</span></div><div class="account-balance '+(bal>=0?'saldo-pos':'saldo-neg')+'" data-acc-bal="'+a.id+'">'+(balHidden()?'••••':((bal>=0?'':'−')+fmt(Math.abs(bal))))+'</div>'+(canDel?'<button class="icon-btn-danger" data-del-account="'+a.id+'">🗑</button>':'')+'</div>';
+}
+function accountsAddRowHTML(){
+  return ui.addingAccount
+    ?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="'+tr('Nome conto')+'" autofocus><button class="btn-primary-sm" id="confirmNewAcc">'+tr('Crea')+'</button></div>'
+    :'<button class="btn-secondary full-width" id="addAccBtn">'+tr('+ Nuovo conto')+'</button>';
+}
 function accountsHTML(){
   return '<div class="view">'+
-    '<section style="display:flex;flex-direction:column;gap:10px;">'+state.accounts.map(function(a){
-      var bal=accBalance(a.id),exp=accMonthExp(a.id),canDel=state.accounts.length>1;
-      return'<div class="card account-card"><span class="dot-lg" style="background:'+colorHex(a.color)+';"></span><div class="account-name-row"><input class="account-name" data-account-id="'+a.id+'" value="'+esc(a.name)+'"><span class="account-sub">'+tr('Saldo totale · speso questo mese: ')+fmt(exp)+'</span></div><div class="account-balance '+(bal>=0?'saldo-pos':'saldo-neg')+'">'+(balHidden()?'••••':((bal>=0?'':'−')+fmt(Math.abs(bal))))+'</div>'+(canDel?'<button class="icon-btn-danger" data-del-account="'+a.id+'">🗑</button>':'')+'</div>';
-    }).join('')+'</section>'+
-    '<label class="toggle-row card" style="margin:0;"><span>'+(balHidden()?eyeOffSVG():eyeOnSVG())+' '+tr('Nascondi i saldi')+'</span><input type="checkbox" id="hideBalToggle" '+(balHidden()?'checked':'')+'></label>'+
-    (ui.addingAccount?'<div class="card" style="display:flex;gap:8px;"><input class="text-input" id="newAccName" placeholder="'+tr('Nome conto')+'" autofocus><button class="btn-primary-sm" id="confirmNewAcc">'+tr('Crea')+'</button></div>':'<button class="btn-secondary full-width" id="addAccBtn">'+tr('+ Nuovo conto')+'</button>')+
-    goalsSectionHTML()+
+    '<section id="accList" style="display:flex;flex-direction:column;gap:10px;">'+state.accounts.map(accountCardHTML).join('')+'</section>'+
+    '<label class="toggle-row card" style="margin:0;"><span id="hideBalLabel">'+(balHidden()?eyeOffSVG():eyeOnSVG())+' '+tr('Nascondi i saldi')+'</span><input type="checkbox" id="hideBalToggle" '+(balHidden()?'checked':'')+'></label>'+
+    '<div id="accAddRow">'+accountsAddRowHTML()+'</div>'+
+    '<div id="goalsSection">'+goalsSectionHTML()+'</div>'+
   '</div>';
 }
 /* ================================================================
@@ -5185,28 +5548,77 @@ function notifCardHTML(){
     (state.autoRegister?'<p class="hint">⚠️ I pagamenti riconosciuti verranno registrati subito, senza revisione.</p>':'')+
   '</section>';
 }
-function wireAccounts(){
+/* La scheda Conti si aggiorna a pezzi, non tutta intera: toccare un
+   pulsante non deve far lampeggiare la pagina ne' far perdere il punto in
+   cui si stava scrivendo. Ogni funzione qui sotto ridisegna solo la sua
+   porzione e ricollega i suoi eventi. */
+function refreshAccountsList(){
+  var box=document.getElementById('accList');
+  if(!box){renderActiveTab();return;}
+  box.innerHTML=state.accounts.map(accountCardHTML).join('');
+  wireAccountRows();
+}
+function refreshAccountBalances(){
+  state.accounts.forEach(function(a){
+    var el=document.querySelector('[data-acc-bal="'+a.id+'"]');
+    if(!el)return;
+    var bal=accBalance(a.id);
+    el.className='account-balance '+(bal>=0?'saldo-pos':'saldo-neg');
+    el.textContent=balHidden()?'••••':((bal>=0?'':'−')+fmt(Math.abs(bal)));
+  });
+  var lbl=document.getElementById('hideBalLabel');
+  if(lbl)lbl.innerHTML=(balHidden()?eyeOffSVG():eyeOnSVG())+' '+tr('Nascondi i saldi');
+  var gs=document.getElementById('goalsSection');
+  if(gs){gs.innerHTML=goalsSectionHTML();wireGoalButtons();}
+}
+function refreshAccountsAddRow(focus){
+  var box=document.getElementById('accAddRow');
+  if(!box){renderActiveTab();return;}
+  box.innerHTML=accountsAddRowHTML();
+  wireAccountsAddRow();
+  if(focus){var i=document.getElementById('newAccName');if(i)i.focus();}
+}
+function wireAccountRows(){
   document.querySelectorAll('[data-account-id]').forEach(function(inp){inp.onchange=function(){var a=accById(inp.dataset.accountId);a.name=inp.value.trim()||a.name;inp.value=a.name;saveState();};});
   document.querySelectorAll('[data-del-account]').forEach(function(btn){
     btn.onclick=function(){
       var id=btn.dataset.delAccount,a=accById(id),n=state.transactions.filter(function(t){return t.accountId===id;}).length+state.transfers.filter(function(t){return t.fromAccountId===id||t.toAccountId===id;}).length;
       var warn=n===0?'':(n===1?tr('Verrà eliminato anche il movimento collegato a questo conto.'):tr('Verranno eliminati anche i N movimenti collegati a questo conto.').replace('N',n));
-      confirmDialog('Eliminare "'+a.name+'"? '+warn,function(){
+      confirmDialog(tr('Eliminare')+' "'+a.name+'"? '+warn,function(){
         state.transactions=state.transactions.filter(function(t){return t.accountId!==id;});
         state.transfers=state.transfers.filter(function(t){return t.fromAccountId!==id&&t.toAccountId!==id;});
         state.accounts=state.accounts.filter(function(a){return a.id!==id;});
         if(state.paypalAccountId===id)state.paypalAccountId=null;
         if(ui.accountFilter===id)ui.accountFilter='all';
-        saveState();showToast(tr('Conto eliminato'));renderActiveTab();
-      },'Elimina');
+        saveState();showToast(tr('Conto eliminato'));
+        refreshAccountsList();   // solo l'elenco, non tutta la pagina
+      },tr('Elimina'));
     };
   });
-  var addB=document.getElementById('addAccBtn');if(addB)addB.onclick=function(){ui.addingAccount=true;renderActiveTab();};
-  var confB=document.getElementById('confirmNewAcc');if(confB)confB.onclick=function(){var n=document.getElementById('newAccName').value.trim();if(!n){showToast(tr('Dai un nome al conto'));return;}if(!canAdd('accounts')){premiumBlock('accounts');return;}state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});ui.addingAccount=false;saveState();showToast(tr('Conto creato'));renderActiveTab();};
+}
+function wireAccountsAddRow(){
+  var addB=document.getElementById('addAccBtn');
+  if(addB)addB.onclick=function(){ui.addingAccount=true;refreshAccountsAddRow(true);};
+  var confB=document.getElementById('confirmNewAcc');
+  if(confB)confB.onclick=function(){
+    var n=document.getElementById('newAccName').value.trim();
+    if(!n){showToast(tr('Dai un nome al conto'));return;}
+    if(!canAdd('accounts')){premiumBlock('accounts');return;}
+    state.accounts.push({id:uid('acc'),name:n,color:state.accounts.length%8});
+    ui.addingAccount=false;saveState();showToast(tr('Conto creato'));
+    refreshAccountsList();refreshAccountsAddRow(false);
+  };
+}
+function wireGoalButtons(){
   document.querySelectorAll('[data-goal-open]').forEach(function(b){b.onclick=function(){openGoalSheet(b.dataset.goalOpen);};});
   var agB=document.getElementById('addGoalBtn');if(agB)agB.onclick=function(){openGoalSheet(null);};
+}
+function wireAccounts(){
+  wireAccountRows();
+  wireAccountsAddRow();
+  wireGoalButtons();
   var hideTog=document.getElementById('hideBalToggle');
-  if(hideTog)hideTog.onchange=function(){state.hideBalances=hideTog.checked;saveState();renderActiveTab();};
+  if(hideTog)hideTog.onchange=function(){state.hideBalances=hideTog.checked;saveState();refreshAccountBalances();};
 }
 
 /* Cablaggio delle card dati (sincronizzazione, import, export, automazione,
@@ -5221,20 +5633,20 @@ function wireDataCards(rerender){
   if(gBtn)gBtn.onclick=async function(){
     var cfg=loadSyncConfig();
     if(!cfg||!cfg.firebaseConfig){openSyncModal();return;}
-    gBtn.disabled=true;gBtn.textContent='Accesso in corso…';
+    gBtn.disabled=true;gBtn.textContent=tr('Accesso in corso…');
     var res=await connectSyncWithGoogle(cfg.firebaseConfig);
-    if(res.ok&&!res.redirect)showToast('Sincronizzazione connessa');
-    else if(!res.ok)showToast(res.error||'Accesso non riuscito');
+    if(res.ok&&!res.redirect)showToast(tr('Sincronizzazione connessa'));
+    else if(!res.ok)showToast(res.error||tr('Accesso non riuscito'));
     rerender();
   };
   var aBtn=document.getElementById('appleSyncBtn');
   if(aBtn)aBtn.onclick=async function(){
     var cfg=loadSyncConfig();
     if(!cfg||!cfg.firebaseConfig){openSyncModal();return;}
-    aBtn.disabled=true;aBtn.textContent='Accesso in corso…';
+    aBtn.disabled=true;aBtn.textContent=tr('Accesso in corso…');
     var res=await connectSyncWithApple(cfg.firebaseConfig);
-    if(res.ok&&!res.redirect)showToast('Sincronizzazione connessa');
-    else if(!res.ok)showToast(res.error||'Accesso non riuscito');
+    if(res.ok&&!res.redirect)showToast(tr('Sincronizzazione connessa'));
+    else if(!res.ok)showToast(res.error||tr('Accesso non riuscito'));
     rerender();
   };
   document.querySelectorAll('[data-copy-target]').forEach(function(btn){
@@ -5244,10 +5656,10 @@ function wireDataCards(rerender){
       field.select();field.setSelectionRange(0,99999);
       var done=false;
       if(navigator.clipboard&&navigator.clipboard.writeText){
-        navigator.clipboard.writeText(field.value).then(function(){showToast('Copiato');}).catch(function(){try{document.execCommand('copy');showToast('Copiato');}catch(e){showToast(tr('Copia manualmente il testo selezionato'));}});
+        navigator.clipboard.writeText(field.value).then(function(){showToast(tr('Copiato'));}).catch(function(){try{document.execCommand('copy');showToast(tr('Copiato'));}catch(e){showToast(tr('Copia manualmente il testo selezionato'));}});
         done=true;
       }
-      if(!done){try{document.execCommand('copy');showToast('Copiato');}catch(e){showToast(tr('Copia manualmente il testo selezionato'));}}
+      if(!done){try{document.execCommand('copy');showToast(tr('Copiato'));}catch(e){showToast(tr('Copia manualmente il testo selezionato'));}}
     };
   });
   var autoTog=document.getElementById('autoRegisterToggle');
@@ -5257,7 +5669,7 @@ function wireDataCards(rerender){
   var discBtn=document.getElementById('disconnectSyncBtn');if(discBtn)discBtn.onclick=function(){
     var warn=sync.pendingPush&&!isOnline()?' ⚠️ Ci sono modifiche non ancora sincronizzate: collegati a internet e premi «Sincronizza» prima di uscire, altrimenti le perdi.':'';
     confirmDialog('Uscire dall\'account '+(sync.email||'')+'? I dati restano al sicuro nel cloud, ma vengono rimossi da questo dispositivo: non saranno più visibili finché non rientri. Potrai poi accedere con un altro account.'+warn,function(){
-      signOutFromCloud().then(function(){showToast('Uscito dall\'account');});
+      signOutFromCloud().then(function(){showToast(tr('Uscito dall\'account'));});
     },'Esci');
   };
   var impBtn=document.getElementById('openImportBtn');if(impBtn)impBtn.onclick=openImportModal;
@@ -5266,7 +5678,7 @@ function wireDataCards(rerender){
   if(rstBtn)rstBtn.onclick=function(){
     confirmDialog(tr('Eliminare definitivamente tutti i dati? Questa azione non si può annullare.'),function(){
       state=ensureV3Fields(defaultState());ui={activeTab:'accounts',viewMonth:currentMonthKey(),viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense'};
-      saveState();showToast('Dati reimpostati');closeModal();renderActiveTab();
+      saveState();showToast(tr('Dati reimpostati'));closeModal();renderActiveTab();
     },'Elimina tutto');
   };
 }
@@ -5414,8 +5826,8 @@ function openEntrySheet(opts){
     wireTagSection();
     var delBtn=document.getElementById('delEntryBtn');
     if(delBtn)delBtn.onclick=function(){
-      if(entry.isEditTx)confirmDialog(tr('Eliminare questo movimento?'),function(){state.transactions=state.transactions.filter(function(t){return t.id!==editTx.id;});saveState();closeModal();showToast('Eliminato');renderActiveTab();},'Elimina');
-      else if(entry.isEditTr)confirmDialog(tr('Eliminare questo trasferimento?'),function(){state.transfers=state.transfers.filter(function(t){return t.id!==editTr.id;});saveState();closeModal();showToast('Eliminato');renderActiveTab();},'Elimina');
+      if(entry.isEditTx)confirmDialog(tr('Eliminare questo movimento?'),function(){state.transactions=state.transactions.filter(function(t){return t.id!==editTx.id;});saveState();closeModal();showToast(tr('Eliminato'));renderActiveTab();},'Elimina');
+      else if(entry.isEditTr)confirmDialog(tr('Eliminare questo trasferimento?'),function(){state.transfers=state.transfers.filter(function(t){return t.id!==editTr.id;});saveState();closeModal();showToast(tr('Eliminato'));renderActiveTab();},'Elimina');
     };
     var saveBtn=document.getElementById('saveEntryBtn');
     if(saveBtn)saveBtn.onclick=function(){
@@ -5582,7 +5994,7 @@ function openSyncModal(){
         m.busy=true;m.errorMsg=null;renderStep();
         var res=await connectSyncWithGoogle(m.parsedConfig);
         m.busy=false;
-        if(res.ok&&!res.redirect){closeModal();showToast('Sincronizzazione connessa');renderActiveTab();}
+        if(res.ok&&!res.redirect){closeModal();showToast(tr('Sincronizzazione connessa'));renderActiveTab();}
         else if(res.ok&&res.redirect){/* la pagina sta per cambiare */}
         else{m.errorMsg=res.error;renderStep();}
       };
@@ -5593,7 +6005,7 @@ function openSyncModal(){
         m.email=email;m.password=password;m.busy=true;m.errorMsg=null;renderStep();
         var res=await connectSyncWithCredentials(m.parsedConfig,email,password,m.mode);
         m.busy=false;
-        if(res.ok){closeModal();showToast('Sincronizzazione connessa');renderActiveTab();}
+        if(res.ok){closeModal();showToast(tr('Sincronizzazione connessa'));renderActiveTab();}
         else{m.errorMsg=res.error;renderStep();}
       };
     }
@@ -5915,396 +6327,10 @@ function pdfBlob(title,subtitle,cols,rows,summary){
   return new Blob([latinBytes(out)],{type:'application/pdf'});
 }
 
-/* ---- PDF: lettura del testo ----
-   I PDF veri delle banche non contengono "testo": contengono codici di
-   caratteri che hanno senso solo passando dalla tabella del font
-   (/ToUnicode). Senza quella tabella esce spazzatura. Qui si fa il lavoro
-   completo: si leggono gli oggetti del PDF (anche quelli dentro gli
-   "object stream" compressi), si trovano i font di ogni pagina, si legge
-   la loro tabella ToUnicode e solo allora si decodifica il testo.
-   Poi si ricostruiscono righe (stessa altezza) e colonne (stessa x). */
-
-var WINANSI_EXTRA={128:8364,130:8218,131:402,132:8222,133:8230,134:8224,135:8225,136:710,137:8240,138:352,139:8249,140:338,142:381,145:8216,146:8217,147:8220,148:8221,149:8226,150:8211,151:8212,152:732,153:8482,154:353,155:8250,156:339,158:382,159:376};
-function winAnsiChar(code){
-  if(WINANSI_EXTRA[code])return String.fromCharCode(WINANSI_EXTRA[code]);
-  return String.fromCharCode(code);
-}
-function hexToStr(hex){
-  var out='';
-  hex=hex.replace(/\s+/g,'');
-  for(var i=0;i+3<hex.length+1;i+=4){
-    var part=hex.substr(i,4);
-    if(part.length<4)break;
-    out+=String.fromCharCode(parseInt(part,16));
-  }
-  if(hex.length%4===2)out+=String.fromCharCode(parseInt(hex.substr(hex.length-2,2),16));
-  return out;
-}
-/* Tabella ToUnicode: codice del font → carattere vero */
-function parseToUnicode(txt){
-  var map={},m;
-  var bc=/beginbfchar([\s\S]*?)endbfchar/g;
-  while((m=bc.exec(txt))){
-    var re=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g,p;
-    while((p=re.exec(m[1])))map[parseInt(p[1],16)]=hexToStr(p[2]);
-  }
-  var br=/beginbfrange([\s\S]*?)endbfrange/g;
-  while((m=br.exec(txt))){
-    var re2=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([\s\S]*?)\])/g,q;
-    while((q=re2.exec(m[1]))){
-      var lo=parseInt(q[1],16),hi=parseInt(q[2],16);
-      if(hi-lo>65535)continue;
-      if(q[3]!==undefined){
-        var base=parseInt(q[3],16);
-        for(var c=lo;c<=hi;c++)map[c]=String.fromCharCode(base+(c-lo));
-      }else if(q[4]!==undefined){
-        var items=q[4].match(/<([0-9A-Fa-f]+)>/g)||[];
-        for(var k=0;k<items.length&&lo+k<=hi;k++)map[lo+k]=hexToStr(items[k].replace(/[<>]/g,''));
-      }
-    }
-  }
-  return map;
-}
-
-/* Estrae gli oggetti del PDF (num → {dict, start, end}) */
-function pdfScanObjects(s){
-  var objs={},re=/(\d+)\s+\d+\s+obj\b/g,m;
-  while((m=re.exec(s))){
-    var num=parseInt(m[1],10);
-    var start=m.index+m[0].length;
-    var end=s.indexOf('endobj',start);
-    if(end<0)end=s.length;
-    objs[num]={body:s.slice(start,end),start:start};
-  }
-  return objs;
-}
-function pdfStreamBytes(u8,s,body,start){
-  var st=body.indexOf('stream');
-  if(st<0)return null;
-  var abs=start+st+6;
-  if(s[abs]==='\r')abs++;
-  if(s[abs]==='\n')abs++;
-  var endRel=body.indexOf('endstream',st);
-  var absEnd=start+(endRel<0?body.length:endRel);
-  var dict=body.slice(0,st);
-  var stop=absEnd;
-  var lm=/\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(dict);
-  if(lm&&abs+parseInt(lm[1],10)<=absEnd)stop=abs+parseInt(lm[1],10);
-  else{while(stop>abs&&(s.charCodeAt(stop-1)===10||s.charCodeAt(stop-1)===13))stop--;}
-  return{dict:dict,bytes:u8.subarray(abs,stop)};
-}
-async function pdfDecodeStream(st,dec){
-  if(!st)return null;
-  if(/\/Image|\/DCTDecode|\/JPXDecode|\/CCITTFaxDecode|\/JBIG2Decode/.test(st.dict))return null;
-  if(/\/FlateDecode/.test(st.dict)){
-    try{return await inflateBytes(st.bytes,'deflate');}
-    catch(e){try{return await inflateBytes(st.bytes,'deflate-raw');}catch(e2){return null;}}
-  }
-  if(/\/Filter/.test(st.dict))return null;
-  return st.bytes;
-}
-
-/* Font di una pagina: nome usato nel contenuto (/F1) → tabella e larghezza codice */
-async function pdfLoadFonts(resDict,objs,u8,s,dec,cache){
-  var fonts={};
-  var fm=/\/Font\s*<<([\s\S]*?)>>/.exec(resDict||'');
-  if(!fm)return fonts;
-  var re=/\/([^\s\/<>]+)\s+(\d+)\s+\d+\s+R/g,m;
-  while((m=re.exec(fm[1]))){
-    var name=m[1],num=parseInt(m[2],10);
-    if(cache[num]){fonts[name]=cache[num];continue;}
-    var fo=objs[num];
-    if(!fo)continue;
-    var body=fo.body;
-    var twoByte=/\/Subtype\s*\/Type0/.test(body)||/Identity-H/.test(body);
-    var map=null;
-    var tu=/\/ToUnicode\s+(\d+)\s+\d+\s+R/.exec(body);
-    if(tu){
-      var to=objs[parseInt(tu[1],10)];
-      if(to){
-        var bytes=await pdfDecodeStream(pdfStreamBytes(u8,s,to.body,to.start),dec);
-        if(bytes)map=parseToUnicode(dec.decode(bytes));
-      }
-    }
-    var font={twoByte:twoByte,map:map};
-    cache[num]=font;
-    fonts[name]=font;
-  }
-  return fonts;
-}
-function pdfDecodeCodes(codes,font){
-  var out='';
-  if(font&&font.twoByte){
-    for(var i=0;i+1<codes.length;i+=2){
-      var c=(codes[i]<<8)|codes[i+1];
-      out+=font.map&&font.map[c]!==undefined?font.map[c]:'';
-    }
-    return out;
-  }
-  for(var j=0;j<codes.length;j++){
-    var b=codes[j];
-    if(font&&font.map&&font.map[b]!==undefined)out+=font.map[b];
-    else out+=winAnsiChar(b);
-  }
-  return out;
-}
-
-/* Percorre un content stream e restituisce i pezzetti di testo con posizione */
-function pdfContentChunks(txt,fonts){
-  var chunks=[],codes=[],nums=[],curX=0,curY=0,inTJ=false,i=0,n=txt.length,font=null,pendingName='';
-  function push(){
-    if(!codes.length)return;
-    var t=pdfDecodeCodes(codes,font);
-    codes=[];
-    if(t&&t.trim())chunks.push({y:curY,x:curX,t:t});
-  }
-  while(i<n){
-    var c=txt[i];
-    if(c==='('){
-      var d=1;i++;
-      while(i<n&&d>0){
-        var ch=txt[i];
-        if(ch==='\\'){
-          var nx=txt[i+1];
-          if(nx>='0'&&nx<='7'){
-            var oct=nx,k=i+2;
-            while(k<n&&oct.length<3&&txt[k]>='0'&&txt[k]<='7'){oct+=txt[k];k++;}
-            codes.push(parseInt(oct,8)&0xFF);i=k;continue;
-          }
-          var map={'n':10,'r':13,'t':9,'b':8,'f':12};
-          if(map[nx]!==undefined)codes.push(map[nx]);
-          else if(nx!==undefined)codes.push(nx.charCodeAt(0)&0xFF);
-          i+=2;continue;
-        }
-        if(ch==='(')d++;
-        else if(ch===')'){d--;if(d===0){i++;break;}}
-        if(d>0)codes.push(ch.charCodeAt(0)&0xFF);
-        i++;
-      }
-      continue;
-    }
-    if(c==='<'&&txt[i+1]==='<'){
-      var depth=0;
-      while(i<n){
-        if(txt[i]==='<'&&txt[i+1]==='<'){depth++;i+=2;continue;}
-        if(txt[i]==='>'&&txt[i+1]==='>'){depth--;i+=2;if(depth<=0)break;continue;}
-        i++;
-      }
-      continue;
-    }
-    if(c==='<'){
-      var e=txt.indexOf('>',i);
-      if(e<0)break;
-      var hex=txt.slice(i+1,e).replace(/\s+/g,'');
-      for(var h=0;h+1<hex.length;h+=2)codes.push(parseInt(hex.substr(h,2),16)&0xFF);
-      i=e+1;continue;
-    }
-    if(c==='/'){
-      var j3=i+1,nm='';
-      while(j3<n&&/[^\s\/\[\]<>()]/.test(txt[j3])){nm+=txt[j3];j3++;}
-      pendingName=nm;i=j3;continue;
-    }
-    if(c==='['){inTJ=true;i++;continue;}
-    if(c===']'){inTJ=false;i++;continue;}
-    if(/[-+.\d]/.test(c)){
-      var j=i,num='';
-      while(j<n&&/[-+.\d]/.test(txt[j])){num+=txt[j];j++;}
-      var val=parseFloat(num);
-      if(!isNaN(val)){
-        nums.push(val);
-        if(inTJ&&val<=-120&&codes.length&&codes[codes.length-1]!==32)codes.push(32);
-      }
-      i=j;continue;
-    }
-    if(/[A-Za-z*'"]/.test(c)){
-      var j2=i,op='';
-      while(j2<n&&/[A-Za-z*'"0-9]/.test(txt[j2])){op+=txt[j2];j2++;}
-      i=j2;
-      if(op==='Tf'){if(fonts&&fonts[pendingName])font=fonts[pendingName];}
-      else if(op==='Tj'||op==='TJ'||op==="'"||op==='"')push();
-      else if(op==='Td'||op==='TD'){if(nums.length>=2){curX+=nums[nums.length-2];curY+=nums[nums.length-1];}}
-      else if(op==='Tm'){if(nums.length>=6){curX=nums[nums.length-2];curY=nums[nums.length-1];}}
-      else if(op==='T*')curY-=12;
-      else if(op==='BT'){curX=0;curY=0;}
-      nums=[];
-      continue;
-    }
-    i++;
-  }
-  push();
-  return chunks;
-}
-function chunksToGroups(chunks){
-  var groups=[];
-  chunks.forEach(function(ch){
-    var g=null;
-    for(var q=0;q<groups.length;q++){if(Math.abs(groups[q].y-ch.y)<=2.5){g=groups[q];break;}}
-    if(!g){g={y:ch.y,items:[]};groups.push(g);}
-    g.items.push(ch);
-  });
-  groups.sort(function(a,b){return b.y-a.y;});
-  groups.forEach(function(g){g.items.sort(function(a,b){return a.x-b.x;});});
-  return groups.filter(function(g){return g.items.length;});
-}
-
-async function pdfToGroups(arrayBuffer){
-  var u8=new Uint8Array(arrayBuffer);
-  var dec=new TextDecoder('windows-1252');
-  var s=dec.decode(u8);
-  if(s.indexOf('%PDF-')<0)throw new Error('Il file non sembra un PDF.');
-  var objs=pdfScanObjects(s);
-
-  /* Oggetti dentro gli "object stream" compressi (PDF moderni) */
-  var nums=Object.keys(objs);
-  for(var oi=0;oi<nums.length;oi++){
-    var o=objs[nums[oi]];
-    if(!/\/Type\s*\/ObjStm/.test(o.body))continue;
-    var st=pdfStreamBytes(u8,s,o.body,o.start);
-    var bytes=await pdfDecodeStream(st,dec);
-    if(!bytes)continue;
-    var txt=dec.decode(bytes);
-    var N=parseInt((/\/N\s+(\d+)/.exec(o.body)||[])[1]||'0',10);
-    var first=parseInt((/\/First\s+(\d+)/.exec(o.body)||[])[1]||'0',10);
-    var headerNums=txt.slice(0,first).trim().split(/\s+/).map(Number);
-    for(var p=0;p<N;p++){
-      var onum=headerNums[p*2],off=headerNums[p*2+1];
-      if(isNaN(onum)||isNaN(off))continue;
-      var nextOff=(p+1<N&&!isNaN(headerNums[(p+1)*2+1]))?headerNums[(p+1)*2+1]:(txt.length-first);
-      if(!objs[onum])objs[onum]={body:txt.slice(first+off,first+nextOff),start:-1,inObjStm:true};
-    }
-  }
-
-  /* Pagine: risorse (font) + contenuti */
-  var fontCache={},all=[];
-  var pageNums=Object.keys(objs).filter(function(k){return /\/Type\s*\/Page\b/.test(objs[k].body);});
-  async function resolveDict(body,key){
-    var inline=new RegExp('\\/'+key+'\\s*<<([\\s\\S]*?)>>\\s*(?:\\/|>>)').exec(body);
-    if(inline)return inline[0];
-    var ref=new RegExp('\\/'+key+'\\s+(\\d+)\\s+\\d+\\s+R').exec(body);
-    if(ref&&objs[parseInt(ref[1],10)])return objs[parseInt(ref[1],10)].body;
-    return '';
-  }
-  for(var pi=0;pi<pageNums.length;pi++){
-    var pg=objs[pageNums[pi]];
-    var res=await resolveDict(pg.body,'Resources');
-    var fonts=await pdfLoadFonts(res,objs,u8,s,dec,fontCache);
-    var contents=[];
-    var cRef=/\/Contents\s+(\d+)\s+\d+\s+R/.exec(pg.body);
-    var cArr=/\/Contents\s*\[([\s\S]*?)\]/.exec(pg.body);
-    if(cRef)contents.push(parseInt(cRef[1],10));
-    else if(cArr){
-      var rr=/(\d+)\s+\d+\s+R/g,mm;
-      while((mm=rr.exec(cArr[1])))contents.push(parseInt(mm[1],10));
-    }
-    var pageTxt='';
-    for(var ci=0;ci<contents.length;ci++){
-      var co=objs[contents[ci]];
-      if(!co||co.start<0)continue;
-      var bytes2=await pdfDecodeStream(pdfStreamBytes(u8,s,co.body,co.start),dec);
-      if(bytes2)pageTxt+=dec.decode(bytes2)+'\n';
-    }
-    if(!pageTxt)continue;
-    all=all.concat(chunksToGroups(pdfContentChunks(pageTxt,fonts)));
-  }
-
-  /* Riserva: se non si sono trovate pagine (PDF strani), si leggono comunque
-     tutti gli stream che contengono testo, senza tabella dei font. */
-  if(!all.length){
-    var keys=Object.keys(objs);
-    for(var q2=0;q2<keys.length;q2++){
-      var ob=objs[keys[q2]];
-      if(ob.start<0)continue;
-      var stb=pdfStreamBytes(u8,s,ob.body,ob.start);
-      if(!stb)continue;
-      var by=await pdfDecodeStream(stb,dec);
-      if(!by)continue;
-      var t2=dec.decode(by);
-      if(t2.indexOf('Tj')<0&&t2.indexOf('TJ')<0)continue;
-      all=all.concat(chunksToGroups(pdfContentChunks(t2,null)));
-    }
-  }
-  if(!all.length)throw new Error('Da questo PDF non esce nessun testo: è probabilmente una scansione (immagine). Usa il CSV o l\'Excel della banca.');
-  return all;
-}
-async function pdfToLines(arrayBuffer){
-  return (await pdfToGroups(arrayBuffer)).map(function(g){
-    return g.items.map(function(it){return it.t;}).join(' ').replace(/\s+/g,' ').trim();
-  }).filter(function(l){return l;});
-}
-
 /* Riconoscimento di un importo: servono i centesimi (o il simbolo €),
    altrimenti si scambierebbero anni e numeri di conto per soldi. */
 var MONEY_RE=/^[-+−(]?\s*(?:€|EUR)?\s*\d[\d.\s']*[.,]\d{2}\s*(?:€|EUR)?\s*[-−)]?$/i;
-var DATE_RE=/^\s*(\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4}|\d{4}-\d{2}-\d{2})\s*$/;
 function isMoneyCell(t){return MONEY_RE.test(String(t||'').trim());}
-function moneyValue(t){return parseAmount(String(t||'').replace(/−/g,'-').replace(/[()]/g,'').replace(/EUR/i,'').trim());}
-
-/* Da PDF a tabella: la data, la descrizione e fino a 3 colonne di importi,
-   riconosciute dalla posizione orizzontale (es. Uscite | Entrate | Saldo). */
-function pdfGroupsToRows(groups){
-  var moneyX=[];
-  groups.forEach(function(g){
-    g.items.forEach(function(it){if(isMoneyCell(it.t))moneyX.push(it.x);});
-  });
-  if(!moneyX.length)return [];
-  moneyX.sort(function(a,b){return a-b;});
-  var clusters=[],curC=[moneyX[0]];
-  for(var i=1;i<moneyX.length;i++){
-    if(moneyX[i]-moneyX[i-1]>40){clusters.push(curC);curC=[];}
-    curC.push(moneyX[i]);
-  }
-  clusters.push(curC);
-  if(clusters.length>3)clusters=clusters.slice(0,3);
-  var centers=clusters.map(function(c){return c.reduce(function(a,b){return a+b;},0)/c.length;});
-  function colOf(x){
-    var best=0,bd=Infinity;
-    centers.forEach(function(c,i){var d=Math.abs(c-x);if(d<bd){bd=d;best=i;}});
-    return best;
-  }
-  var rows=[],lastDate='';
-  groups.forEach(function(g){
-    var date='',desc=[],amts=['','',''],found=false;
-    g.items.forEach(function(it){
-      var t=it.t.trim();
-      if(!date&&DATE_RE.test(t)&&parseDateFlexible(t)){date=t;return;}
-      if(isMoneyCell(t)){amts[colOf(it.x)]=t;found=true;return;}
-      desc.push(t);
-    });
-    if(!found)return;
-    var dtxt=desc.join(' ');
-    if(/^\s*(saldo|totale|totali|riporto|segue)\b/i.test(dtxt))return;  // righe di totale, non movimenti
-    if(!date&&lastDate)date=lastDate;
-    if(date)lastDate=date;
-    rows.push([date,desc.join(' ').replace(/\s+/g,' ').trim(),amts[0],amts[1],amts[2]]);
-  });
-  return rows;
-}
-/* Riserva: se il PDF ha ogni riga in un unico blocco di testo, si torna
-   al riconoscimento con le espressioni regolari sulla riga intera. */
-function pdfLinesToRows(lines){
-  var AMT=/[-+−]?\s?\d{1,3}(?:[.\s]\d{3})*,\d{2}(?:\s?[-−])?/g;
-  var DATE=/\b(\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4})\b/;
-  var rows=[],lastDate='';
-  lines.forEach(function(l){
-    var dm=DATE.exec(l);
-    var rest=dm?l.slice(dm.index+dm[1].length):l;
-    var amts=rest.match(AMT);
-    if(!amts||!amts.length)return;
-    var date=dm?parseDateFlexible(dm[1]):'';
-    if(!date&&lastDate)date=lastDate;
-    if(!date)return;
-    lastDate=date;
-    var raw=amts[0];
-    var val=moneyValue(raw);
-    if(isNaN(val)||val===0)return;
-    if(/[-−]\s*$/.test(raw)&&val>0)val=-val;
-    var desc=rest.replace(new RegExp(raw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),' ')
-      .replace(/\b\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4}\b/g,' ')
-      .replace(/\s+/g,' ').trim();
-    rows.push([date,desc||'Movimento',String(val).replace('.',','),'','']);
-  });
-  return rows;
-}
 
 /* ---- Salvataggio del file sul telefono ---- */
 async function saveOrShare(filename,blob,mime){
@@ -6483,7 +6509,7 @@ function openExportModal(){
 }
 
 /* ================================================================
-   IMPORT DEI TUOI DATI (CSV · XLSX · PDF)
+   IMPORT DEI TUOI DATI (CSV · XLSX)
    Ogni file diventa una tabella; poi si decide quali colonne sono
    data / descrizione / importo, e come capire se è una spesa o un'entrata.
    Nulla viene salvato prima dell'anteprima riga per riga.
@@ -6546,11 +6572,32 @@ function guessColMapByContent(rows,start){
   };
 }
 
+/* Sceglie la colonna delle date confrontando quante ne legge davvero.
+   Cambia idea solo se un'altra colonna e' NETTAMENTE migliore (+25%): cosi'
+   il nome dell'intestazione resta il criterio principale. */
+function bestDateColumn(rows,start,preferred,alternative){
+  var cols=0;
+  rows.forEach(function(r){cols=Math.max(cols,r.length);});
+  if(cols===0)return preferred;
+  function score(c){
+    if(c==null||c<0||c>=cols)return -1;
+    var r=readDateColumn(rows,start,c);
+    return r.total?r.ok/r.total:0;
+  }
+  var bestC=preferred,bestS=score(preferred);
+  [alternative].concat(function(){var a=[];for(var i=0;i<cols;i++)a.push(i);return a;}())
+    .forEach(function(c){
+      var sc=score(c);
+      if(sc>bestS+0.25){bestS=sc;bestC=c;}
+    });
+  return bestC>-1?bestC:0;
+}
+
 function openImportModal(){
-  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],rawLines:[],sheets:[],refSheet:null,
+  var imp={step:1,accountId:state.accounts[0].id,source:'csv',fileName:'',rawText:'',rows:[],sheets:[],refSheet:null,
            hasHeader:true,headers:[],mapping:{date:0,description:1,amount:2,amountIn:-1,amountOut:-1,typeCol:-1},
            amountMode:'single',signRule:'auto',analyzed:false,
-           parsed:[],error:'',warn:'',busy:false};
+           parsed:[],error:'',warn:'',busy:false,applyAll:true,_groups:{},dateFails:0};
 
   function renderStep(){var r=document.querySelector('#modal-root .sheet-wrap');if(r){r.innerHTML=stepHTML();wireStep();}}
   function stepDots(){var h='<div class="step-dots">';for(var i=1;i<=3;i++)h+='<span class="step-dot'+(i===imp.step?' active':'')+'"></span>';return h+'</div>';}
@@ -6561,15 +6608,15 @@ function openImportModal(){
     var opts=state.accounts.map(function(a){return'<option value="'+a.id+'" '+(a.id===imp.accountId?'selected':'')+'>'+esc(a.name)+'</option>';}).join('');
     var status='';
     if(imp.busy)status='<p class="hint">'+tr('Lettura del file in corso…')+'</p>';
-    else if(imp.error)status='<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.error)+'</p>'+(imp.rawLines.length?'<div class="field-group"><label class="field-label">'+tr('Testo che sono riuscito a leggere (per capire cosa non va)')+'</label><textarea class="text-input" readonly style="font-family:monospace;font-size:11px;">'+esc(imp.rawLines.slice(0,60).join('\n'))+'</textarea></div>':'');
+    else if(imp.error)status='<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.error)+'</p>';
     else if(imp.rows.length)status='<p class="hint">✅ '+esc(imp.fileName||'File')+': '+imp.rows.length+' righe lette.</p>';
     return'<div class="sheet">'+stepDots()+
       '<h3 style="margin:4px 0 0;">'+tr('Importa i tuoi dati')+'</h3>'+
       '<div class="field-group"><label class="field-label">'+tr('Conto di destinazione')+'</label><select class="select" id="impAcc">'+opts+'</select></div>'+
-      '<div class="field-group"><label class="field-label">File (CSV, Excel .xlsx o PDF)</label><input type="file" accept=".csv,.txt,.xlsx,.pdf,text/csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="impFile"></div>'+
+      '<div class="field-group"><label class="field-label">'+tr('File (CSV o Excel .xlsx)')+'</label><input type="file" accept=".csv,.txt,.xlsx,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" id="impFile"></div>'+
       status+
       '<div class="field-group"><label class="field-label">'+tr('Oppure incolla il contenuto (CSV)')+'</label><textarea class="text-input" id="impText" placeholder="data;descrizione;importo">'+esc(imp.rawText)+'</textarea></div>'+
-      '<p class="hint">'+tr('Il PDF viene letto come testo: funziona con gli estratti conto scaricati dalla banca, non con scansioni o foto.')+'</p>'+
+      '<p class="hint">'+tr('Scarica dalla banca il file CSV o Excel dei movimenti: sono i formati che si leggono senza errori.')+'</p>'+
       '<button class="btn-primary full-width" id="impNext1" '+(imp.rows.length?'':'disabled')+'>Continua</button>'+
       '<button class="btn-secondary full-width" id="impCancel1">'+tr('Annulla')+'</button></div>';
   }
@@ -6612,6 +6659,10 @@ function openImportModal(){
     });
     var g=guessColMapByContent(imp.rows,start);
     imp.mapping.date=byName.date>-1?byName.date:(g.date>-1?g.date:0);
+    /* Il nome dell'intestazione puo' mentire ("Data valuta" con dentro del
+       testo). Prima di fidarsi si controlla quante date si leggono davvero, e
+       se un'altra colonna fa molto meglio si usa quella. */
+    imp.mapping.date=bestDateColumn(imp.rows,start,imp.mapping.date,g.date);
     imp.mapping.description=byName.description>-1?byName.description:(g.description>-1?g.description:Math.min(1,imp.rows[0].length-1));
     imp.mapping.typeCol=byName.type;
 
@@ -6663,6 +6714,30 @@ function openImportModal(){
     }
     return out+'</select>';
   }
+  /* Mostra subito se le date si leggono o no, con due esempi veri presi dal
+     file: e' il controllo che evita di ritrovarsi tutte le righe con la
+     stessa data. */
+  function datePreviewHTML(){
+    if(!imp.rows.length)return '';
+    var start=imp.hasHeader?1:0;
+    var dc=readDateColumn(imp.rows,start,imp.mapping.date);
+    if(!dc.total)return '<p class="hint" style="color:var(--red);margin-top:-4px;">⚠️ '+tr('Questa colonna e\' vuota: scegline un\'altra.')+'</p>';
+    var ex=[],i;
+    for(i=start;i<imp.rows.length&&ex.length<2;i++){
+      var raw=String((imp.rows[i]||[])[imp.mapping.date]==null?'':(imp.rows[i]||[])[imp.mapping.date]).trim();
+      var iso=dc.dates[i-start];
+      if(raw&&iso)ex.push(esc(raw)+' → '+esc(formatDayHeader(iso)+' '+iso.slice(0,4)));
+    }
+    var pct=dc.total?Math.round(dc.ok/dc.total*100):0;
+    var bad=pct<90;
+    return '<p class="hint" style="margin-top:-4px;'+(bad?'color:var(--red);':'')+'">'+
+      (bad?'⚠️ ':'')+tr('Date riconosciute')+': <strong>'+dc.ok+'/'+dc.total+'</strong>'+
+      (dc.serial?' ('+tr('numeri di Excel')+')':'')+
+      (dc.order==='mdy'?' · '+tr('formato mese/giorno'):'')+
+      (ex.length?'<br>'+ex.join('<br>'):'')+
+      (bad?'<br>'+tr('Prova un\'altra colonna: se le date non si leggono, tutti i movimenti finiscono con la data di oggi.'):'')+
+      '</p>';
+  }
   function step2(){
     analyze();
     var dual=imp.amountMode==='dual';
@@ -6679,7 +6754,7 @@ function openImportModal(){
       multi+
       (imp.warn?'<p class="hint" style="color:var(--red);">⚠️ '+esc(imp.warn)+'</p>':'')+
       '<label class="toggle-row"><span>'+tr('Prima riga come intestazione')+'</span><input type="checkbox" id="impHeader" '+(imp.hasHeader?'checked':'')+'></label>'+
-      '<div class="field-group"><label class="field-label">'+tr('Colonna data')+'</label>'+colOptions('date',imp.mapping.date)+'</div>'+
+      '<div class="field-group"><label class="field-label">'+tr('Colonna data')+'</label>'+colOptions('date',imp.mapping.date)+datePreviewHTML()+'</div>'+
       '<div class="field-group"><label class="field-label">'+tr('Colonna descrizione')+'</label>'+colOptions('description',imp.mapping.description)+'</div>'+
       '<div class="field-group"><label class="field-label">'+tr('Come sono scritti gli importi')+'</label><div class="segmented small">'+
         '<button class="'+(dual?'':'active')+'" data-amt-mode="single">'+tr('Una colonna')+'</button>'+
@@ -6699,7 +6774,7 @@ function openImportModal(){
       )+
       '<p class="hint">'+tr('Nel passo successivo puoi ancora cambiare riga per riga: c\'è un pulsante per passare da spesa a entrata.')+'</p>'+
       '<button class="btn-primary full-width" id="impNext2">Continua</button>'+
-      '<button class="btn-secondary full-width" id="impBack2">'+tr('Indietro')+'</button></div>';
+      '<button class="btn-secondary full-width" id="impBack2" data-back="1">'+tr('Indietro')+'</button></div>';
   }
 
   function typeFromColumn(v,val){
@@ -6729,6 +6804,7 @@ function openImportModal(){
   }
   function buildParsed(){
     var out=[];
+    imp.dateFails=0;
     imp.sheets.forEach(function(sh){parseSheet(sh,out);});
     imp.parsed=out;
   }
@@ -6736,6 +6812,9 @@ function openImportModal(){
     var rows=sh.rows||[];
     var hasHead=(sh===imp.refSheet)?imp.hasHeader:(sh.hasHeader!==false&&imp.hasHeader);
     var start=hasHead?1:0,m=mappingForSheet(sh),lastDate='';
+    /* Le date si leggono guardando tutta la colonna in una volta, non riga
+       per riga: solo cosi' si capisce se 06/07 e' 6 luglio o 7 giugno. */
+    var dc=readDateColumn(rows,start,m.date);
     for(var i=start;i<rows.length;i++){
       var cols=rows[i]||[];
       var type,amount;
@@ -6758,38 +6837,218 @@ function openImportModal(){
         else type=ra<0?'expense':'income';
         amount=Math.abs(ra);
       }
-      var date=parseDateFlexible(cols[m.date]);
-      if(!date&&lastDate)date=lastDate;
-      if(!date)date=todayISO();
+      var rawDate=String(cols[m.date]==null?'':cols[m.date]).trim();
+      var date=dc.dates[i-start]||null;
+      var dateOk=!!date;
+      if(!date){
+        /* Cella vuota: e' la classica riga di continuazione, eredita la data
+           di sopra. Cella PIENA ma illeggibile: e' un problema vero e va
+           segnalato, non nascosto dietro la data di oggi. */
+        if(!rawDate&&lastDate){date=lastDate;dateOk=true;}
+        else{date=lastDate||todayISO();imp.dateFails++;}
+      }
       lastDate=date;
       var desc=String(cols[m.description]==null?'':cols[m.description]).trim();
       if(sh.forced)type=sh.forced;   // foglio "Spese" o "Entrate": decide lui
       out.push({id:uid('imp'),date:date,desc:desc,amount:amount,include:true,type:type,
-                sheet:sh.name||'',categoryId:guessCat(desc,type)});
+                sheet:sh.name||'',raw:cols,head:hasHead?(rows[0]||null):null,
+                dateOk:dateOk,rawDate:rawDate,
+                mkey:merchantKey(desc),categoryId:guessCat(desc,type)});
     }
   }
 
   /* ---------- passo 3: anteprima ---------- */
   function catOptsGrouped(sel){return'<optgroup label="Spese">'+catsByType('expense').map(function(c){return'<option value="'+c.id+'" '+(c.id===sel?'selected':'')+'>'+esc(c.emoji)+' '+esc(c.name)+'</option>';}).join('')+'</optgroup><optgroup label="Entrate">'+catsByType('income').map(function(c){return'<option value="'+c.id+'" '+(c.id===sel?'selected':'')+'>'+esc(c.emoji)+' '+esc(c.name)+'</option>';}).join('')+'</optgroup>';}
+  /* Quante righe condividono lo stesso esercente: serve sia per il contatore
+     "x12" accanto alla riga, sia per propagare la categoria. */
+  function groupKey(r){return r.mkey?(r.type+'|'+r.mkey):'';}
+  function buildGroups(){
+    var g={};
+    imp.parsed.forEach(function(r){var k=groupKey(r);if(k)g[k]=(g[k]||0)+1;});
+    imp._groups=g;
+  }
+  function impCounts(){
+    var cnt=0,inc=0;
+    imp.parsed.forEach(function(r){if(r.include){cnt++;if(r.type==='income')inc++;}});
+    return{cnt:cnt,inc:inc,exp:cnt-inc};
+  }
+  function impRowHTML(r,i){
+    var n=(imp._groups&&imp._groups[groupKey(r)])||1;
+    return'<div class="import-row-item'+(r.include?'':' is-off')+'" data-row="'+i+'">'+
+      '<div class="imp-line1">'+
+        '<input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'>'+
+        '<span class="imp-date'+(r.dateOk===false?' imp-date-bad':'')+'">'+(r.dateOk===false?'⚠ ':'')+formatShortDate(r.date)+'</span>'+
+        '<span class="imp-desc" data-info="'+i+'">'+esc(r.desc||'—')+'</span>'+
+        '<span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span>'+
+      '</div>'+
+      '<div class="imp-line2">'+
+        '<button class="chip imp-flip" data-flip="'+i+'">'+(r.type==='income'?tr('Entrata'):tr('Spesa'))+'</button>'+
+        '<select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select>'+
+        (n>1?'<span class="imp-grp" data-info="'+i+'">×'+n+'</span>':'')+
+        (r.sheet&&imp.sheets.length>1?'<span class="imp-sheet">'+esc(r.sheet)+'</span>':'')+
+        '<button class="imp-info" data-info="'+i+'" aria-label="'+tr('Dettagli')+'">i</button>'+
+      '</div>'+
+    '</div>';
+  }
   function step3(){
-    var cnt=imp.parsed.filter(function(r){return r.include;}).length;
-    var inc=imp.parsed.filter(function(r){return r.include&&r.type==='income';}).length;
+    buildGroups();
+    var c=impCounts();
     return'<div class="sheet">'+stepDots()+'<h3 style="margin:4px 0 0;">'+tr('Controlla e importa')+'</h3>'+
-      '<p class="hint">'+imp.parsed.length+' righe · <strong id="impCnt">'+cnt+'</strong> pronte per "'+esc(accById(imp.accountId).name)+'" ('+inc+' entrate, '+(cnt-inc)+' spese). Le categorie sono assegnate in automatico dalla descrizione — puoi cambiarle qui, e tocca <strong>S/E</strong> per invertire spesa/entrata.</p>'+
+      '<p class="hint">'+imp.parsed.length+' '+tr('righe')+' · <strong id="impCnt">'+c.cnt+'</strong> '+tr('pronte per')+' "'+esc(accById(imp.accountId).name)+'" (<span id="impInc">'+c.inc+'</span> '+tr('entrate')+', <span id="impExp">'+c.exp+'</span> '+tr('spese')+'). '+tr('Tocca la descrizione o il tasto <strong>i</strong> per vedere tutti i dettagli della riga.')+'</p>'+
+      (imp.dateFails?'<p class="hint" style="color:var(--red);">⚠️ '+imp.dateFails+' '+tr('righe senza data leggibile: hanno preso la data della riga precedente o quella di oggi. Torna indietro e controlla la colonna data.')+'</p>':'')+
+      '<label class="toggle-row"><span>'+tr('Cambiando categoria, aggiorna tutte le righe dello stesso esercente')+'</span><input type="checkbox" id="impApplyAll" '+(imp.applyAll===false?'':'checked')+'></label>'+
       '<div class="card import-table">'+(imp.parsed.length?imp.parsed.map(function(r,i){
-        return'<div class="import-row-item"><input type="checkbox" data-inc="'+i+'" '+(r.include?'checked':'')+'>'+
-          '<span class="imp-date">'+formatShortDate(r.date)+'</span>'+
-          '<span class="imp-desc">'+esc(r.desc||'—')+(r.sheet&&imp.sheets.length>1?' <em style="opacity:.6;">['+esc(r.sheet)+']</em>':'')+'</span>'+
-          '<button class="chip" data-flip="'+i+'" style="padding:2px 8px;font-size:11px;">'+(r.type==='income'?'E':'S')+'</button>'+
-          '<span class="imp-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</span>'+
-          '<select data-cat="'+i+'">'+catOptsGrouped(r.categoryId)+'</select></div>';
+        return impRowHTML(r,i);
       }).join(''):'<p class="empty-note">'+tr('Nessuna riga valida: torna indietro e controlla le colonne.')+'</p>')+'</div>'+
-      '<button class="btn-primary full-width" id="impConfirm" '+(cnt?'':'disabled')+'>Importa '+cnt+' movimenti</button>'+
-      '<button class="btn-secondary full-width" id="impBack3">'+tr('Indietro')+'</button></div>';
+      '<button class="btn-primary full-width" id="impConfirm" '+(c.cnt?'':'disabled')+'>'+tr('Importa')+' '+c.cnt+' '+tr('movimenti')+'</button>'+
+      '<button class="btn-secondary full-width" id="impBack3" data-back="1">'+tr('Indietro')+'</button></div>';
+  }
+
+  /* ---------- finestrella dei dettagli di una riga ---------- */
+  function impDetailHTML(i){
+    var r=imp.parsed[i];
+    if(!r)return '';
+    var head=r.head||[],kv='';
+    (r.raw||[]).forEach(function(v,ci){
+      var val=String(v==null?'':v).trim();
+      if(!val)return;
+      var lab=String(head[ci]||'').trim()||(tr('Colonna')+' '+(ci+1));
+      kv+='<div class="imp-kv"><span>'+esc(lab)+'</span><strong>'+esc(val)+'</strong></div>';
+    });
+    if(!kv)kv='<div class="imp-kv"><span>'+tr('Riga originale')+'</span><strong>—</strong></div>';
+    var n=(imp._groups&&imp._groups[groupKey(r)])||1;
+    var cat=catById(r.categoryId);
+    return'<div class="imp-detail-wrap" id="impDetailWrap">'+
+      '<div class="imp-detail-back" id="impDetailBack"></div>'+
+      '<div class="imp-detail-box">'+
+        '<h3 style="margin:0;">'+tr('Dettagli del movimento')+'</h3>'+
+        '<p class="imp-detail-desc">'+esc(r.desc||'—')+'</p>'+
+        '<div class="imp-detail-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'−')+fmt(r.amount)+'</div>'+
+        '<div class="imp-kv"><span>'+tr('Data')+'</span><strong>'+esc(formatDayHeader(r.date)+' '+r.date.slice(0,4))+
+          (r.dateOk===false?'<br><span style="color:var(--red);font-weight:600;">⚠️ '+tr('data non riconosciuta')+(r.rawDate?': "'+esc(r.rawDate)+'"':'')+'</span>':'')+'</strong></div>'+
+        '<div class="imp-kv"><span>'+tr('Tipo')+'</span><strong>'+(r.type==='income'?tr('Entrata'):tr('Spesa'))+'</strong></div>'+
+        '<div class="imp-kv"><span>'+tr('Categoria')+'</span><strong>'+esc(cat.emoji+' '+cat.name)+'</strong></div>'+
+        '<div class="imp-kv"><span>'+tr('Esercente riconosciuto')+'</span><strong>'+esc(merchantLabel(r.desc)||tr('non riconosciuto'))+'</strong></div>'+
+        '<div class="imp-kv"><span>'+tr('Righe che cambiano insieme')+'</span><strong>'+n+'</strong></div>'+
+        (r.sheet?'<div class="imp-kv"><span>'+tr('Foglio')+'</span><strong>'+esc(r.sheet)+'</strong></div>':'')+
+        '<div class="imp-kv"><span>'+tr('Nel conto')+'</span><strong>'+esc(accById(imp.accountId).name)+'</strong></div>'+
+        '<h4 class="imp-detail-h4">'+tr('Come era scritto nel file')+'</h4>'+
+        kv+
+        '<div class="field-group" style="margin-top:10px;"><label class="field-label">'+tr('Cambia categoria')+'</label>'+
+          '<select class="select" id="impDetailCat">'+catOptsGrouped(r.categoryId)+'</select></div>'+
+        '<button class="btn-secondary full-width" id="impDetailFlip">'+(r.type==='income'?tr('Trasforma in spesa'):tr('Trasforma in entrata'))+'</button>'+
+        '<button class="btn-secondary full-width" id="impDetailSkip">'+(r.include?tr('Escludi questa riga'):tr('Includi questa riga'))+'</button>'+
+        '<button class="btn-primary full-width" id="impDetailClose">'+tr('Chiudi')+'</button>'+
+      '</div></div>';
+  }
+  function closeImpDetail(){
+    var w=document.getElementById('impDetailWrap');
+    if(w&&w.parentNode)w.parentNode.removeChild(w);
+  }
+  /* La finestrella si AGGIUNGE al modale senza ridisegnarlo: cosi' la lunga
+     lista dietro non perde la posizione di scorrimento. */
+  function openImpDetail(i){
+    closeImpDetail();
+    var root=document.getElementById('modal-root');
+    if(!root)return;
+    root.insertAdjacentHTML('beforeend',impDetailHTML(i));
+    document.getElementById('impDetailBack').onclick=closeImpDetail;
+    document.getElementById('impDetailClose').onclick=closeImpDetail;
+    document.getElementById('impDetailCat').onchange=function(e){
+      applyCategory(i,e.target.value);
+      closeImpDetail();openImpDetail(i);
+    };
+    document.getElementById('impDetailFlip').onclick=function(){
+      flipRow(i);closeImpDetail();openImpDetail(i);
+    };
+    document.getElementById('impDetailSkip').onclick=function(){
+      var r=imp.parsed[i];
+      r.include=!r.include;
+      refreshRow(i);refreshCounts();
+      closeImpDetail();openImpDetail(i);
+    };
+  }
+
+  /* ---------- modifiche riga per riga (senza ridisegnare tutta la lista) ---------- */
+  function refreshRow(i){
+    var el=document.querySelector('.import-row-item[data-row="'+i+'"]');
+    if(!el)return;
+    var box=document.createElement('div');
+    box.innerHTML=impRowHTML(imp.parsed[i],i);
+    var nu=box.firstChild;
+    el.parentNode.replaceChild(nu,el);
+    wireRow(nu);
+  }
+  function refreshCounts(){
+    var c=impCounts();
+    var a=document.getElementById('impCnt');if(a)a.textContent=c.cnt;
+    var b=document.getElementById('impInc');if(b)b.textContent=c.inc;
+    var d=document.getElementById('impExp');if(d)d.textContent=c.exp;
+    var btn=document.getElementById('impConfirm');
+    if(btn){btn.disabled=!c.cnt;btn.textContent=tr('Importa')+' '+c.cnt+' '+tr('movimenti');}
+  }
+  function flipRow(i){
+    var r=imp.parsed[i];
+    r.type=r.type==='income'?'expense':'income';
+    r.categoryId=guessCat(r.desc,r.type);
+    buildGroups();
+    refreshRow(i);refreshCounts();
+  }
+  /* Cuore della modifica: cambiando categoria a una riga, se l'interruttore e'
+     acceso la stessa categoria va a TUTTE le righe dello stesso esercente che
+     hanno lo stesso verso (spesa o entrata), e la scelta viene ricordata per
+     gli import futuri. */
+  function applyCategory(i,catId){
+    var r=imp.parsed[i];
+    if(!r)return;
+    var cat=catById(catId);
+    var wasType=r.type;
+    var targets=[i];
+    if(imp.applyAll!==false&&r.mkey){
+      targets=[];
+      imp.parsed.forEach(function(x,j){
+        if(x.mkey===r.mkey&&(j===i||x.type===wasType))targets.push(j);
+      });
+    }
+    var flips=(wasType!==cat.type);
+    targets.forEach(function(j){
+      imp.parsed[j].categoryId=catId;
+      imp.parsed[j].type=cat.type;
+      imp.parsed[j].touched=true;   // scelta esplicita: solo queste fanno regola
+    });
+    setMerchantRule(r.desc,cat.type,catId);
+    if(flips){
+      /* Il verso e' cambiato: vanno ridisegnate le righe (segno, colore, chip). */
+      buildGroups();
+      targets.forEach(refreshRow);
+    }else{
+      /* Solo la categoria: basta spostare il menu a tendina. Su un estratto
+         conto di centinaia di righe evita di ricostruire mezza lista. */
+      targets.forEach(function(j){
+        var se=document.querySelector('.import-row-item[data-row="'+j+'"] select[data-cat]');
+        if(se)se.value=catId;
+      });
+    }
+    refreshCounts();
+    if(targets.length>1){
+      showToast(tr('Categoria applicata a')+' '+targets.length+' '+tr('righe di')+' “'+(merchantLabel(r.desc)||tr('questo esercente'))+'”');
+    }
+  }
+  function wireRow(el){
+    var i=+el.dataset.row;
+    var c=el.querySelector('[data-inc]');
+    if(c)c.onchange=function(){imp.parsed[i].include=c.checked;refreshRow(i);refreshCounts();};
+    var f=el.querySelector('[data-flip]');
+    if(f)f.onclick=function(){flipRow(i);};
+    var se=el.querySelector('[data-cat]');
+    if(se)se.onchange=function(){applyCategory(i,se.value);};
+    el.querySelectorAll('[data-info]').forEach(function(b){
+      b.onclick=function(ev){ev.preventDefault();openImpDetail(+b.dataset.info);};
+    });
   }
 
   async function readFile(f){
-    imp.busy=true;imp.error='';imp.warn='';imp.fileName=f.name;imp.analyzed=false;imp.rawLines=[];renderStep();
+    imp.busy=true;imp.error='';imp.warn='';imp.fileName=f.name;imp.analyzed=false;renderStep();
     var name=(f.name||'').toLowerCase();
     try{
       if(/\.xlsx$/.test(name)||(f.type||'').indexOf('spreadsheetml')>-1){
@@ -6800,15 +7059,10 @@ function openImportModal(){
         imp.rows=imp.refSheet.rows;
         imp.hasHeader=true;imp.rawText='';
       }else if(/\.pdf$/.test(name)||f.type==='application/pdf'){
-        imp.source='pdf';
-        var groups=await pdfToGroups(await f.arrayBuffer());
-        imp.rawLines=groups.map(function(g){return g.items.map(function(it){return it.t;}).join(' ');});
-        var rows=pdfGroupsToRows(groups);
-        var good=rows.filter(function(r){return r[0]&&(r[2]||r[3]||r[4]);}).length;
-        if(good<2)rows=pdfLinesToRows(imp.rawLines);
-        if(!rows.length)throw new Error(tr('Nel PDF non ho trovato righe con data e importo.'));
-        imp.rows=[['Data','Descrizione','Importo 1','Importo 2','Importo 3']].concat(rows);
-        imp.hasHeader=true;imp.rawText='';
+        /* L'import da PDF e' stato rimosso: i PDF delle banche sono impaginati
+           in mille modi diversi e il risultato era troppo spesso sbagliato.
+           CSV ed Excel danno dati puliti. */
+        throw new Error(tr('I PDF non si possono importare. Scarica dalla banca il file CSV o Excel (.xlsx) degli stessi movimenti.'));
       }else{
         imp.source='csv';
         var text=await f.text();
@@ -6866,19 +7120,17 @@ function openImportModal(){
       document.getElementById('impNext2').onclick=function(){buildParsed();imp.step=3;renderStep();};
       document.getElementById('impBack2').onclick=function(){imp.step=1;renderStep();};
     }else{
-      document.querySelectorAll('[data-inc]').forEach(function(c){c.onchange=function(){imp.parsed[+c.dataset.inc].include=c.checked;renderStep();};});
-      document.querySelectorAll('[data-flip]').forEach(function(b){b.onclick=function(){
-        var r=imp.parsed[+b.dataset.flip];
-        r.type=r.type==='income'?'expense':'income';
-        r.categoryId=guessCat(r.desc,r.type);
-        renderStep();
-      };});
-      document.querySelectorAll('[data-cat]').forEach(function(s){s.onchange=function(){var idx=+s.dataset.cat,cat=catById(s.value);imp.parsed[idx].categoryId=s.value;imp.parsed[idx].type=cat.type;renderStep();};});
-      document.getElementById('impBack3').onclick=function(){imp.step=2;renderStep();};
+      var ap=document.getElementById('impApplyAll');
+      if(ap)ap.onchange=function(){imp.applyAll=ap.checked;};
+      document.querySelectorAll('.import-row-item[data-row]').forEach(wireRow);
+      document.getElementById('impBack3').onclick=function(){closeImpDetail();imp.step=2;renderStep();};
       document.getElementById('impConfirm').onclick=function(){
         var chosen=imp.parsed.filter(function(r){return r.include;});
         chosen.forEach(function(r){state.transactions.push({id:uid('tx'),type:r.type,amount:r.amount,accountId:imp.accountId,categoryId:r.categoryId,merchant:'',note:r.desc,date:r.date,tags:[],createdAt:Date.now(),source:'import'});});
-        saveState();closeModal();showToast('Importati '+chosen.length+' movimenti');renderActiveTab();
+        /* Diventano regola per il futuro SOLO le categorie scelte a mano: le
+           ipotesi automatiche non devono cementarsi. */
+        chosen.forEach(function(r){if(r.touched)setMerchantRule(r.desc,r.type,r.categoryId);});
+        saveState();closeImpDetail();closeModal();showToast(tr('Importati')+' '+chosen.length+' '+tr('movimenti'));renderActiveTab();
       };
     }
   }
@@ -6977,7 +7229,7 @@ function requestRecNotifPermission(cb){
   if(Notification.permission==='granted'){if(cb)cb(true);return;}
   if(Notification.permission==='denied'){showToast(tr('Le notifiche sono bloccate: attivale dalle impostazioni del telefono per questa app'));if(cb)cb(false);return;}
   Notification.requestPermission().then(function(p){
-    if(p==='granted'){showToast('Notifiche attivate');checkRecurringDue(true);}
+    if(p==='granted'){showToast(tr('Notifiche attivate'));checkRecurringDue(true);}
     else showToast(tr('Notifiche non attivate'));
     if(cb)cb(p==='granted');
     renderActiveTab();
@@ -7418,7 +7670,7 @@ function openRecurringSheet(opts){
     document.querySelectorAll('[data-rc-acc]').forEach(function(b){b.onclick=function(){m.accountId=b.dataset.rcAcc;document.querySelectorAll('[data-rc-acc]').forEach(function(q){q.classList.toggle('selected',q===b);});};});
     wireCats();
     var pn=document.getElementById('rcPayNow');if(pn)pn.onclick=function(){closeModal();payRecurring(m.id);};
-    var db=document.getElementById('rcDelBtn');if(db)db.onclick=function(){confirmDialog('Eliminare il ricorrente "'+esc(m.name)+'"? I movimenti già registrati restano nello storico.',function(){state.recurring=state.recurring.filter(function(r){return r.id!==m.id;});saveState();closeModal();showToast('Ricorrente eliminato');renderActiveTab();},'Elimina');};
+    var db=document.getElementById('rcDelBtn');if(db)db.onclick=function(){confirmDialog(tr('Eliminare il ricorrente')+' "'+esc(m.name)+'"? I movimenti già registrati restano nello storico.',function(){state.recurring=state.recurring.filter(function(r){return r.id!==m.id;});saveState();closeModal();showToast(tr('Ricorrente eliminato'));renderActiveTab();},'Elimina');};
     var sv=document.getElementById('rcSave');if(sv)sv.onclick=function(){
       var name=(m.name||'').trim();if(!name){showToast(tr('Dai un nome al ricorrente'));return;}
       var amount=parseAmount(String(m.amountStr).replace(',','.'));if(!(amount>0)){showToast(tr('Inserisci un importo valido'));return;}
@@ -7433,6 +7685,96 @@ function openRecurringSheet(opts){
 }
 
 /* ================================================================
+   GESTO "INDIETRO": si trascina dal bordo sinistro verso destra e si
+   torna di un passo, come su iPhone. La zona sensibile e' larga 44px
+   (comoda col pollice, senza rubare tocchi al resto della schermata) e
+   il gesto si conferma dopo 70px. Cosa vuol dire "un passo" dipende da
+   dov'e' l'utente: si chiude prima la cosa piu' interna.
+================================================================ */
+var EDGE_ZONE=44,EDGE_TRIGGER=70;
+/* L'elemento che segue il dito durante il trascinamento. */
+function edgeBackTarget(){
+  var d=document.getElementById('impDetailWrap');
+  if(d)return d.querySelector('.imp-detail-box')||d;
+  var m=document.getElementById('modal-root');
+  if(m&&m.classList.contains('open'))return m.querySelector('.sheet-wrap')||m.querySelector('.confirm-wrap');
+  var ip=document.getElementById('invPage');
+  if(ip)return ip;
+  return document.getElementById('content');
+}
+function goBackOneStep(){
+  /* 1. finestrella dei dettagli dell'import */
+  var d=document.getElementById('impDetailWrap');
+  if(d){if(d.parentNode)d.parentNode.removeChild(d);return true;}
+  /* 2. foglio aperto: se ha un passo precedente ci torna, altrimenti si chiude */
+  var m=document.getElementById('modal-root');
+  if(m&&m.classList.contains('open')){
+    var b=m.querySelector('[data-back]');
+    if(b){b.click();return true;}
+    closeModal();return true;
+  }
+  /* 3. pagina Investimenti: dal dettaglio alla lista, poi si esce */
+  var ip=document.getElementById('invPage');
+  if(ip){
+    var ib=document.getElementById('ipBack');
+    if(ib){ib.click();return true;}
+    closeInvestPage();return true;
+  }
+  /* 4. altrimenti: scheda precedente */
+  var i=TAB_ORDER.indexOf(ui.activeTab);
+  if(i>0){ui.activeTab=TAB_ORDER[i-1];renderActiveTab('right');return true;}
+  return false;
+}
+function initEdgeBack(){
+  var startX=0,startY=0,active=false,decided=false,dx=0,el=null;
+  function reset(){
+    if(el){el.style.transition='';el.style.transform='';el.style.opacity='';}
+    active=false;decided=false;dx=0;el=null;ui._edgeSwipe=false;
+  }
+  /* In fase di CATTURA: cosi' arriva prima dello swipe tra schede e puo'
+     zittirlo, evitando di fare due passi indietro insieme. */
+  document.addEventListener('touchstart',function(e){
+    reset();
+    if(e.touches.length!==1)return;
+    var t=e.target;
+    if(t&&t.closest&&t.closest('.carousel,.chip-row,.keypad,input,select,textarea'))return;
+    if(e.touches[0].clientX>EDGE_ZONE)return;
+    startX=e.touches[0].clientX;startY=e.touches[0].clientY;
+    active=true;ui._edgeSwipe=true;
+  },{passive:true,capture:true});
+  document.addEventListener('touchmove',function(e){
+    if(!active)return;
+    dx=e.touches[0].clientX-startX;
+    var dy=e.touches[0].clientY-startY;
+    if(!decided){
+      if(Math.abs(dx)<8&&Math.abs(dy)<8)return;
+      decided=true;
+      if(!(dx>0&&Math.abs(dx)>Math.abs(dy))){reset();return;}
+      el=edgeBackTarget();
+      if(!el){reset();return;}
+    }
+    if(!el)return;
+    if(e.cancelable)e.preventDefault();
+    el.style.transition='none';
+    el.style.transform='translateX('+Math.min(dx,170)+'px)';
+    el.style.opacity=String(Math.max(0.5,1-dx/450));
+  },{passive:false,capture:true});
+  document.addEventListener('touchend',function(){
+    if(!active||!el){reset();return;}
+    var target=el,go=dx>=EDGE_TRIGGER;
+    active=false;ui._edgeSwipe=false;el=null;decided=false;dx=0;
+    target.style.transition='transform .2s var(--ease-out),opacity .2s var(--ease-out)';
+    target.style.transform=go?'translateX(70px)':'';
+    target.style.opacity=go?'0':'';
+    setTimeout(function(){
+      target.style.transition='';target.style.transform='';target.style.opacity='';
+      if(go)goBackOneStep();
+    },go?170:210);
+  },{passive:true,capture:true});
+  document.addEventListener('touchcancel',reset,{passive:true,capture:true});
+}
+
+/* ================================================================
    GESTI: swipe tra schede + pull-to-refresh + chiusura fogli
 ================================================================ */
 function initSwipeTabs(){
@@ -7440,6 +7782,7 @@ function initSwipeTabs(){
   var sx=0,sy=0,tracking=false,horiz=null;
   c.addEventListener('touchstart',function(e){
     if(e.touches.length!==1)return;
+    if(ui._edgeSwipe)return;   // sta partendo il gesto "indietro" dal bordo
     if(document.getElementById('modal-root').classList.contains('open'))return;
     var t=e.target;
     if(t.closest&&t.closest('.chip-row,.carousel,input,select,textarea,.month-table,.keypad'))return;
@@ -7482,7 +7825,7 @@ async function doRefresh(){
     ptr.classList.remove('refreshing');
     ptr.classList.add('hiding');
     setTimeout(function(){ptr.classList.remove('hiding');},320);
-    showToast('Aggiornato');
+    showToast(tr('Aggiornato'));
   },Math.max(0,650-(Date.now()-t0)));
 }
 function initPullToRefresh(){
@@ -7603,6 +7946,7 @@ async function init(){
   initSwipeTabs();
   initPullToRefresh();
   initSheetDismiss();
+  initEdgeBack();
   var hasWorkingStorage=usingClaudeStorage||(function(){try{window.localStorage.setItem('__t','1');window.localStorage.removeItem('__t');return true;}catch(e){return false;}})();
   if(!hasWorkingStorage)showToast(tr('Salvataggio non disponibile in questa sessione'));
   if(!usingClaudeStorage&&'serviceWorker' in navigator){
