@@ -18,22 +18,27 @@ import com.getcapacitor.BridgeActivity;
  *     parte l'azione richiesta, che la pagina web legge poi con consumeAction();
  *  3. gestisce il tasto e il gesto INDIETRO di Android.
  *
- * Sul punto 3. Senza il plugin @capacitor/app, Capacitor non chiede niente
- * alla pagina quando si preme indietro: chiude direttamente l'activity, cioe'
- * l'app. Per questo il gesto di sistema usciva da Spendy invece di chiudere il
- * foglio aperto.
+ * Sul punto 3. Senza il plugin @capacitor/app, Capacitor non chiede niente alla
+ * pagina quando si preme indietro: chiude direttamente l'app. Qui invece
+ * CHIEDIAMO ALLA PAGINA cosa fare, eseguendo window.spendyHandleBack():
+ * risponde "1" se ha chiuso un livello (e allora restiamo dentro), "0" se non
+ * c'era niente da chiudere (e allora si esce davvero).
  *
- * Qui registriamo il nostro gestore, che CHIEDE ALLA PAGINA cosa fare
- * eseguendo window.spendyHandleBack(). Quella funzione chiude un livello e
- * risponde "1"; se non c'era niente da chiudere risponde "0" e allora si esce
- * davvero. Non ci si affida piu' alla cronologia del WebView, che in alcune
- * configurazioni non risulta navigabile: si chiede direttamente all'app.
+ * Attenzione a DOVE si registra il gestore. Android consulta i gestori
+ * dall'ultimo registrato al primo. Registrandolo una sola volta all'avvio, al
+ * ritorno da un'altra app il gestore di Capacitor finiva davanti al nostro e
+ * l'app tornava a chiudersi: e' il motivo per cui prima funzionava solo alla
+ * prima apertura. Per questo lo registriamo di nuovo a OGNI ritorno in primo
+ * piano (onResume), togliendo prima quello vecchio: cosi' il nostro e' sempre
+ * l'ultimo, quindi sempre il primo a essere consultato.
  */
 public class MainActivity extends BridgeActivity {
 
-    /** Codice eseguito nella pagina: risponde "1" se ha chiuso qualcosa. */
+    /** Codice eseguito dentro la pagina: risponde "1" se ha chiuso qualcosa. */
     private static final String ASK_PAGE =
         "(function(){try{return (window.spendyHandleBack && window.spendyHandleBack())?'1':'0';}catch(e){return '0';}})()";
+
+    private OnBackPressedCallback backCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,61 +48,82 @@ public class MainActivity extends BridgeActivity {
         installBackHandler();
     }
 
-    /**
-     * I gestori aggiunti dopo hanno la precedenza su quelli gia' registrati,
-     * quindi questo viene consultato prima di quello standard di Capacitor.
-     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Rimette il nostro gestore in cima alla pila a ogni ritorno nell'app.
+        installBackHandler();
+    }
+
     private void installBackHandler() {
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                final OnBackPressedCallback self = this;
-                WebView found = null;
-                try {
-                    if (getBridge() != null) found = getBridge().getWebView();
-                } catch (Exception e) {
-                    found = null;
+        try {
+            if (backCallback != null) {
+                backCallback.remove();
+                backCallback = null;
+            }
+            backCallback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    handleBack();
                 }
-                if (found == null) {
-                    exitApp(self);
-                    return;
-                }
-                final WebView webView = found;
-                try {
-                    webView.evaluateJavascript(ASK_PAGE, new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String value) {
-                            if (value != null && value.contains("1")) {
-                                // La pagina ha chiuso un livello: restiamo dentro l'app.
-                                return;
-                            }
-                            // Riserva: se la pagina non risponde ma ha una
-                            // cronologia, torniamo indietro di una tappa.
-                            if (webView.canGoBack()) {
-                                webView.goBack();
-                                return;
-                            }
-                            exitApp(self);
-                        }
-                    });
-                } catch (Exception e) {
+            };
+            // Senza LifecycleOwner: la gestiamo noi in onResume, cosi' nessuno
+            // puo' toglierla o rimetterla in coda a nostra insaputa.
+            getOnBackPressedDispatcher().addCallback(backCallback);
+        } catch (Exception e) {
+            // Se qualcosa va storto resta il comportamento standard.
+        }
+    }
+
+    private void handleBack() {
+        WebView found = null;
+        try {
+            if (getBridge() != null) found = getBridge().getWebView();
+        } catch (Exception e) {
+            found = null;
+        }
+        if (found == null) {
+            exitApp();
+            return;
+        }
+        final WebView webView = found;
+        try {
+            webView.evaluateJavascript(ASK_PAGE, new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    if (value != null && value.contains("1")) {
+                        // La pagina ha chiuso un livello: restiamo nell'app.
+                        return;
+                    }
+                    // Riserva: se la pagina non risponde ma ha una cronologia,
+                    // torniamo indietro di una tappa.
                     if (webView.canGoBack()) {
                         webView.goBack();
-                    } else {
-                        exitApp(self);
+                        return;
                     }
+                    exitApp();
                 }
+            });
+        } catch (Exception e) {
+            if (webView.canGoBack()) {
+                webView.goBack();
+            } else {
+                exitApp();
             }
-        });
+        }
     }
 
     /**
-     * Uscita vera: si disattiva il nostro gestore e si lascia proseguire il
-     * comportamento normale, altrimenti si entrerebbe in un ciclo infinito.
+     * Uscita vera dall'app. Si chiude direttamente l'activity invece di
+     * disattivare il gestore e ripassare la palla: disattivarlo lo avrebbe
+     * messo fuori gioco anche per le volte successive.
      */
-    private void exitApp(OnBackPressedCallback callback) {
-        callback.setEnabled(false);
-        getOnBackPressedDispatcher().onBackPressed();
+    private void exitApp() {
+        try {
+            finish();
+        } catch (Exception e) {
+            // Nulla da fare: meglio non chiudere che schiantarsi.
+        }
     }
 
     /** Chiamata quando l'app era gia' aperta e si tocca un tasto del widget. */
