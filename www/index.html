@@ -1770,6 +1770,7 @@ Object.assign(TR.fr,{
 Object.assign(TR.en,{'Accedi con Apple':'Sign in with Apple'});
 /* --- grafico interattivo e menu' senza ridisegni (v43) --- */
 Object.assign(TR.en,{
+'ponte':'bridge',
 'Apri il grafico in grande':'Open the chart in full size',
 'Errore durante la creazione del file.':'Something went wrong while creating the file.',
 'Esportazione annullata.':'Export cancelled.',
@@ -1783,6 +1784,7 @@ Object.assign(TR.en,{
 'Dove vanno i tuoi soldi':'Where your money goes'
 });
 Object.assign(TR.es,{
+'ponte':'puente',
 'Apri il grafico in grande':'Abrir el gráfico en grande',
 'Errore durante la creazione del file.':'Error al crear el archivo.',
 'Esportazione annullata.':'Exportación cancelada.',
@@ -1796,6 +1798,7 @@ Object.assign(TR.es,{
 'Dove vanno i tuoi soldi':'Adónde va tu dinero'
 });
 Object.assign(TR.fr,{
+'ponte':'pont',
 'Apri il grafico in grande':'Ouvrir le graphique en grand',
 'Errore durante la creazione del file.':'Erreur lors de la création du fichier.',
 'Esportazione annullata.':'Export annulé.',
@@ -2672,7 +2675,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v43';
+var APP_VERSION='v44';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -5328,7 +5331,7 @@ function profileTabHTML(){
       menuRowHTML('menuPremiumTest','🧪','background:var(--amber-soft);color:var(--amber);font-size:15px;',tr('Premium (prova)'),isPremium()?tr('Attivo — funzioni sbloccate'):tr('Non attivo — piano gratuito'))+
     '</div>'+
     '<p class="profile-footer">Spendy · '+tr('versione installata:')+' <strong>'+APP_VERSION+'</strong><br>'+tr('i tuoi dati restano sul dispositivo')+
-      '<br><span style="opacity:.55;">'+tr('indietro')+': '+esc(backModeLabel())+' · '+esc(BACK_MODE)+'</span></p>'+
+      '<br><span style="opacity:.55;">'+tr('indietro')+': '+esc(backModeLabel())+' · '+tr('ponte')+' '+backBridgeCount()+'</span></p>'+
   '</div>';
 }
 function wireProfileTab(){
@@ -8404,9 +8407,32 @@ function requestBack(){
   if(histDepth>0){try{history.back();return true;}catch(e){}}
   return goBackOneStep();
 }
-/* Come sta arrivando l'indietro: serve solo per capire, se qualcosa non
-   funziona su un telefono, quale strada sta usando l'app. */
+/* ---- PONTE COL TASTO/GESTO INDIETRO DI ANDROID -------------------
+   Il gesto di sistema di Android non arriva mai alla pagina: lo intercetta
+   il sistema operativo e lo consegna all'app nativa. La MainActivity, a quel
+   punto, esegue questa funzione dentro la pagina per chiedere: "hai qualcosa
+   da chiudere?". Se rispondiamo di si', l'app resta aperta e noi chiudiamo un
+   livello; se rispondiamo di no, l'app si chiude come deve.
+   E' l'unica strada che non dipende dalla cronologia del WebView, che in
+   questa configurazione non risultava navigabile. */
 var BACK_MODE='web';
+var BACK_BRIDGE_KEY='spendy-back-bridge-v1';
+function backBridgeCount(){
+  try{return +(window.localStorage.getItem(BACK_BRIDGE_KEY)||0);}catch(e){return 0;}
+}
+/* Il conteggio si salva sul dispositivo perche' quando il ponte NON funziona
+   l'app si chiude: riaprendola, questo numero dice se Android ci aveva
+   davvero interpellati. */
+function bumpBackBridge(){
+  try{window.localStorage.setItem(BACK_BRIDGE_KEY,String(backBridgeCount()+1));}catch(e){}
+}
+window.spendyHandleBack=function(){
+  bumpBackBridge();
+  try{
+    if(layerDepth()>0){requestBack();return true;}
+  }catch(e){}
+  return false;
+};
 function backModeLabel(){
   if(window.Capacitor&&typeof Capacitor.isNativePlatform==='function'&&Capacitor.isNativePlatform())return 'app nativa';
   if(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)return 'app installata';
