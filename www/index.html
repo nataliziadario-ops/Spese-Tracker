@@ -2675,7 +2675,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v44';
+var APP_VERSION='v45';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -5331,7 +5331,7 @@ function profileTabHTML(){
       menuRowHTML('menuPremiumTest','🧪','background:var(--amber-soft);color:var(--amber);font-size:15px;',tr('Premium (prova)'),isPremium()?tr('Attivo — funzioni sbloccate'):tr('Non attivo — piano gratuito'))+
     '</div>'+
     '<p class="profile-footer">Spendy · '+tr('versione installata:')+' <strong>'+APP_VERSION+'</strong><br>'+tr('i tuoi dati restano sul dispositivo')+
-      '<br><span style="opacity:.55;">'+tr('indietro')+': '+esc(backModeLabel())+' · '+tr('ponte')+' '+backBridgeCount()+'</span></p>'+
+      '<br><span style="opacity:.55;">'+tr('indietro')+': '+esc(backModeLabel())+' · '+tr('ponte')+' '+backBridgeStats().calls+'/'+backBridgeStats().handled+'</span></p>'+
   '</div>';
 }
 function wireProfileTab(){
@@ -8416,22 +8416,50 @@ function requestBack(){
    E' l'unica strada che non dipende dalla cronologia del WebView, che in
    questa configurazione non risultava navigabile. */
 var BACK_MODE='web';
-var BACK_BRIDGE_KEY='spendy-back-bridge-v1';
-function backBridgeCount(){
-  try{return +(window.localStorage.getItem(BACK_BRIDGE_KEY)||0);}catch(e){return 0;}
-}
-/* Il conteggio si salva sul dispositivo perche' quando il ponte NON funziona
-   l'app si chiude: riaprendola, questo numero dice se Android ci aveva
-   davvero interpellati. */
-function bumpBackBridge(){
-  try{window.localStorage.setItem(BACK_BRIDGE_KEY,String(backBridgeCount()+1));}catch(e){}
-}
-window.spendyHandleBack=function(){
-  bumpBackBridge();
+var BACK_BRIDGE_KEY='spendy-back-bridge-v2';
+/* Due conteggi salvati sul dispositivo (l'app si chiude, quindi devono
+   sopravvivere): quante volte Android ci ha interpellati e quante volte
+   abbiamo risposto "ho chiuso qualcosa". Bastano per capire da che parte
+   guardare se qualcosa non va. */
+function backBridgeStats(){
   try{
-    if(layerDepth()>0){requestBack();return true;}
+    var raw=window.localStorage.getItem(BACK_BRIDGE_KEY);
+    if(!raw)return{calls:0,handled:0};
+    var o=JSON.parse(raw);
+    return{calls:+o.calls||0,handled:+o.handled||0};
+  }catch(e){return{calls:0,handled:0};}
+}
+function bumpBackBridge(handled){
+  try{
+    var st=backBridgeStats();
+    st.calls++;
+    if(handled)st.handled++;
+    window.localStorage.setItem(BACK_BRIDGE_KEY,JSON.stringify(st));
   }catch(e){}
-  return false;
+}
+/* Questa e' la funzione che la MainActivity esegue dentro la pagina quando su
+   Android si preme indietro. Deve essere impossibile da rompere: qualunque
+   errore imprevisto non deve tradursi in "chiudi l'app" se c'era qualcosa da
+   chiudere. */
+window.spendyHandleBack=function(){
+  var aperto=false;
+  try{aperto=layerDepth()>0;}catch(e){
+    /* Se il conteggio dei livelli fallisce, guardiamo direttamente lo schermo. */
+    try{
+      aperto=!!(document.getElementById('confirmLayer')||
+                document.getElementById('impDetailWrap')||
+                document.getElementById('invPage')||
+                (document.getElementById('modal-root')&&document.getElementById('modal-root').classList.contains('open'))||
+                (TAB_ORDER.indexOf(ui.activeTab)>0));
+    }catch(e2){aperto=false;}
+  }
+  if(!aperto){bumpBackBridge(false);return false;}
+  var fatto=false;
+  try{fatto=requestBack()!==false;}catch(e){
+    try{fatto=goBackOneStep();}catch(e2){fatto=false;}
+  }
+  bumpBackBridge(true);
+  return true;   // c'era qualcosa di aperto: l'app NON deve chiudersi
 };
 function backModeLabel(){
   if(window.Capacitor&&typeof Capacitor.isNativePlatform==='function'&&Capacitor.isNativePlatform())return 'app nativa';
