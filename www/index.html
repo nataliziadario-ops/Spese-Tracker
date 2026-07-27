@@ -230,14 +230,39 @@ main#content{flex:1;min-height:0;padding:8px 16px 132px;overflow-y:auto;-webkit-
 .saldo-pos{color:var(--accent);}
 .saldo-neg{color:var(--red);}
 /* ---------- Donut & legenda ---------- */
-.donut-section{display:flex;align-items:center;gap:20px;margin-top:8px;}
-.donut{width:112px;height:112px;flex-shrink:0;}
-.legend{list-style:none;margin:0;padding:0;flex:1;display:flex;flex-direction:column;gap:8px;}
-.legend-item{display:flex;align-items:center;gap:8px;font-size:12.5px;}
+.donut-section{display:flex;align-items:center;gap:14px;margin-top:8px;min-width:0;cursor:pointer;}
+.donut{width:104px;height:104px;flex-shrink:0;}
+/* min-width:0 ovunque: senza, i nomi lunghi non si accorciano e le percentuali
+   finiscono FUORI dal riquadro. */
+.legend{list-style:none;margin:0;padding:0;flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12.5px;min-width:0;}
 .legend-item .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-.legend-name{flex:1;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.legend-amount{font-variant-numeric:tabular-nums;font-weight:600;}
-.legend-pct{color:var(--ink-faint);font-size:11px;min-width:28px;text-align:right;font-variant-numeric:tabular-nums;}
+.legend-name{flex:1 1 auto;min-width:0;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.legend-amount{flex-shrink:0;font-variant-numeric:tabular-nums;font-weight:600;}
+.legend-pct{flex-shrink:0;color:var(--ink-faint);font-size:11px;min-width:26px;text-align:right;font-variant-numeric:tabular-nums;}
+@media (max-width:380px){
+  .donut{width:88px;height:88px;}
+  .donut-section{gap:10px;}
+  .legend-item{font-size:12px;gap:5px;}
+}
+/* Foglio "Dove vanno i soldi": grafico grande e voci toccabili. */
+.bd-donut-wrap{position:relative;width:200px;height:200px;margin:2px auto 6px;}
+.bd-donut{width:200px;height:200px;display:block;}
+.bd-donut circle{cursor:pointer;transition:opacity .18s ease;}
+.bd-donut circle.dim{opacity:.28;}
+.bd-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 34px;}
+.bd-center-emoji{font-size:22px;line-height:1;}
+.bd-center-name{font-size:12px;color:var(--ink-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+.bd-center-val{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px;}
+.bd-center-pct{font-size:11.5px;color:var(--ink-faint);}
+.bd-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.bd-row{display:flex;align-items:center;gap:9px;padding:10px 4px;border-bottom:1px solid var(--hairline);font-size:13px;min-width:0;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;color:var(--ink);cursor:pointer;}
+.bd-row:last-child{border-bottom:none;}
+.bd-row.on{background:var(--accent-soft);border-radius:10px;}
+.bd-row .dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.bd-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bd-amt{flex-shrink:0;font-variant-numeric:tabular-nums;font-weight:600;}
+.bd-pct{flex-shrink:0;width:38px;text-align:right;color:var(--ink-faint);font-size:11.5px;font-variant-numeric:tabular-nums;}
 .empty-note{font-size:13px;color:var(--ink-faint);text-align:center;padding:22px 0;}
 /* ---------- Avvisi budget ---------- */
 .alert-card{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:500;border:1px solid transparent;}
@@ -1743,6 +1768,46 @@ Object.assign(TR.fr,{
 'Collega la password':'Lier le mot de passe'
 });
 Object.assign(TR.en,{'Accedi con Apple':'Sign in with Apple'});
+/* --- grafico interattivo e menu' senza ridisegni (v43) --- */
+Object.assign(TR.en,{
+'Apri il grafico in grande':'Open the chart in full size',
+'Errore durante la creazione del file.':'Something went wrong while creating the file.',
+'Esportazione annullata.':'Export cancelled.',
+'Tocca una fetta o una voce per vederne i dettagli.':'Tap a slice or a row to see its details.',
+'Totale entrate':'Total income',
+'Totale spese':'Total spending',
+'altre':'more',
+'categorie':'categories',
+'indietro':'back',
+'tocca il grafico per vederlo in grande':'tap the chart to see it full size',
+'Dove vanno i tuoi soldi':'Where your money goes'
+});
+Object.assign(TR.es,{
+'Apri il grafico in grande':'Abrir el gráfico en grande',
+'Errore durante la creazione del file.':'Error al crear el archivo.',
+'Esportazione annullata.':'Exportación cancelada.',
+'Tocca una fetta o una voce per vederne i dettagli.':'Toca una porción o una fila para ver sus detalles.',
+'Totale entrate':'Total de ingresos',
+'Totale spese':'Total de gastos',
+'altre':'más',
+'categorie':'categorías',
+'indietro':'atrás',
+'tocca il grafico per vederlo in grande':'toca el gráfico para verlo en grande',
+'Dove vanno i tuoi soldi':'Adónde va tu dinero'
+});
+Object.assign(TR.fr,{
+'Apri il grafico in grande':'Ouvrir le graphique en grand',
+'Errore durante la creazione del file.':'Erreur lors de la création du fichier.',
+'Esportazione annullata.':'Export annulé.',
+'Tocca una fetta o una voce per vederne i dettagli.':'Touchez une part ou une ligne pour en voir les détails.',
+'Totale entrate':'Total des revenus',
+'Totale spese':'Total des dépenses',
+'altre':'autres',
+'categorie':'catégories',
+'indietro':'retour',
+'tocca il grafico per vederlo in grande':'touchez le graphique pour l\'agrandir',
+'Dove vanno i tuoi soldi':'Où va votre argent'
+});
 /* --- gesto indietro di sistema, gate premium, nuova disposizione (v42) --- */
 Object.assign(TR.en,{
 'Accedi a Spendy':'Sign in to Spendy',
@@ -2607,7 +2672,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v42';
+var APP_VERSION='v43';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3849,6 +3914,19 @@ function confirmDialog(msg,onOk,okLabel){
   if(bd)bd.onclick=chiudi;
   syncBackHistory();
 }
+/* Ridisegna il contenuto di un foglio MANTENENDO il punto in cui si stava
+   guardando. Senza questo, ogni tocco su un pulsante interno riportava la
+   pagina in cima: e' il "refresh di tutta la pagina" che si notava nei menu'. */
+function rerenderSheetWrap(html){
+  var w=document.querySelector('#modal-root .sheet-wrap');
+  if(!w)return null;
+  var old=w.querySelector('.sheet');
+  var y=old?old.scrollTop:0;
+  w.innerHTML=html;
+  var nu=w.querySelector('.sheet');
+  if(nu&&y)nu.scrollTop=y;
+  return w;
+}
 function closeConfirmLayer(){
   var l=document.getElementById('confirmLayer');
   if(l&&l.parentNode)l.parentNode.removeChild(l);
@@ -3887,6 +3965,112 @@ function renderActiveTab(dir){
 /* ================================================================
    SHARED SVG / ROWS
 ================================================================ */
+/* ================================================================
+   GRAFICO IN GRANDE — "Dove vanno i tuoi soldi"
+   Si apre toccando il grafico. Ogni fetta e ogni riga si possono toccare:
+   quella scelta si illumina, le altre si spengono, e al centro compaiono
+   categoria, importo e percentuale.
+================================================================ */
+function bdDonutSVG(bd,selId){
+  var sz=200,sw=34,r=(sz-sw)/2,ci=2*Math.PI*r,cx=sz/2,cy=sz/2;
+  if(!bd.length)return '<svg viewBox="0 0 '+sz+' '+sz+'" class="bd-donut"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--track)" stroke-width="'+sw+'"/></svg>';
+  var off=0,circles='',gapPx=bd.length>1?3:0;
+  bd.forEach(function(b){
+    var cat=catById(b.catId),full=(b.pct/100)*ci,len=Math.max(full-gapPx,1);
+    var dim=(selId&&b.catId!==selId)?' class="dim"':'';
+    var w=(selId&&b.catId===selId)?(sw+6):sw;
+    circles+='<circle'+dim+' data-slice="'+esc(b.catId)+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+colorHex(cat.color)+'" stroke-width="'+w+'" stroke-dasharray="'+len.toFixed(2)+' '+(ci-len).toFixed(2)+'" stroke-dashoffset="'+(-(off+gapPx/2)).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" stroke-linecap="butt"/>';
+    off+=full;
+  });
+  return '<svg viewBox="0 0 '+sz+' '+sz+'" class="bd-donut">'+circles+'</svg>';
+}
+function openBreakdownSheet(bd,titolo){
+  var sel=null;
+  bd=(bd||[]).slice();
+  var tot=bd.reduce(function(a,b){return a+b.total;},0);
+  function centerHTML(){
+    if(!sel){
+      return '<div class="bd-center"><div class="bd-center-name">'+(ui.breakdownType==='income'?tr('Totale entrate'):tr('Totale spese'))+'</div>'+
+        '<div class="bd-center-val">'+fmt(tot)+'</div>'+
+        '<div class="bd-center-pct">'+bd.length+' '+tr('categorie')+'</div></div>';
+    }
+    var b=bd.find(function(x){return x.catId===sel;});
+    if(!b)return '';
+    var c=catById(b.catId);
+    return '<div class="bd-center"><div class="bd-center-emoji">'+esc(c.emoji)+'</div>'+
+      '<div class="bd-center-name">'+esc(c.name)+'</div>'+
+      '<div class="bd-center-val">'+fmt(b.total)+'</div>'+
+      '<div class="bd-center-pct">'+b.pct.toFixed(1).replace('.',',')+'%</div></div>';
+  }
+  function listHTML(){
+    if(!bd.length)return '<p class="empty-note">'+tr('Nessun movimento.')+'</p>';
+    return '<ul class="bd-list">'+bd.map(function(b){
+      var c=catById(b.catId);
+      return '<li><button class="bd-row'+(sel===b.catId?' on':'')+'" data-slice="'+esc(b.catId)+'">'+
+        '<span class="dot" style="background:'+colorHex(c.color)+'"></span>'+
+        '<span class="bd-name">'+esc(c.emoji)+' '+esc(c.name)+'</span>'+
+        '<span class="bd-amt">'+fmt(b.total)+'</span>'+
+        '<span class="bd-pct">'+b.pct.toFixed(1).replace('.',',')+'%</span></button></li>';
+    }).join('')+'</ul>';
+  }
+  function sheetHTML(){
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">'+esc(titolo||tr('Dove vanno i tuoi soldi'))+'</h3>'+
+      '<p class="hint" style="margin:0;">'+tr('Tocca una fetta o una voce per vederne i dettagli.')+'</p>'+
+      '<div class="bd-donut-wrap" id="bdWrap">'+bdDonutSVG(bd,sel)+centerHTML()+'</div>'+
+      '<div class="card" style="padding:4px 12px;" id="bdList">'+listHTML()+'</div>'+
+      '<button class="btn-secondary full-width" id="bdClose">'+tr('Chiudi')+'</button>'+
+    '</div>';
+  }
+  /* Selezionare una fetta ridisegna solo grafico ed elenco, non il foglio. */
+  function scegli(id){
+    sel=(sel===id)?null:id;
+    var w=document.getElementById('bdWrap');
+    if(w)w.innerHTML=bdDonutSVG(bd,sel)+centerHTML();
+    var l=document.getElementById('bdList');
+    if(l)l.innerHTML=listHTML();
+    wire();
+  }
+  function wire(){
+    document.querySelectorAll('#modal-root [data-slice]').forEach(function(el){
+      el.onclick=function(){scegli(el.dataset.slice);};
+    });
+    var cl=document.getElementById('bdClose');if(cl)cl.onclick=closeModal;
+    var bdrop=document.getElementById('modalBackdrop');if(bdrop)bdrop.onclick=closeModal;
+  }
+  openModal(sheetHTML());
+  wire();
+}
+/* Il riquadro "dove vanno i soldi": lo stesso in Home e nello Storico, con i
+   dati che gli vengono passati. Toccandolo si apre la versione grande. */
+function breakdownLegendHTML(list){
+  if(!list.length)return '<p class="empty-note" style="flex:1;">'+tr('Nessun movimento.')+'</p>';
+  return '<ul class="legend">'+list.map(function(b){
+    var c=catById(b.catId);
+    return'<li class="legend-item"><span class="dot" style="background:'+colorHex(c.color)+'"></span>'+
+      '<span class="legend-name">'+esc(c.emoji)+' '+esc(c.name)+'</span>'+
+      '<span class="legend-amount">'+fmt(b.total)+'</span>'+
+      '<span class="legend-pct">'+b.pct.toFixed(0)+'%</span></li>';
+  }).join('')+'</ul>';
+}
+var LAST_BREAKDOWN={data:[],limit:0,annual:false};
+function breakdownSectionHTML(bd,limit,annual){
+  LAST_BREAKDOWN={data:bd,limit:limit||0,annual:!!annual};
+  var list=limit?bd.slice(0,limit):bd;
+  var resto=bd.length-list.length;
+  return '<section class="card" id="breakdownCard">'+
+    '<div class="segmented small" style="margin-bottom:4px;">'+
+      '<button class="'+(ui.breakdownType==='expense'?'active':'')+'" data-breakdown="expense">'+tr('Spese')+'</button>'+
+      '<button class="'+(ui.breakdownType==='income'?'active mode-income':'')+'" data-breakdown="income">'+tr('Entrate')+'</button>'+
+    '</div>'+
+    '<div class="donut-section" id="breakdownOpen" role="button" tabindex="0" aria-label="'+tr('Apri il grafico in grande')+'">'+
+      donutSVG(bd)+breakdownLegendHTML(list)+
+    '</div>'+
+    '<p class="hint" style="text-align:center;margin:6px 0 0;">'+
+      (resto>0?('+'+resto+' '+tr('altre')+' · '):'')+tr('tocca il grafico per vederlo in grande')+'</p>'+
+  '</section>';
+}
 function donutSVG(bd){
   var sz=110,sw=18,r=(sz-sw)/2,ci=2*Math.PI*r,cx=sz/2,cy=sz/2;
   if(!bd.length)return '<svg viewBox="0 0 '+sz+' '+sz+'" class="donut"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--track)" stroke-width="'+sw+'"/></svg>';
@@ -4027,7 +4211,7 @@ function monthlyViewHTML(isCurrent){
     '<section class="month-nav"><button class="icon-btn" id="prevMonth">‹</button><span class="nav-label">'+formatMonthLabel(ui.viewMonth)+'</span><button class="icon-btn" id="nextMonth" '+(isCurrent?'disabled':'')+'>›</button></section>'+
     '<div class="chip-row">'+accFilterChipsHTML()+'</div>'+
     '<section class="stat-row"><div class="card stat-tile"><div class="stat-label">'+tr('Entrate')+'</div><div class="stat-value income">+'+fmt(totals.income)+'</div></div><div class="card stat-tile"><div class="stat-label">Uscite</div><div class="stat-value">−'+fmt(totals.expense)+'</div></div></section>'+
-    '<section class="card"><div class="segmented small" style="margin-bottom:4px;"><button class="'+(ui.breakdownType==='expense'?'active':'')+'" data-breakdown="expense">'+tr('Spese')+'</button><button class="'+(ui.breakdownType==='income'?'active mode-income':'')+'" data-breakdown="income">'+tr('Entrate')+'</button></div><div class="donut-section">'+donutSVG(bd)+(bd.length?'<ul class="legend">'+bd.map(function(b){var c=catById(b.catId);return'<li class="legend-item"><span class="dot" style="background:'+colorHex(c.color)+'"></span><span class="legend-name">'+esc(c.emoji)+' '+esc(c.name)+'</span><span class="legend-amount">'+fmt(b.total)+'</span><span class="legend-pct">'+b.pct.toFixed(0)+'%</span></li>';}).join('')+'</ul>':'<p class="empty-note" style="flex:1;">'+tr('Nessun movimento.')+'</p>')+'</div></section>'+
+    breakdownSectionHTML(bd,0)+
     alertsHTML
   );
 }
@@ -4051,11 +4235,31 @@ function annualViewHTML(){
     '<div class="chip-row">'+accFilterChipsHTML()+'</div>'+
     '<section class="annual-grid"><div class="card annual-tile"><div class="alabel">'+tr('Entrate')+'</div><div class="avalue saldo-pos">+'+fmt(d.totalIncome)+'</div></div><div class="card annual-tile"><div class="alabel">Uscite</div><div class="avalue" style="color:var(--red);">−'+fmt(d.totalExpense)+'</div></div><div class="card annual-tile"><div class="alabel">'+tr('Saldo')+'</div><div class="avalue '+(d.net>=0?'saldo-pos':'saldo-neg')+'">'+(d.net>=0?'+':'−')+fmt(Math.abs(d.net))+'</div></div></section>'+
     '<section class="chart-wrap"><div class="chart-legend"><span><span class="chart-legend-dot" style="background:var(--accent);"></span>'+tr('Entrate')+'</span><span><span class="chart-legend-dot" style="background:var(--red);"></span>Uscite</span></div>'+barChartSVG(d.incomeByMonth,d.expenseByMonth)+'</section>'+
-    '<section class="card"><div class="segmented small" style="margin-bottom:4px;"><button class="'+(ui.breakdownType==='expense'?'active':'')+'" data-breakdown="expense">'+tr('Spese')+'</button><button class="'+(ui.breakdownType==='income'?'active mode-income':'')+'" data-breakdown="income">'+tr('Entrate')+'</button></div><div class="donut-section">'+donutSVG(catBreakdown)+(catBreakdown.length?'<ul class="legend">'+catBreakdown.slice(0,5).map(function(b){var c=catById(b.catId);return'<li class="legend-item"><span class="dot" style="background:'+colorHex(c.color)+'"></span><span class="legend-name">'+esc(c.emoji)+' '+esc(c.name)+'</span><span class="legend-amount">'+fmt(b.total)+'</span><span class="legend-pct">'+b.pct.toFixed(0)+'%</span></li>';}).join('')+'</ul>':'<p class="empty-note" style="flex:1;">'+tr('Nessun dato.')+'</p>')+'</div></section>'+
+    breakdownSectionHTML(catBreakdown,5,true)+
     '<section class="card" style="padding:14px 12px;"><table class="month-table"><thead><tr><th>'+tr('Mese')+'</th><th>'+tr('Entrate')+'</th><th>Uscite</th><th>'+tr('Saldo')+'</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></section>'
   );
 }
 
+/* Il riquadro del grafico si aggiorna da solo: cambiare Spese/Entrate non
+   deve ridisegnare tutta la schermata. */
+function wireBreakdown(){
+  var limit=LAST_BREAKDOWN.limit,annual=LAST_BREAKDOWN.annual;
+  document.querySelectorAll('[data-breakdown]').forEach(function(b){b.onclick=function(){
+    if(ui.breakdownType===b.dataset.breakdown)return;
+    ui.breakdownType=b.dataset.breakdown;
+    var card=document.getElementById('breakdownCard');
+    /* Nella vista annuale i totali si calcolano su tutto l'anno: li' conviene
+       lasciar ricostruire la schermata. Nella vista mensile basta il riquadro. */
+    if(!card||annual){renderActiveTab();return;}
+    var data=breakdown(filteredTx(ui.viewMonth,ui.accountFilter,'all',ui.breakdownType));
+    var box=document.createElement('div');
+    box.innerHTML=breakdownSectionHTML(data,limit,annual);
+    card.parentNode.replaceChild(box.firstChild,card);
+    wireBreakdown();
+  };});
+  var op=document.getElementById('breakdownOpen');
+  if(op)op.onclick=function(){openBreakdownSheet(LAST_BREAKDOWN.data);};
+}
 function wireHome(){
   document.querySelectorAll('[data-home-view]').forEach(function(b){b.onclick=function(){ui.homeView=b.dataset.homeView;renderActiveTab();};});
   var pm=document.getElementById('prevMonth');if(pm)pm.onclick=function(){ui.viewMonth=shiftMonth(ui.viewMonth,-1);renderActiveTab();};
@@ -4063,7 +4267,7 @@ function wireHome(){
   var py=document.getElementById('prevYear');if(py)py.onclick=function(){ui.viewYear--;renderActiveTab();};
   var ny=document.getElementById('nextYear');if(ny)ny.onclick=function(){if(ui.viewYear<new Date().getFullYear())ui.viewYear++;renderActiveTab();};
   document.querySelectorAll('[data-acc-filter]').forEach(function(b){b.onclick=function(){ui.accountFilter=b.dataset.accFilter;renderActiveTab();};});
-  document.querySelectorAll('[data-breakdown]').forEach(function(b){b.onclick=function(){ui.breakdownType=b.dataset.breakdown;renderActiveTab();};});
+  wireBreakdown();
   document.querySelectorAll('[data-goto]').forEach(function(el){el.onclick=function(){
     if(el.dataset.goto==='accounts'){openAccountsSheet();return;}
     gotoTab(el.dataset.goto);
@@ -4696,8 +4900,7 @@ function openInvestmentsSheet(){
     return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 10px;">'+title+'</h3>'+(iv.mode==='form'?formHTML():listHTML())+'</div>';
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');if(!w)return;
-    w.innerHTML=sheetHTML();
+    var w=rerenderSheetWrap(sheetHTML());if(!w)return;
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     if(iv.mode==='list'){
       var ad=document.getElementById('invAdd');
@@ -4751,9 +4954,9 @@ function openBudgetSheet(){
   }
   function render(){
     var wrap=document.querySelector('#modal-root .sheet-wrap');
-    if(!wrap){openModal('<div class="sheet"></div>');wrap=document.querySelector('#modal-root .sheet-wrap');}
+    if(!wrap){openModal('<div class="sheet"></div>');}
+    wrap=rerenderSheetWrap(sheetHTML());
     if(!wrap)return;
-    wrap.innerHTML=sheetHTML();
     wire();
   }
   /* Aggiorna SOLO la card interessata (barra, colore, cifre) senza
@@ -4905,9 +5108,9 @@ function openCatsTagsSheet(){
 
   function render(){
     var wrap=document.querySelector('#modal-root .sheet-wrap');
-    if(!wrap){openModal('<div class="sheet"></div>');wrap=document.querySelector('#modal-root .sheet-wrap');}
+    if(!wrap){openModal('<div class="sheet"></div>');}
+    wrap=rerenderSheetWrap(sheetHTML());
     if(!wrap)return;
-    wrap.innerHTML=sheetHTML();
     wire();
   }
 
@@ -5124,7 +5327,8 @@ function profileTabHTML(){
     '<div class="menu-list">'+
       menuRowHTML('menuPremiumTest','🧪','background:var(--amber-soft);color:var(--amber);font-size:15px;',tr('Premium (prova)'),isPremium()?tr('Attivo — funzioni sbloccate'):tr('Non attivo — piano gratuito'))+
     '</div>'+
-    '<p class="profile-footer">Spendy · '+tr('versione installata:')+' <strong>'+APP_VERSION+'</strong><br>'+tr('i tuoi dati restano sul dispositivo')+'</p>'+
+    '<p class="profile-footer">Spendy · '+tr('versione installata:')+' <strong>'+APP_VERSION+'</strong><br>'+tr('i tuoi dati restano sul dispositivo')+
+      '<br><span style="opacity:.55;">'+tr('indietro')+': '+esc(backModeLabel())+' · '+esc(BACK_MODE)+'</span></p>'+
   '</div>';
 }
 function wireProfileTab(){
@@ -5344,9 +5548,8 @@ function openAdvStatsSheet(){
     '</div>';
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');
+    var w=rerenderSheetWrap(sheetHTML());
     if(!w)return;
-    w.innerHTML=sheetHTML();
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
   }
   openModal('<div class="sheet"></div>');
@@ -5369,9 +5572,8 @@ function openDataSheet(){
     '</div>';
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');
+    var w=rerenderSheetWrap(sheetHTML());
     if(!w)return;
-    w.innerHTML=sheetHTML();
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     wireDataCards(render);
   }
@@ -5462,9 +5664,8 @@ function openInfoSheet(openKey){
     '</div>';
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');
+    var w=rerenderSheetWrap(sheetHTML());
     if(!w)return;
-    w.innerHTML=sheetHTML();
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     document.querySelectorAll('[data-info-idx]').forEach(function(c){
       var h=c.querySelector('.info-head');
@@ -5574,9 +5775,8 @@ function openBalancesSheet(){
     var te=document.getElementById('balTo');if(te)te.onchange=function(){if(te.value)m.to=te.value;if(m.to<m.from)m.from=m.to;renderBody();};
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');
+    var w=rerenderSheetWrap(sheetHTML());
     if(!w)return;
-    w.innerHTML=sheetHTML();
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     document.querySelectorAll('[data-bal-mode]').forEach(function(b){b.onclick=function(){
       m.mode=b.dataset.balMode;
@@ -5631,9 +5831,8 @@ function openLinkPasswordModal(){
       '<button class="btn-secondary full-width" id="lpCancel">'+tr('Annulla')+'</button></div>';
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');
+    var w=rerenderSheetWrap(html());
     if(!w)return;
-    w.innerHTML=html();
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     var c=document.getElementById('lpCancel');if(c)c.onclick=closeModal;
     var cl=document.getElementById('lpClose');if(cl)cl.onclick=closeModal;
@@ -5812,9 +6011,8 @@ function openGoalSheet(goalId){
     if(ne)m.name=ne.value;if(ee)m.emoji=ee.value;if(te)m.targetStr=te.value;
   }
   function render(){
-    var w=document.querySelector('#modal-root .sheet-wrap');
+    var w=rerenderSheetWrap(sheetHTML());
     if(!w)return;
-    w.innerHTML=sheetHTML();
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     var cc=document.getElementById('goalCancel');if(cc)cc.onclick=closeModal;
     /* Passare da Versa a Preleva (o cambiare colore) cambia solo un pulsante:
@@ -6167,6 +6365,24 @@ function openEntrySheet(opts){
     '</div>';
   }
 
+  /* Aggiorna le sole parti che dipendono dal tipo di movimento. */
+  function switchMode(){
+    document.querySelectorAll('[data-mode]').forEach(function(x){
+      var on=(x.dataset.mode===entry.mode);
+      x.className=on?('active'+(x.dataset.mode==='income'?' mode-income':(x.dataset.mode==='transfer'?' mode-transfer':''))):'';
+    });
+    var wrap=document.querySelector('#modal-root .entry-sheet');
+    if(wrap){
+      var t=wrap.querySelector('.ticket-amount');
+      var card=t?t.parentNode:null;
+      if(card)card.className=ticketClass();
+      var lbl=wrap.querySelector('.ticket-label');
+      if(lbl)lbl.textContent=ticketLabel();
+    }
+    var bd=document.getElementById('entryBody');
+    if(bd){bd.innerHTML=bodyHTML();wireBody();}
+    refreshSaveBtn();
+  }
   function refreshSaveBtn(){
     var n=parseAmount(entry.amountStr.replace(',','.'));
     var ok=n>0;
@@ -6265,7 +6481,10 @@ function openEntrySheet(opts){
       entry.mode=b.dataset.mode;
       entry.showCatForm=false;
       if(entry.mode!=='transfer'){var fc=catsByType(entry.mode==='income'?'income':'expense');if(!fc.some(function(c){return c.id===entry.categoryId;}))entry.categoryId=fc[0]?fc[0].id:null;}
-      render();
+      /* Cambiare tipo cambia il colore della testata e i campi sotto, non
+         tutto il foglio: l'importo gia' digitato e la tastiera restano dove
+         sono, senza il lampeggio di un ridisegno completo. */
+      switchMode();
     };});
     wireBody();refreshSaveBtn();
   }
@@ -6868,19 +7087,22 @@ function openExportModal(){
       '<button class="btn-secondary full-width" data-exp-fmt="pdf" '+(n?'':'disabled')+'>📄 '+tr('Esporta PDF')+'</button>'+
       '<button class="btn-secondary full-width" data-exp-fmt="xlsx" '+(n?'':'disabled')+'>📊 '+tr('Esporta Excel (.xlsx)')+(isPremium()?'':' 🔒')+'</button>'+
       '<button class="btn-secondary full-width" data-exp-fmt="csv" '+(n?'':'disabled')+'>🧾 '+tr('Esporta CSV')+(isPremium()?'':' 🔒')+'</button>'+
-      (ex.msg?'<p class="hint">'+esc(ex.msg)+'</p>':'<p class="hint">'+tr('Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.')+'</p>')+
+      '<p class="hint" id="expMsg">'+(ex.msg?esc(ex.msg):tr('Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.'))+'</p>'+
     '</div>';
   }
   function render(){
-    var wrap=document.querySelector('#modal-root .sheet-wrap');
+    var wrap=rerenderSheetWrap(sheetHTML());
     if(!wrap)return;
-    wrap.innerHTML=sheetHTML();
     wire();
   }
   function wire(){
     var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
     document.querySelectorAll('[data-exp-scope]').forEach(function(b){
-      b.onclick=function(){ex.scope=b.dataset.expScope;ex.msg='';render();};
+      b.onclick=function(){
+        ex.scope=b.dataset.expScope;ex.msg='';
+        document.querySelectorAll('[data-exp-scope]').forEach(function(x){x.classList.toggle('active',x===b);});
+        var mg=document.getElementById('expMsg');if(mg)mg.textContent=tr('Su iPhone si apre il menu di condivisione: scegli “Salva su File” per tenere il documento.');
+      };
     });
     document.querySelectorAll('[data-exp-fmt]').forEach(function(b){
       b.onclick=async function(){
@@ -6891,11 +7113,11 @@ function openExportModal(){
         try{
           res=fmt==='pdf'?exportPDF(ex.scope):fmt==='xlsx'?exportXLSX(ex.scope):exportCSV(ex.scope);
         }catch(e){
-          ex.busy=false;ex.msg='Errore durante la creazione del file.';render();return;
+          ex.busy=false;ex.msg=tr('Errore durante la creazione del file.');render();return;
         }
         var out=await saveOrShare(res.name,res.blob,res.mime);
         ex.busy=false;
-        if(out==='cancelled'){ex.msg='Esportazione annullata.';render();return;}
+        if(out==='cancelled'){ex.msg=tr('Esportazione annullata.');render();return;}
         if(out==='failed'){ex.msg=tr('Non è stato possibile salvare il file.');render();return;}
         closeModal();
         showToast(res.count+' movimenti esportati in '+res.name);
@@ -8057,7 +8279,7 @@ function openRecurringSheet(opts){
   }
   function rerenderCats(){var el=document.getElementById('rcCatSection');if(el){el.outerHTML=catChips();wireCats();}}
   function rerenderBody(){var b=document.getElementById('rcBody');if(b){b.innerHTML=bodyHTML();wireBody();}}
-  function render(){var wrap=document.querySelector('#modal-root .sheet-wrap');if(!wrap)return;wrap.innerHTML=sheetHTML();wireBody();var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;}
+  function render(){var wrap=rerenderSheetWrap(sheetHTML());if(!wrap)return;wireBody();var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;}
   function wireCats(){
     document.querySelectorAll('[data-rc-cat]').forEach(function(b){b.onclick=function(){m.categoryId=b.dataset.rcCat;document.querySelectorAll('[data-rc-cat]').forEach(function(q){q.classList.toggle('selected',q===b);});};});
     var nb=document.getElementById('rcNewCatBtn');if(nb)nb.onclick=function(){m.showCatForm=true;rerenderCats();setTimeout(function(){var e=document.getElementById('rcNewCatName');if(e)e.focus();},40);};
@@ -8182,7 +8404,18 @@ function requestBack(){
   if(histDepth>0){try{history.back();return true;}catch(e){}}
   return goBackOneStep();
 }
+/* Come sta arrivando l'indietro: serve solo per capire, se qualcosa non
+   funziona su un telefono, quale strada sta usando l'app. */
+var BACK_MODE='web';
+function backModeLabel(){
+  if(window.Capacitor&&typeof Capacitor.isNativePlatform==='function'&&Capacitor.isNativePlatform())return 'app nativa';
+  if(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)return 'app installata';
+  return 'browser';
+}
 function initSystemBack(){
+  /* 1) Strada principale: la cronologia della pagina. La usa il browser, la
+        PWA installata e anche l'app Android (la MainActivity chiama goBack()
+        sul WebView, che qui arriva come popstate). */
   window.addEventListener('popstate',function(){
     if(skipPop>0){skipPop--;return;}
     if(histDepth>0){
@@ -8191,6 +8424,24 @@ function initSystemBack(){
       setTimeout(syncBackHistory,0);
     }
   });
+  /* 2) Rete di sicurezza: alcuni contenitori nativi (Cordova e certe versioni
+        di Capacitor) annunciano il tasto indietro con un evento sul documento
+        invece di toccare la cronologia. Se arriva quello, lo gestiamo noi. */
+  document.addEventListener('backbutton',function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    if(layerDepth()>0)requestBack();
+  });
+  /* 3) Se il contenitore nativo espone il plugin App di Capacitor, ci
+        agganciamo anche li'. Se non c'e', non succede nulla. */
+  try{
+    if(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App&&Capacitor.Plugins.App.addListener){
+      Capacitor.Plugins.App.addListener('backButton',function(info){
+        if(layerDepth()>0){requestBack();return;}
+        if(info&&info.canGoBack===false&&Capacitor.Plugins.App.exitApp)Capacitor.Plugins.App.exitApp();
+      });
+      BACK_MODE='plugin';
+    }
+  }catch(e){}
   syncBackHistory();
 }
 
