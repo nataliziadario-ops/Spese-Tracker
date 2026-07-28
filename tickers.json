@@ -1476,59 +1476,33 @@
   },
   {
    "symbol": "VWCE",
-   "name": "Vanguard FTSE All-World Acc",
+   "name": "Vanguard FTSE All-World (VWCE)",
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azionario mondiale ad accumulazione, quotato in euro.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "Vanguard FTSE All-World UCITS ETF",
    "isin": "IE00BK5BQT80",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "VWRL",
-   "name": "Vanguard FTSE All-World Dist",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Azionario mondiale che distribuisce i dividendi.",
-   "source": "twelvedata+alphavantage",
-   "region": "Paesi Bassi",
-   "avQuery": "Vanguard FTSE All-World UCITS ETF Distributing",
-   "isin": "IE00B3RBWM25",
-   "mic": "XAMS",
-   "country": "Netherlands",
-   "exchangeName": "Euronext Amsterdam"
+   "exchangeName": "XETRA",
+   "avSymbol": "VWCE.DEX"
   },
   {
    "symbol": "SWDA",
-   "name": "iShares Core MSCI World Acc",
+   "name": "iShares Core MSCI World (SWDA / EUNL)",
    "kind": "etf",
    "currency": "EUR",
    "desc": "I paesi sviluppati del mondo, ad accumulazione.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Regno Unito",
    "avQuery": "iShares Core MSCI World UCITS ETF",
    "isin": "IE00B4L5Y983",
    "mic": "XLON",
    "country": "United Kingdom",
-   "exchangeName": "LSE"
-  },
-  {
-   "symbol": "EUNL",
-   "name": "iShares Core MSCI World (Xetra)",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Stesso fondo mondiale, quotato in Germania.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "iShares Core MSCI World UCITS ETF Xetra",
-   "isin": "IE00B4L5Y983",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "LSE",
+   "avSymbol": "EUNL.FRK"
   },
   {
    "symbol": "VUSA",
@@ -1536,83 +1510,29 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "L'S&P 500 americano acquistabile in Europa.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "Vanguard S&P 500 UCITS ETF",
    "isin": "IE00B3XXRP09",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "VUSA.AMS"
   },
   {
    "symbol": "SXR8",
-   "name": "iShares Core S&P 500 Acc",
+   "name": "iShares Core S&P 500 (SXR8 / CSSPX)",
    "kind": "etf",
    "currency": "EUR",
    "desc": "S&P 500 ad accumulazione, molto usato in Europa.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "iShares Core S&P 500 UCITS ETF",
    "isin": "IE00B5BMR087",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "EIMI",
-   "name": "iShares Core MSCI EM IMI",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Mercati emergenti in versione molto ampia.",
-   "source": "twelvedata+alphavantage",
-   "region": "Regno Unito",
-   "avQuery": "iShares Core MSCI Emerging Markets IMI UCITS ETF",
-   "isin": "IE00BKM4GZ66",
-   "mic": "XLON",
-   "country": "United Kingdom",
-   "exchangeName": "LSE"
-  },
-  {
-   "symbol": "IS3N",
-   "name": "iShares MSCI EM IMI (Xetra)",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Emergenti quotati in Germania.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "iShares Core MSCI Emerging Markets IMI Xetra",
-   "isin": "IE00BKM4GZ66",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "XDWD",
-   "name": "Xtrackers MSCI World",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Azionario mondiale sviluppato di Xtrackers.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "Xtrackers MSCI World UCITS ETF",
-   "isin": "IE00BJ0KDQ92",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "SPPW",
-   "name": "SPDR MSCI World",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Azionario mondiale sviluppato di SPDR.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "SPDR MSCI World UCITS ETF",
-   "isin": "IE00BFY0GT14",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "SXR8.DEX"
   },
   {
    "symbol": "IUSQ",
@@ -1620,13 +1540,14 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Mondo intero: sviluppati ed emergenti insieme.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "iShares MSCI ACWI UCITS ETF",
    "isin": "IE00B6R52259",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "IUSQ.DEX"
   },
   {
    "symbol": "VHYL",
@@ -1634,13 +1555,14 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Azioni mondiali che pagano dividendi alti.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Paesi Bassi",
    "avQuery": "Vanguard FTSE All-World High Dividend Yield UCITS ETF",
    "isin": "IE00B8GKDB10",
    "mic": "XAMS",
    "country": "Netherlands",
-   "exchangeName": "Euronext Amsterdam"
+   "exchangeName": "Euronext Amsterdam",
+   "avSymbol": "VHYL.AMS"
   },
   {
    "symbol": "AGGH",
@@ -1648,27 +1570,14 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Obbligazioni mondiali con cambio coperto in euro.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "iShares Core Global Aggregate Bond UCITS ETF EUR Hedged",
    "isin": "IE00BDBRDM35",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "EXS1",
-   "name": "iShares Core DAX",
-   "kind": "etf",
-   "currency": "EUR",
-   "desc": "Le principali 40 aziende tedesche.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "iShares Core DAX UCITS ETF",
-   "isin": "DE0005933931",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "AGGH.AMS"
   },
   {
    "symbol": "EXW1",
@@ -1676,27 +1585,29 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Le 50 maggiori aziende dell'area euro.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "iShares EURO STOXX 50 UCITS ETF",
    "isin": "DE0005933956",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "EXW1.FRK"
   },
   {
    "symbol": "XEON",
-   "name": "Xtrackers Overnight Rate",
+   "name": "Xtrackers Overnight Rate (liquidità)",
    "kind": "etf",
    "currency": "EUR",
    "desc": "Liquidità in euro remunerata al tasso di mercato.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "Xtrackers II EUR Overnight Rate Swap UCITS ETF",
    "isin": "LU0290358497",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "XEON.DEX"
   },
   {
    "symbol": "SGLD",
@@ -1704,13 +1615,14 @@
    "kind": "etf",
    "currency": "EUR",
    "desc": "Oro fisico acquistabile in Europa.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "Invesco Physical Gold ETC",
    "isin": "IE00B579F325",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "SGLD.AMS"
   },
   {
    "symbol": "ENEL",
@@ -1718,7 +1630,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "La maggiore utility elettrica italiana.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Enel SpA",
    "isin": "IT0003128367",
@@ -1727,7 +1639,8 @@
     "ENEL.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0NRE.LON"
   },
   {
    "symbol": "ISP",
@@ -1735,7 +1648,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "La principale banca italiana.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Intesa Sanpaolo SpA",
    "isin": "IT0000072618",
@@ -1744,7 +1657,8 @@
     "ISP.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0HBC.LON"
   },
   {
    "symbol": "UCG",
@@ -1752,7 +1666,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Grande banca italiana con presenza europea.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "UniCredit SpA",
    "isin": "IT0005239360",
@@ -1761,24 +1675,8 @@
     "UCG.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
-  },
-  {
-   "symbol": "ENI",
-   "name": "Eni",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Il colosso italiano di petrolio ed energia.",
-   "source": "twelvedata+alphavantage",
-   "region": "Italia",
-   "avQuery": "Eni SpA",
-   "isin": "IT0003132476",
-   "mic": "XMIL",
-   "alt": [
-    "ENI.MI"
-   ],
-   "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0RLS.LON"
   },
   {
    "symbol": "STLAM",
@@ -1786,7 +1684,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Fiat, Peugeot, Jeep e altri marchi automobilistici.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Stellantis NV",
    "isin": "NL00150001Q9",
@@ -1795,7 +1693,8 @@
     "STLAM.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "8TI.DEX"
   },
   {
    "symbol": "RACE",
@@ -1803,7 +1702,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Auto sportive di lusso di Maranello.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Ferrari NV",
    "isin": "NL0011585146",
@@ -1812,7 +1711,8 @@
     "RACE.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "2FE.DEX"
   },
   {
    "symbol": "G",
@@ -1820,7 +1720,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il maggiore gruppo assicurativo italiano.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Assicurazioni Generali SpA",
    "isin": "IT0000062072",
@@ -1829,7 +1729,8 @@
     "G.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0K78.LON"
   },
   {
    "symbol": "MONC",
@@ -1837,7 +1738,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Abbigliamento di lusso, celebre per i piumini.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Moncler SpA",
    "isin": "IT0004965148",
@@ -1846,7 +1747,8 @@
     "MONC.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0QII.LON"
   },
   {
    "symbol": "LDO",
@@ -1854,7 +1756,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Difesa, elicotteri ed elettronica italiana.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Leonardo SpA",
    "isin": "IT0003856405",
@@ -1863,7 +1765,8 @@
     "LDO.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0ONG.LON"
   },
   {
    "symbol": "PST",
@@ -1871,7 +1774,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Poste, servizi finanziari e assicurativi.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Poste Italiane SpA",
    "isin": "IT0003796171",
@@ -1880,7 +1783,8 @@
     "PST.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "7PI.FRK"
   },
   {
    "symbol": "SRG",
@@ -1888,7 +1792,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Rete di trasporto del gas in Italia.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Italia",
    "avQuery": "Snam SpA",
    "isin": "IT0003153415",
@@ -1897,41 +1801,8 @@
     "SRG.MI"
    ],
    "country": "Italy",
-   "exchangeName": "Euronext Milan"
-  },
-  {
-   "symbol": "TRN",
-   "name": "Terna",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Rete elettrica nazionale italiana.",
-   "source": "twelvedata+alphavantage",
-   "region": "Italia",
-   "avQuery": "Terna SpA",
-   "isin": "IT0003242622",
-   "mic": "XMIL",
-   "alt": [
-    "TRN.MI"
-   ],
-   "country": "Italy",
-   "exchangeName": "Euronext Milan"
-  },
-  {
-   "symbol": "CPR",
-   "name": "Campari",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Bevande e liquori celebri nel mondo.",
-   "source": "twelvedata+alphavantage",
-   "region": "Italia",
-   "avQuery": "Davide Campari-Milano NV",
-   "isin": "NL0015435975",
-   "mic": "XMIL",
-   "alt": [
-    "CPR.MI"
-   ],
-   "country": "Italy",
-   "exchangeName": "Euronext Milan"
+   "exchangeName": "Euronext Milan",
+   "avSymbol": "0NQP.LON"
   },
   {
    "symbol": "SAP",
@@ -1939,27 +1810,14 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Software gestionale per grandi aziende.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "SAP SE",
    "isin": "DE0007164600",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "SIE",
-   "name": "Siemens",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Industria, automazione e infrastrutture.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "Siemens AG",
-   "isin": "DE0007236101",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "SAPA.FRK"
   },
   {
    "symbol": "ALV",
@@ -1967,41 +1825,14 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Uno dei maggiori assicuratori del mondo.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "Allianz SE",
    "isin": "DE0008404005",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "BMW",
-   "name": "BMW",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Auto di fascia alta e motociclette.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "Bayerische Motoren Werke AG",
-   "isin": "DE0005190003",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "MBG",
-   "name": "Mercedes-Benz",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Auto di lusso e veicoli commerciali.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "Mercedes-Benz Group AG",
-   "isin": "DE0007100000",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "ALV.FRK"
   },
   {
    "symbol": "VOW3",
@@ -2009,24 +1840,10 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il maggiore gruppo automobilistico europeo.",
-   "source": "twelvedata+alphavantage",
+   "source": "twelvedata",
    "region": "Germania",
    "avQuery": "Volkswagen AG",
    "isin": "DE0007664039",
-   "mic": "XETR",
-   "country": "Germany",
-   "exchangeName": "XETRA"
-  },
-  {
-   "symbol": "DTE",
-   "name": "Deutsche Telekom",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Telefonia tedesca, proprietaria di T-Mobile.",
-   "source": "twelvedata+alphavantage",
-   "region": "Germania",
-   "avQuery": "Deutsche Telekom AG",
-   "isin": "DE0005557508",
    "mic": "XETR",
    "country": "Germany",
    "exchangeName": "XETRA"
@@ -2037,7 +1854,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il più grande gruppo chimico del mondo.",
-   "source": "twelvedata+alphavantage",
+   "source": "twelvedata",
    "region": "Germania",
    "avQuery": "BASF SE",
    "isin": "DE000BASF111",
@@ -2051,7 +1868,7 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Abbigliamento e scarpe sportive.",
-   "source": "twelvedata+alphavantage",
+   "source": "twelvedata",
    "region": "Germania",
    "avQuery": "adidas AG",
    "isin": "DE000A1EWWW0",
@@ -2065,13 +1882,14 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Difesa e componentistica per veicoli.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Germania",
    "avQuery": "Rheinmetall AG",
    "isin": "DE0007030009",
    "mic": "XETR",
    "country": "Germany",
-   "exchangeName": "XETRA"
+   "exchangeName": "XETRA",
+   "avSymbol": "RHM.DEX"
   },
   {
    "symbol": "MC",
@@ -2079,83 +1897,14 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Il gruppo del lusso: Louis Vuitton, Dior.",
-   "source": "twelvedata+alphavantage",
+   "source": "alphavantage",
    "region": "Francia",
    "avQuery": "LVMH Moet Hennessy Louis Vuitton",
    "isin": "FR0000121014",
    "mic": "XPAR",
    "country": "France",
-   "exchangeName": "Euronext Paris"
-  },
-  {
-   "symbol": "OR",
-   "name": "L'Oréal",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Cosmetici e prodotti di bellezza.",
-   "source": "twelvedata+alphavantage",
-   "region": "Francia",
-   "avQuery": "L'Oreal SA",
-   "isin": "FR0000120321",
-   "mic": "XPAR",
-   "country": "France",
-   "exchangeName": "Euronext Paris"
-  },
-  {
-   "symbol": "TTE",
-   "name": "TotalEnergies",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Energia, petrolio e rinnovabili.",
-   "source": "twelvedata+alphavantage",
-   "region": "Francia",
-   "avQuery": "TotalEnergies SE",
-   "isin": "FR0000120271",
-   "mic": "XPAR",
-   "country": "France",
-   "exchangeName": "Euronext Paris"
-  },
-  {
-   "symbol": "SAN",
-   "name": "Sanofi",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Farmaceutica francese.",
-   "source": "twelvedata+alphavantage",
-   "region": "Francia",
-   "avQuery": "Sanofi SA",
-   "isin": "FR0000120578",
-   "mic": "XPAR",
-   "country": "France",
-   "exchangeName": "Euronext Paris"
-  },
-  {
-   "symbol": "AIR",
-   "name": "Airbus",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Aerei civili, elicotteri e spazio.",
-   "source": "twelvedata+alphavantage",
-   "region": "Francia",
-   "avQuery": "Airbus SE",
-   "isin": "NL0000235190",
-   "mic": "XPAR",
-   "country": "France",
-   "exchangeName": "Euronext Paris"
-  },
-  {
-   "symbol": "ASML",
-   "name": "ASML",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Macchine indispensabili per produrre i chip.",
-   "source": "twelvedata+alphavantage",
-   "region": "Paesi Bassi",
-   "avQuery": "ASML Holding NV",
-   "isin": "NL0010273215",
-   "mic": "XAMS",
-   "country": "Netherlands",
-   "exchangeName": "Euronext Amsterdam"
+   "exchangeName": "Euronext Paris",
+   "avSymbol": "0HAU.LON"
   },
   {
    "symbol": "ADYEN",
@@ -2163,55 +1912,13 @@
    "kind": "stock",
    "currency": "EUR",
    "desc": "Piattaforma di pagamenti per grandi aziende.",
-   "source": "twelvedata+alphavantage",
+   "source": "twelvedata",
    "region": "Paesi Bassi",
    "avQuery": "Adyen NV",
    "isin": "NL0012969182",
    "mic": "XAMS",
    "country": "Netherlands",
    "exchangeName": "Euronext Amsterdam"
-  },
-  {
-   "symbol": "ITX",
-   "name": "Inditex (Zara)",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Il gruppo di Zara e altri marchi di moda.",
-   "source": "twelvedata+alphavantage",
-   "region": "Spagna",
-   "avQuery": "Industria de Diseno Textil SA",
-   "isin": "ES0148396007",
-   "mic": "XMAD",
-   "country": "Spain",
-   "exchangeName": "BME"
-  },
-  {
-   "symbol": "IBE",
-   "name": "Iberdrola",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Elettricità e rinnovabili in Spagna e nel mondo.",
-   "source": "twelvedata+alphavantage",
-   "region": "Spagna",
-   "avQuery": "Iberdrola SA",
-   "isin": "ES0144580Y14",
-   "mic": "XMAD",
-   "country": "Spain",
-   "exchangeName": "BME"
-  },
-  {
-   "symbol": "SAN.MC",
-   "name": "Banco Santander",
-   "kind": "stock",
-   "currency": "EUR",
-   "desc": "Grande banca spagnola con presenza globale.",
-   "source": "twelvedata+alphavantage",
-   "region": "Spagna",
-   "avQuery": "Banco Santander SA",
-   "isin": "ES0113900J37",
-   "mic": "XMAD",
-   "country": "Spain",
-   "exchangeName": "BME"
   }
  ]
 }
