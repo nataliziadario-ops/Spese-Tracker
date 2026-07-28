@@ -30,10 +30,10 @@
 </script>
 <style>
 :root{
-  --bg:#E9EBE6;--app-bg:#F6F7F4;--surface:#FFFFFF;--surface-2:#F3F4F1;
-  --inset:#ECEEE9;--track:#E7E9E3;--handle:#D6D9D2;
-  --border:#E4E7E1;--hairline:rgba(23,27,24,0.08);
-  --ink:#171B18;--ink-soft:#5D645B;--ink-faint:#949B91;
+  --bg:#E9ECE6;--app-bg:#F7F9F5;--surface:#FFFFFF;--surface-2:#F2F5F0;
+  --inset:#EEF1EB;--track:#E4E9E2;--handle:#D2D8D0;
+  --border:#E5EAE2;--hairline:rgba(16,58,48,0.075);
+  --ink:#121714;--ink-soft:#576059;--ink-faint:#8B948A;
   --accent:#146356;--accent-dark:#0C4A3F;--accent-soft:#E2EEEA;--accent-glow:rgba(20,99,86,0.32);
   --accent-hi:#1B7A6A;
   --amber:#A8700F;--amber-soft:#F7ECD6;--amber-ink:#6E4B10;
@@ -45,9 +45,9 @@
   --toast-bg:rgba(23,27,24,0.94);--toast-ink:#FFFFFF;
   --ticket-a:#232922;--ticket-b:#171B18;
   --radius-xl:26px;--radius-lg:20px;--radius-md:14px;--radius-sm:10px;
-  --shadow-xs:0 1px 2px rgba(23,27,24,0.05);
-  --shadow:0 1px 2px rgba(23,27,24,0.04),0 6px 18px rgba(23,27,24,0.05);
-  --shadow-lg:0 2px 6px rgba(23,27,24,0.07),0 18px 44px rgba(23,27,24,0.16);
+  --shadow-xs:0 1px 2px rgba(16,58,48,0.055);
+  --shadow:0 1px 1px rgba(16,58,48,0.035),0 10px 26px -14px rgba(16,58,48,0.30);
+  --shadow-lg:0 2px 8px rgba(16,58,48,0.07),0 22px 50px -18px rgba(16,58,48,0.42);
   --font-display:'Space Grotesk','Helvetica Neue',Arial,sans-serif;
   --font-body:'Inter',system-ui,-apple-system,sans-serif;
   --ease-out:cubic-bezier(.25,.6,.3,1);
@@ -78,7 +78,10 @@ html[data-theme="dark"]{
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.001ms!important;transition-duration:0.001ms!important;}}
 html,body{margin:0;padding:0;height:100%;background:var(--bg);overscroll-behavior:none;}
 body{font-family:var(--font-body);color:var(--ink);-webkit-tap-highlight-color:transparent;overflow-x:hidden;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
-button{font-family:inherit;cursor:pointer;touch-action:manipulation;transition:transform .13s var(--ease-out),background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .18s ease,opacity .16s ease;}
+/* I pulsanti partono "nudi": senza questo azzeramento il browser di Android
+   disegna il suo rettangolo grigio con gli angoli quadrati, che spuntava
+   dentro i riquadri arrotondati (es. Mercato: Azioni / ETF / Cripto). */
+button{-webkit-appearance:none;appearance:none;background-color:transparent;border:0 solid transparent;color:inherit;font-family:inherit;cursor:pointer;touch-action:manipulation;transition:transform .13s var(--ease-out),background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .18s ease,opacity .16s ease;}
 input,select,textarea{font-family:inherit;transition:border-color .16s ease,box-shadow .18s ease;}
 ::selection{background:var(--accent-soft);}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
@@ -104,11 +107,12 @@ input,select,textarea{font-family:inherit;transition:border-color .16s ease,box-
 @keyframes ambDrift1{from{transform:translate(0,0) scale(1);}to{transform:translate(70px,55px) scale(1.14);}}
 @keyframes ambDrift2{from{transform:translate(0,0) scale(1.1);}to{transform:translate(-65px,-70px) scale(0.94);}}
 @keyframes ambDrift3{from{transform:translate(0,0) scale(0.96);}to{transform:translate(60px,-55px) scale(1.12);}}
-/* Palette per scheda — tema chiaro */
-#app{--amb1:#BFE0D2;--amb2:#D9EAD0;--amb3:#C9E2DF;}
-#app[data-amb="history"]{--amb1:#C3D6EC;--amb2:#D6E1F2;--amb3:#CBDDE8;}
-#app[data-amb="recurring"]{--amb1:#D8CFEC;--amb2:#E4D8F0;--amb3:#CFD5F0;}
-#app[data-amb="accounts"]{--amb1:#E9DBBB;--amb2:#EFE4C8;--amb3:#DBE4CB;}
+/* Palette per scheda — tema chiaro (tinte piu' tenui: lo sfondo deve
+   sembrare carta buona, non una macchia di colore) */
+#app{--amb1:#C9E1D7;--amb2:#DFEBD9;--amb3:#D3E3E1;}
+#app[data-amb="history"]{--amb1:#CEDAEC;--amb2:#DEE6F2;--amb3:#D4E0E9;}
+#app[data-amb="recurring"]{--amb1:#DCD5EC;--amb2:#E7DEF0;--amb3:#D7DBF0;}
+#app[data-amb="accounts"]{--amb1:#EBE0C6;--amb2:#F0E8D2;--amb3:#E0E7D3;}
 /* Palette per scheda — tema scuro (glow) */
 html[data-theme="dark"] #ambient{opacity:0.5;}
 html[data-theme="dark"] #ambient .amb{mix-blend-mode:screen;}
@@ -250,7 +254,7 @@ main#content{flex:1;min-height:0;padding:8px 16px 132px;overflow-y:auto;-webkit-
 .bd-donut{width:200px;height:200px;display:block;}
 .bd-donut circle{cursor:pointer;transition:opacity .18s ease;}
 .bd-donut circle.dim{opacity:.28;}
-.bd-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 34px;}
+.bd-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 38px;}
 .bd-center-emoji{font-size:22px;line-height:1;}
 .bd-center-name{font-size:12px;color:var(--ink-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
 .bd-center-val{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px;}
@@ -671,12 +675,72 @@ main#content{overscroll-behavior-y:contain;position:relative;}
 .ip-nochart{font-size:12.5px;color:var(--ink-soft);padding:26px 0;text-align:center;}
 /* --- Mercato a tendina per categoria (v37) --- */
 .invp-cat{border:1px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden;background:var(--surface);}
-.invp-cat-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;color:var(--ink);font-weight:600;font-size:14px;}
+.invp-cat-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;background:transparent;border:0;border-radius:14px;color:var(--ink);font-weight:600;font-size:14px;text-align:left;}
+.invp-cat.open .invp-cat-head{border-radius:14px 14px 0 0;}
 .invp-cat-n{font-size:11px;color:var(--ink-soft);background:var(--track);border-radius:8px;padding:1px 7px;margin-left:6px;}
 .invp-cat-chev{color:var(--ink-soft);font-size:13px;}
 .invp-cat-body{padding:0 10px 8px;}
 .invp-cat-body .invp-row{background:var(--bg);}
 .invp-warn{background:var(--amber-soft);color:var(--amber-ink);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:12px;line-height:1.45;}
+/* ---------- Radar abbonamenti + statistiche avanzate (v46) ---------- */
+.sub-hero{background:var(--accent-soft);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;}
+.sub-hero b{font-family:var(--font-display);font-size:27px;letter-spacing:-0.02em;color:var(--accent);line-height:1.1;}
+.sub-hero span{font-size:12.5px;color:var(--ink-soft);}
+.sub-list{display:flex;flex-direction:column;}
+.sub-row{display:flex;flex-direction:column;gap:7px;padding:12px 0;border-bottom:1px solid var(--hairline);}
+.sub-row:last-child{border-bottom:none;}
+.sub-top{display:flex;align-items:baseline;gap:8px;}
+.sub-name{font-weight:650;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sub-amt{flex-shrink:0;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;}
+.sub-meta{font-size:11.5px;color:var(--ink-faint);line-height:1.45;}
+.sub-flags{display:flex;flex-wrap:wrap;gap:6px;}
+.sub-flag{font-size:10.5px;font-weight:650;padding:2px 8px;border-radius:7px;background:var(--amber-soft);color:var(--amber-ink);}
+.sub-flag.up{background:var(--red-soft);color:var(--red-ink);}
+.sub-flag.ok{background:var(--accent-soft);color:var(--accent);}
+.sub-actions{display:flex;gap:8px;margin-top:2px;}
+.sub-actions button{flex:1;font-size:12.5px;padding:9px 10px;border-radius:11px;}
+.stat-mini{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--hairline);}
+.stat-mini:last-child{border-bottom:none;}
+.stat-mini b{font-variant-numeric:tabular-nums;}
+.stat-axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);}
+.stat-big{font-family:var(--font-display);font-size:27px;font-weight:800;letter-spacing:-0.02em;line-height:1.15;}
+/* ================================================================
+   RIFINITURA DEL TEMA CHIARO (v46)
+   Stesso impianto, resa piu' curata: superfici con un filo di rilievo
+   (sfumatura leggerissima + luce sul bordo alto), ombre tinte del verde
+   del marchio invece che grigie, sfondo ambientale piu' discreto.
+   Tocca SOLO il tema chiaro: lo scuro resta identico.
+================================================================ */
+html[data-theme="light"]{
+  --nav-bg:rgba(255,255,255,0.84);
+  --backdrop:rgba(17,32,27,0.38);
+}
+html[data-theme="light"] #ambient{opacity:0.46;}
+html[data-theme="light"] .card,
+html[data-theme="light"] .menu-list,
+html[data-theme="light"] .invp-chart-card,
+html[data-theme="light"] .invp-cat,
+html[data-theme="light"] .invp-row,
+html[data-theme="light"] .inv-chart,
+html[data-theme="light"] .inv-row{
+  background-image:linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,249,245,0.96));
+  box-shadow:0 1px 1px rgba(16,58,48,0.035),0 12px 28px -16px rgba(16,58,48,0.34),inset 0 1px 0 #FFFFFF;
+}
+html[data-theme="light"] .btn-secondary,
+html[data-theme="light"] .chip{
+  background-image:linear-gradient(180deg,#FFFFFF,#F6F9F5);
+}
+html[data-theme="light"] .chip.selected{background-image:none;}
+html[data-theme="light"] .text-input,
+html[data-theme="light"] .select,
+html[data-theme="light"] textarea.text-input{
+  background-image:linear-gradient(180deg,#FBFDFA,#FFFFFF);
+  box-shadow:inset 0 1px 2px rgba(16,58,48,0.04);
+}
+html[data-theme="light"] .segmented{background:#EBEFE9;border-color:rgba(16,58,48,0.05);}
+html[data-theme="light"] .sheet{box-shadow:0 -14px 44px rgba(16,58,48,0.16);}
+html[data-theme="light"] .bottomnav{box-shadow:0 10px 30px -10px rgba(16,58,48,0.30),0 2px 6px rgba(16,58,48,0.05);}
+html[data-theme="light"] .hero-card{box-shadow:0 12px 30px -10px rgba(12,44,36,0.45),inset 0 1px 0 rgba(255,255,255,0.10);}
 </style>
 </head>
 <body>
@@ -2394,7 +2458,7 @@ function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
     categories:DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);}).concat(DEFAULT_INCOME_CATS.map(function(c){return Object.assign({},c);})),
-    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[],merchantRules:{}
+    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[],merchantRules:{},subsIgnored:[]
   };
 }
 
@@ -2402,6 +2466,8 @@ function ensureV3Fields(s){
   s.tags=s.tags||[];
   /* Regole esercente -> categoria imparate durante gli import. */
   s.merchantRules=s.merchantRules||{};
+  /* Esercenti che l'utente ha detto NON essere abbonamenti (radar). */
+  s.subsIgnored=s.subsIgnored||[];
   (s.accounts||[]).forEach(function(a){a.excludeFromTotal=!!a.excludeFromTotal;});
   s.transactions=s.transactions||[];
   s.transfers=s.transfers||[];
@@ -2438,7 +2504,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],merchantRules:raw.merchantRules||{},inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],merchantRules:raw.merchantRules||{},subsIgnored:raw.subsIgnored||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -2675,7 +2741,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v45';
+var APP_VERSION='v46';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3975,13 +4041,16 @@ function renderActiveTab(dir){
    categoria, importo e percentuale.
 ================================================================ */
 function bdDonutSVG(bd,selId){
-  var sz=200,sw=34,r=(sz-sw)/2,ci=2*Math.PI*r,cx=sz/2,cy=sz/2;
+  /* La fetta scelta si ingrossa di GROW: il raggio va calcolato sullo spessore
+     MASSIMO, altrimenti la fetta evidenziata esce dal riquadro e si vede
+     tagliata (era il bordo destro/alto del grafico grande). */
+  var sz=200,sw=32,GROW=6,PAD=1,r=(sz-(sw+GROW))/2-PAD,ci=2*Math.PI*r,cx=sz/2,cy=sz/2;
   if(!bd.length)return '<svg viewBox="0 0 '+sz+' '+sz+'" class="bd-donut"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--track)" stroke-width="'+sw+'"/></svg>';
   var off=0,circles='',gapPx=bd.length>1?3:0;
   bd.forEach(function(b){
     var cat=catById(b.catId),full=(b.pct/100)*ci,len=Math.max(full-gapPx,1);
     var dim=(selId&&b.catId!==selId)?' class="dim"':'';
-    var w=(selId&&b.catId===selId)?(sw+6):sw;
+    var w=(selId&&b.catId===selId)?(sw+GROW):sw;
     circles+='<circle'+dim+' data-slice="'+esc(b.catId)+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+colorHex(cat.color)+'" stroke-width="'+w+'" stroke-dasharray="'+len.toFixed(2)+' '+(ci-len).toFixed(2)+'" stroke-dashoffset="'+(-(off+gapPx/2)).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')" stroke-linecap="butt"/>';
     off+=full;
   });
@@ -5298,6 +5367,7 @@ function profileTabHTML(){
     data:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19a4.5 4.5 0 1 0-.4-9A6 6 0 0 0 5.3 12 3.5 3.5 0 0 0 6 19z"/><path d="M12 12v6"/><path d="m9.5 15 2.5-3 2.5 3"/></svg>',
     imp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 20h16"/></svg>',
     info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>',
+    radar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.6"/><path d="M12 12 19 6"/></svg>',
     lang:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg>'
   };
   var A='background:var(--accent-soft);color:var(--accent);',T='background:var(--transfer-soft);color:var(--transfer);',M='background:var(--amber-soft);color:var(--amber);';
@@ -5313,6 +5383,7 @@ function profileTabHTML(){
     /* 4 */ '<div class="menu-list">'+
       menuRowHTML('menuInvest',ICO.inv,A,tr('Investimenti'),tr('Monitora azioni, ETF e cripto'),!isPremium())+
       menuRowHTML('menuAdvStats',ICO.stats,A,tr('Statistiche avanzate'),tr('Confronti, proiezioni e andamento'),!isPremium())+
+      menuRowHTML('menuSubs',ICO.radar,M,tr('Radar abbonamenti'),tr('Scopri quanto ti costano davvero'),!isPremium())+
     '</div>'+
     /* 5 */ '<div class="menu-list">'+
       menuRowHTML('menuImport',ICO.imp,T,tr('Importa i tuoi dati'),tr('Da file CSV o Excel della banca'))+
@@ -5362,6 +5433,7 @@ function wireProfileTab(){
   var md=document.getElementById('menuData');if(md)md.onclick=openDataSheet;
   var mi=document.getElementById('menuInfo');if(mi)mi.onclick=function(){openInfoSheet();};
   var mas=document.getElementById('menuAdvStats');if(mas)mas.onclick=openAdvStatsSheet;
+  var msb=document.getElementById('menuSubs');if(msb)msb.onclick=openSubsSheet;
   var mpt=document.getElementById('menuPremiumTest');
   if(mpt)mpt.onclick=function(){
     setPremiumTest(!isPremium());
@@ -5440,6 +5512,478 @@ function heaviestWeekday(){
   }catch(e){names=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];}
   return {name:names[best],total:sums[best],count:counts[best]};
 }
+
+/* i18n statistiche avanzate + radar abbonamenti (v46) */
+Object.assign(TR.en,{
+'Radar abbonamenti':'Subscription radar',
+'Scopri quanto ti costano davvero':'See what they really cost you',
+'I pagamenti che tornano ogni mese, trovati fra i tuoi movimenti.':'The payments that come back every month, found among your transactions.',
+'Ti costano in tutto':'Altogether they cost you',
+'all\'anno · M al mese · N abbonamenti trovati':'per year · M per month · N subscriptions found',
+'N non sono ancora fra le tue ricorrenti: aggiungili e l\'app terrà d\'occhio le scadenze.':'N are not among your recurring payments yet: add them and the app will keep an eye on the due dates.',
+'Scartati da te':'Dismissed by you',
+'Rimetti':'Restore',
+'Il radar guarda gli ultimi 12 mesi e segnala solo i pagamenti regolari e di importo simile. Se qualcosa non torna, dimmi che non è un abbonamento e non te lo ripropongo.':'The radar looks at the last 12 months and only flags regular payments of similar amounts. If something is off, tell me it is not a subscription and I will not suggest it again.',
+'Non ho ancora trovato abbonamenti. Servono almeno tre pagamenti uguali dallo stesso esercente: continua a registrare le spese (o importa l\'estratto conto) e riprova fra qualche settimana.':'No subscriptions found yet. At least three identical payments from the same merchant are needed: keep recording your expenses (or import your bank statement) and try again in a few weeks.',
+'rincarato del P%':'up by P%',
+'già fra le ricorrenti':'already recurring',
+'non registrato':'not recorded',
+'Aggiungi alle ricorrenti':'Add to recurring',
+'Non è un abbonamento':'Not a subscription',
+'/anno':'/year',
+'N pagamenti · ultimo il D':'N payments · last on D',
+'ogni mese':'every month',
+'ogni settimana':'every week',
+'ogni 3 mesi':'every 3 months',
+'ogni anno':'every year',
+'Trovato dal radar abbonamenti':'Found by the subscription radar',
+'Aggiunto ai pagamenti ricorrenti':'Added to recurring payments',
+'Con Premium il radar cerca da solo, fra i tuoi movimenti, i pagamenti che si ripetono sempre uguali e ti dice:':'With Premium the radar searches your transactions on its own for payments that repeat identically, and tells you:',
+'quanto ti costano tutti insieme, al mese e all\'anno':'how much they cost you altogether, per month and per year',
+'quali paghi senza averli fra le ricorrenti':'which ones you pay without having them among your recurring payments',
+'quali sono aumentati di prezzo senza dirtelo':'which ones went up in price without telling you',
+'e li aggiunge alle ricorrenti con un tocco':'and it adds them to your recurring payments with one tap',
+'Spesso basta un abbonamento dimenticato per ripagare il Premium.':'One forgotten subscription is often enough to pay for Premium.',
+'Tasso di risparmio':'Savings rate',
+'Di ogni 100 € che entrano questo mese te ne restano R €. Media degli ultimi 6 mesi: M%.':'Of every €100 coming in this month, R € stay with you. Average of the last 6 months: M%.',
+'Il tuo patrimonio':'Your net worth',
+'Un anno fa':'A year ago',
+'Mesi di autonomia':'Months of runway',
+'Alle tue spese medie di S al mese, i soldi che hai durerebbero circa N mesi.':'At your average spending of S per month, the money you have would last about N months.',
+'Obbligate o scelte?':'Fixed or chosen?',
+'Spese fisse (ricorrenti attive)':'Fixed expenses (active recurring)',
+'Spese variabili':'Variable expenses',
+'Il P% di quello che spendi è già deciso prima che il mese cominci.':'P% of what you spend is already decided before the month begins.',
+'Dove spendi di più':'Where you spend the most',
+'N volte · in media M':'N times · M on average',
+'Ultimi 3 mesi, raggruppati per negozio e non per categoria.':'Last 3 months, grouped by shop rather than by category.',
+'Giorni senza spese':'No-spend days',
+'su N':'out of N',
+'Giorni di questo mese in cui non hai speso niente. Sono quelli che spostano davvero il risparmio.':'Days this month when you spent nothing. Those are the ones that really move your savings.',
+'La tua inflazione':'Your own inflation',
+'Negli ultimi 12 mesi hai speso A, contro B dei 12 mesi precedenti.':'Over the last 12 months you spent A, against B in the previous 12.',
+'Tasso di risparmio, mese per mese':'Savings rate, month by month',
+'Andamento del patrimonio e mesi di autonomia':'Net worth trend and months of runway',
+'Spese obbligate contro spese scelte':'Fixed versus chosen spending',
+'Dove spendi di più, negozio per negozio':'Where you spend the most, shop by shop',
+'Giorni senza spese e la tua inflazione personale':'No-spend days and your own inflation'
+});
+Object.assign(TR.es,{
+'Radar abbonamenti':'Radar de suscripciones',
+'Scopri quanto ti costano davvero':'Descubre cuánto te cuestan de verdad',
+'I pagamenti che tornano ogni mese, trovati fra i tuoi movimenti.':'Los pagos que vuelven cada mes, encontrados entre tus movimientos.',
+'Ti costano in tutto':'En total te cuestan',
+'all\'anno · M al mese · N abbonamenti trovati':'al año · M al mes · N suscripciones encontradas',
+'N non sono ancora fra le tue ricorrenti: aggiungili e l\'app terrà d\'occhio le scadenze.':'N aún no están entre tus recurrentes: añádelos y la app vigilará los vencimientos.',
+'Scartati da te':'Descartados por ti',
+'Rimetti':'Restaurar',
+'Il radar guarda gli ultimi 12 mesi e segnala solo i pagamenti regolari e di importo simile. Se qualcosa non torna, dimmi che non è un abbonamento e non te lo ripropongo.':'El radar mira los últimos 12 meses y solo señala pagos regulares de importe parecido. Si algo no cuadra, dime que no es una suscripción y no volveré a proponerlo.',
+'Non ho ancora trovato abbonamenti. Servono almeno tre pagamenti uguali dallo stesso esercente: continua a registrare le spese (o importa l\'estratto conto) e riprova fra qualche settimana.':'Aún no he encontrado suscripciones. Hacen falta al menos tres pagos iguales del mismo comercio: sigue registrando gastos (o importa el extracto) y vuelve a probar en unas semanas.',
+'rincarato del P%':'subió un P%',
+'già fra le ricorrenti':'ya es recurrente',
+'non registrato':'no registrado',
+'Aggiungi alle ricorrenti':'Añadir a recurrentes',
+'Non è un abbonamento':'No es una suscripción',
+'/anno':'/año',
+'N pagamenti · ultimo il D':'N pagos · el último el D',
+'ogni mese':'cada mes',
+'ogni settimana':'cada semana',
+'ogni 3 mesi':'cada 3 meses',
+'ogni anno':'cada año',
+'Trovato dal radar abbonamenti':'Encontrado por el radar de suscripciones',
+'Aggiunto ai pagamenti ricorrenti':'Añadido a los pagos recurrentes',
+'Con Premium il radar cerca da solo, fra i tuoi movimenti, i pagamenti che si ripetono sempre uguali e ti dice:':'Con Premium el radar busca solo, entre tus movimientos, los pagos que se repiten iguales y te dice:',
+'quanto ti costano tutti insieme, al mese e all\'anno':'cuánto te cuestan en total, al mes y al año',
+'quali paghi senza averli fra le ricorrenti':'cuáles pagas sin tenerlos entre los recurrentes',
+'quali sono aumentati di prezzo senza dirtelo':'cuáles han subido de precio sin avisarte',
+'e li aggiunge alle ricorrenti con un tocco':'y los añade a los recurrentes con un toque',
+'Spesso basta un abbonamento dimenticato per ripagare il Premium.':'A menudo basta una suscripción olvidada para pagar el Premium.',
+'Tasso di risparmio':'Tasa de ahorro',
+'Di ogni 100 € che entrano questo mese te ne restano R €. Media degli ultimi 6 mesi: M%.':'De cada 100 € que entran este mes te quedan R €. Media de los últimos 6 meses: M%.',
+'Il tuo patrimonio':'Tu patrimonio',
+'Un anno fa':'Hace un año',
+'Mesi di autonomia':'Meses de autonomía',
+'Alle tue spese medie di S al mese, i soldi che hai durerebbero circa N mesi.':'Con tu gasto medio de S al mes, el dinero que tienes duraría unos N meses.',
+'Obbligate o scelte?':'¿Obligadas o elegidas?',
+'Spese fisse (ricorrenti attive)':'Gastos fijos (recurrentes activos)',
+'Spese variabili':'Gastos variables',
+'Il P% di quello che spendi è già deciso prima che il mese cominci.':'El P% de lo que gastas ya está decidido antes de que empiece el mes.',
+'Dove spendi di più':'Dónde más gastas',
+'N volte · in media M':'N veces · M de media',
+'Ultimi 3 mesi, raggruppati per negozio e non per categoria.':'Últimos 3 meses, agrupados por comercio y no por categoría.',
+'Giorni senza spese':'Días sin gastos',
+'su N':'de N',
+'Giorni di questo mese in cui non hai speso niente. Sono quelli che spostano davvero il risparmio.':'Días de este mes en los que no gastaste nada. Son los que de verdad mueven el ahorro.',
+'La tua inflazione':'Tu inflación',
+'Negli ultimi 12 mesi hai speso A, contro B dei 12 mesi precedenti.':'En los últimos 12 meses gastaste A, frente a B de los 12 anteriores.',
+'Tasso di risparmio, mese per mese':'Tasa de ahorro, mes a mes',
+'Andamento del patrimonio e mesi di autonomia':'Evolución del patrimonio y meses de autonomía',
+'Spese obbligate contro spese scelte':'Gastos obligados frente a elegidos',
+'Dove spendi di più, negozio per negozio':'Dónde más gastas, comercio por comercio',
+'Giorni senza spese e la tua inflazione personale':'Días sin gastos y tu inflación personal'
+});
+Object.assign(TR.fr,{
+'Radar abbonamenti':'Radar des abonnements',
+'Scopri quanto ti costano davvero':'Voyez ce qu\'ils vous coûtent vraiment',
+'I pagamenti che tornano ogni mese, trovati fra i tuoi movimenti.':'Les paiements qui reviennent chaque mois, trouvés parmi vos opérations.',
+'Ti costano in tutto':'Au total ils vous coûtent',
+'all\'anno · M al mese · N abbonamenti trovati':'par an · M par mois · N abonnements trouvés',
+'N non sono ancora fra le tue ricorrenti: aggiungili e l\'app terrà d\'occhio le scadenze.':'N ne sont pas encore parmi vos paiements récurrents : ajoutez-les et l\'app surveillera les échéances.',
+'Scartati da te':'Écartés par vous',
+'Rimetti':'Rétablir',
+'Il radar guarda gli ultimi 12 mesi e segnala solo i pagamenti regolari e di importo simile. Se qualcosa non torna, dimmi che non è un abbonamento e non te lo ripropongo.':'Le radar regarde les 12 derniers mois et ne signale que les paiements réguliers de montant similaire. Si quelque chose cloche, dites-moi que ce n\'est pas un abonnement et je ne le proposerai plus.',
+'Non ho ancora trovato abbonamenti. Servono almeno tre pagamenti uguali dallo stesso esercente: continua a registrare le spese (o importa l\'estratto conto) e riprova fra qualche settimana.':'Aucun abonnement trouvé pour l\'instant. Il faut au moins trois paiements identiques du même commerçant : continuez à enregistrer vos dépenses (ou importez votre relevé) et réessayez dans quelques semaines.',
+'rincarato del P%':'en hausse de P%',
+'già fra le ricorrenti':'déjà récurrent',
+'non registrato':'non enregistré',
+'Aggiungi alle ricorrenti':'Ajouter aux récurrents',
+'Non è un abbonamento':'Ce n\'est pas un abonnement',
+'/anno':'/an',
+'N pagamenti · ultimo il D':'N paiements · dernier le D',
+'ogni mese':'chaque mois',
+'ogni settimana':'chaque semaine',
+'ogni 3 mesi':'tous les 3 mois',
+'ogni anno':'chaque année',
+'Trovato dal radar abbonamenti':'Trouvé par le radar des abonnements',
+'Aggiunto ai pagamenti ricorrenti':'Ajouté aux paiements récurrents',
+'Con Premium il radar cerca da solo, fra i tuoi movimenti, i pagamenti che si ripetono sempre uguali e ti dice:':'Avec Premium, le radar cherche tout seul, parmi vos opérations, les paiements qui se répètent à l\'identique et vous dit :',
+'quanto ti costano tutti insieme, al mese e all\'anno':'combien ils vous coûtent au total, par mois et par an',
+'quali paghi senza averli fra le ricorrenti':'lesquels vous payez sans les avoir parmi vos récurrents',
+'quali sono aumentati di prezzo senza dirtelo':'lesquels ont augmenté sans vous prévenir',
+'e li aggiunge alle ricorrenti con un tocco':'et il les ajoute aux récurrents en un geste',
+'Spesso basta un abbonamento dimenticato per ripagare il Premium.':'Un seul abonnement oublié suffit souvent à rembourser le Premium.',
+'Tasso di risparmio':'Taux d\'épargne',
+'Di ogni 100 € che entrano questo mese te ne restano R €. Media degli ultimi 6 mesi: M%.':'Sur 100 € qui entrent ce mois-ci, il vous reste R €. Moyenne des 6 derniers mois : M%.',
+'Il tuo patrimonio':'Votre patrimoine',
+'Un anno fa':'Il y a un an',
+'Mesi di autonomia':'Mois d\'autonomie',
+'Alle tue spese medie di S al mese, i soldi che hai durerebbero circa N mesi.':'À votre dépense moyenne de S par mois, l\'argent dont vous disposez durerait environ N mois.',
+'Obbligate o scelte?':'Subies ou choisies ?',
+'Spese fisse (ricorrenti attive)':'Dépenses fixes (récurrents actifs)',
+'Spese variabili':'Dépenses variables',
+'Il P% di quello che spendi è già deciso prima che il mese cominci.':'P% de ce que vous dépensez est déjà décidé avant le début du mois.',
+'Dove spendi di più':'Où vous dépensez le plus',
+'N volte · in media M':'N fois · M en moyenne',
+'Ultimi 3 mesi, raggruppati per negozio e non per categoria.':'3 derniers mois, regroupés par commerce et non par catégorie.',
+'Giorni senza spese':'Jours sans dépense',
+'su N':'sur N',
+'Giorni di questo mese in cui non hai speso niente. Sono quelli che spostano davvero il risparmio.':'Jours de ce mois où vous n\'avez rien dépensé. Ce sont eux qui font vraiment bouger l\'épargne.',
+'La tua inflazione':'Votre inflation',
+'Negli ultimi 12 mesi hai speso A, contro B dei 12 mesi precedenti.':'Sur les 12 derniers mois vous avez dépensé A, contre B les 12 précédents.',
+'Tasso di risparmio, mese per mese':'Taux d\'épargne, mois par mois',
+'Andamento del patrimonio e mesi di autonomia':'Évolution du patrimoine et mois d\'autonomie',
+'Spese obbligate contro spese scelte':'Dépenses subies contre dépenses choisies',
+'Dove spendi di più, negozio per negozio':'Où vous dépensez le plus, commerce par commerce',
+'Giorni senza spese e la tua inflazione personale':'Jours sans dépense et votre inflation personnelle'
+});
+
+/* ================================================================
+   STATISTICHE AVANZATE — CALCOLI NUOVI (v46)
+================================================================ */
+function statsMonthKeys(n){var a=[];for(var i=n-1;i>=0;i--)a.push(monthKeyBack(i));return a;}
+function monthEndISO(mk){var p=mk.split('-'),d=new Date(+p[0],+p[1],0);return mk+'-'+String(d.getDate()).padStart(2,'0');}
+/* Tasso di risparmio: quanta parte di quello che entra resta in tasca. */
+function savingsRateSeries(n){
+  return statsMonthKeys(n).map(function(k){
+    var t=monthTotals(k);
+    return {k:k,label:monthLabelShort(k),inc:t.inc,exp:t.exp,rate:(t.inc>0?((t.inc-t.exp)/t.inc*100):null)};
+  });
+}
+/* Patrimonio a fine di ogni mese. Si parte dal saldo di OGGI e si torna
+   indietro togliendo i movimenti successivi: cosi' la curva finisce sempre
+   esattamente sul saldo reale. I giroconti fra conti propri non contano
+   (spostare soldi non cambia il patrimonio), tranne quando un conto e'
+   tenuto fuori dal totale: in quel caso il passaggio si vede. */
+function netWorthSeries(n){
+  var oggi=totalBalance(),dentro={};
+  accountsInTotal().forEach(function(a){dentro[a.id]=true;});
+  return statsMonthKeys(n).map(function(k){
+    var fine=monthEndISO(k),dopo=0;
+    (state.transactions||[]).forEach(function(t){
+      if(!t.date||t.date<=fine||!dentro[t.accountId])return;
+      dopo+=(t.type==='income'?t.amount:-t.amount);
+    });
+    (state.transfers||[]).forEach(function(tr){
+      if(!tr.date||tr.date<=fine)return;
+      if(dentro[tr.fromAccountId]&&!dentro[tr.toAccountId])dopo-=tr.amount;
+      if(dentro[tr.toAccountId]&&!dentro[tr.fromAccountId])dopo+=tr.amount;
+    });
+    return {k:k,label:monthLabelShort(k),v:oggi-dopo};
+  });
+}
+/* Mesi di autonomia: quanto durerebbero i soldi che hai, alle tue spese
+   medie degli ultimi 6 mesi CHIUSI (quello in corso e' ancora parziale). */
+function monthsOfRunway(){
+  var chiusi=statsMonthKeys(7).slice(0,6),tot=0,quanti=0;
+  chiusi.forEach(function(k){var t=monthTotals(k);if(t.exp>0){tot+=t.exp;quanti++;}});
+  if(!quanti)return null;
+  var media=tot/quanti;
+  if(media<=0)return null;
+  return {mesi:totalBalance()/media,media:media,soldi:totalBalance()};
+}
+/* Quanto della spesa e' "obbligata" (ricorrenti attive) e quanto e' scelta. */
+function fixedVsVariable(mk){
+  var fisse=(state.recurring||[]).reduce(function(s,r){
+    if(r.status==='paused'||r.type==='income')return s;
+    return s+recMonthlyEquiv(r);
+  },0);
+  var tot=monthTotals(mk).exp;
+  return {fisse:fisse,variabili:Math.max(0,tot-fisse),tot:tot,
+          pct:(tot>0?Math.min(100,fisse/tot*100):0)};
+}
+/* Giorni del mese in cui non hai speso niente. */
+function noSpendDays(mk){
+  var spesi={};
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.date.slice(0,7)!==mk||t.type==='income')return;
+    spesi[t.date]=true;
+  });
+  var p=mk.split('-'),giorni=new Date(+p[0],+p[1],0).getDate();
+  var fino=(mk===currentMonthKey())?Math.min(giorni,+todayISO().slice(8,10)):giorni;
+  var senza=0;
+  for(var d=1;d<=fino;d++){if(!spesi[mk+'-'+String(d).padStart(2,'0')])senza++;}
+  return {senza:senza,su:fino};
+}
+/* Dove spendi di piu': classifica per esercente, non per categoria. */
+function topMerchants(mesi,quanti){
+  var limite=monthKeyBack((mesi||3)-1),map={};
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.type==='income'||t.date.slice(0,7)<limite)return;
+    var testo=t.merchant||t.note||'',k=merchantKey(testo);
+    if(!k)return;
+    if(!map[k])map[k]={key:k,label:merchantLabel(testo)||k,total:0,count:0};
+    map[k].total+=t.amount;map[k].count++;
+  });
+  return Object.keys(map).map(function(k){return map[k];})
+    .sort(function(a,b){return b.total-a.total;}).slice(0,quanti||5);
+}
+/* "Inflazione personale": ultimi 12 mesi contro i 12 precedenti. */
+function yoyChange(){
+  var ora=0,prima=0,i;
+  for(i=0;i<12;i++)ora+=monthTotals(monthKeyBack(i)).exp;
+  for(i=12;i<24;i++)prima+=monthTotals(monthKeyBack(i)).exp;
+  if(prima<=0||ora<=0)return null;
+  return {ora:ora,prima:prima,pct:(ora-prima)/prima*100};
+}
+/* Grafici piccoli, senza librerie esterne. */
+function statLineSVG(vals){
+  var W=100,H=42,n=vals.length;
+  if(n<2)return '';
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),d=(mx-mn)||1;
+  var pts=vals.map(function(v,i){
+    return (i*(W/(n-1))).toFixed(2)+','+(H-2-((v-mn)/d)*(H-6)).toFixed(2);
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="width:100%;height:66px;display:block;" aria-hidden="true">'+
+    '<path d="M0,'+H+' L'+pts.join(' L')+' L'+W+','+H+' Z" fill="var(--accent)" opacity="0.12"/>'+
+    '<polyline points="'+pts.join(' ')+'" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+}
+function statRateBarsSVG(serie){
+  var W=100,H=44,n=serie.length,bw=W/Math.max(1,n),zero=H/2,out='';
+  var mx=20;
+  serie.forEach(function(s){if(s.rate!=null)mx=Math.max(mx,Math.abs(s.rate));});
+  serie.forEach(function(s,i){
+    if(s.rate==null)return;
+    var h=Math.max(1,Math.abs(s.rate)/mx*(zero-2));
+    out+='<rect x="'+(i*bw+bw*0.22).toFixed(2)+'" y="'+((s.rate>=0?zero-h:zero)).toFixed(2)+
+      '" width="'+(bw*0.56).toFixed(2)+'" height="'+h.toFixed(2)+'" rx="0.9" fill="'+
+      (s.rate>=0?'var(--accent)':'var(--red)')+'" opacity="'+(i===n-1?'1':'0.6')+'"/>';
+  });
+  out+='<line x1="0" y1="'+zero+'" x2="'+W+'" y2="'+zero+'" stroke="var(--ink-faint)" stroke-width="0.4" opacity="0.5"/>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="width:100%;height:72px;display:block;" aria-hidden="true">'+out+'</svg>';
+}
+
+/* ================================================================
+   RADAR ABBONAMENTI (Premium, v46)
+   Legge i movimenti degli ultimi 12 mesi e cerca i pagamenti che tornano
+   sempre uguali dallo stesso esercente: quelli sono abbonamenti. Mostra
+   quanto costano all'anno, quali NON sono ancora fra le ricorrenti e
+   quali sono aumentati di prezzo senza che te ne accorgessi.
+   Non inventa niente: usa solo i movimenti gia' registrati.
+================================================================ */
+function subsIgnoredList(){return state.subsIgnored||[];}
+function subsAlreadyRecurring(k){
+  return (state.recurring||[]).some(function(r){return merchantKey(r.name||'')===k;});
+}
+function subsCadence(mediaGiorni,scarto){
+  if(mediaGiorni>=25&&mediaGiorni<=38&&scarto<=7)return 'monthly';
+  if(mediaGiorni>=5&&mediaGiorni<=10&&scarto<=3)return 'weekly';
+  if(mediaGiorni>=80&&mediaGiorni<=100&&scarto<=12)return 'quarterly';
+  if(mediaGiorni>=330&&mediaGiorni<=400&&scarto<=25)return 'yearly';
+  return null;
+}
+function subsPerMonth(cad,importo){
+  if(cad==='weekly')return importo*52/12;
+  if(cad==='quarterly')return importo/3;
+  if(cad==='yearly')return importo/12;
+  return importo;
+}
+function subsScan(){
+  var limite=monthKeyBack(11),gruppi={};
+  (state.transactions||[]).forEach(function(t){
+    if(!t.date||t.type==='income'||t.type==='transfer')return;
+    if(t.date.slice(0,7)<limite)return;
+    var k=merchantKey(t.merchant||t.note||'');
+    if(!k)return;
+    (gruppi[k]=gruppi[k]||[]).push(t);
+  });
+  var out=[];
+  Object.keys(gruppi).forEach(function(k){
+    var lista=gruppi[k].slice().sort(function(a,b){return a.date<b.date?-1:(a.date>b.date?1:0);});
+    if(lista.length<3)return;
+    /* Regolarita': distanza media fra un pagamento e il successivo. */
+    var gap=[],prec=null;
+    lista.forEach(function(t){
+      var d=Date.parse(t.date);
+      if(prec!=null&&!isNaN(d))gap.push((d-prec)/86400000);
+      if(!isNaN(d))prec=d;
+    });
+    if(gap.length<2)return;
+    var media=gap.reduce(function(a,b){return a+b;},0)/gap.length;
+    var scarto=Math.sqrt(gap.reduce(function(a,g){return a+(g-media)*(g-media);},0)/gap.length);
+    var cad=subsCadence(media,scarto);
+    if(!cad)return;
+    /* Importi simili fra loro: una spesa al supermercato cambia ogni volta,
+       un abbonamento no. Tollero un 25% per gli aumenti di listino. */
+    var imp=lista.map(function(t){return t.amount;});
+    var mImp=imp.reduce(function(a,b){return a+b;},0)/imp.length;
+    if(mImp<=0)return;
+    var fuori=Math.max.apply(null,imp.map(function(v){return Math.abs(v-mImp)/mImp;}));
+    if(fuori>0.25)return;
+    var ultimo=lista[lista.length-1],primo=lista[0];
+    var aumento=(primo.amount>0)?((ultimo.amount-primo.amount)/primo.amount*100):0;
+    var perMese=subsPerMonth(cad,ultimo.amount);
+    out.push({key:k,label:merchantLabel(ultimo.merchant||ultimo.note||'')||k,
+      cadenza:cad,importo:ultimo.amount,perMese:perMese,anno:perMese*12,
+      volte:lista.length,ultimo:ultimo.date,aumento:aumento,
+      categoryId:ultimo.categoryId,accountId:ultimo.accountId,
+      registrato:subsAlreadyRecurring(k),
+      ignorato:subsIgnoredList().indexOf(k)>=0});
+  });
+  return out.sort(function(a,b){return b.anno-a.anno;});
+}
+function subsNextDate(s){
+  function iso(x){return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
+  function avanti(x){
+    if(s.cadenza==='weekly')x.setDate(x.getDate()+7);
+    else if(s.cadenza==='quarterly')x.setMonth(x.getMonth()+3);
+    else if(s.cadenza==='yearly')x.setFullYear(x.getFullYear()+1);
+    else x.setMonth(x.getMonth()+1);
+  }
+  var p=String(s.ultimo).split('-'),d=new Date(+p[0],+p[1]-1,+p[2]),oggi=todayISO(),giri=0;
+  do{avanti(d);giri++;}while(iso(d)<oggi&&giri<200);
+  return iso(d);
+}
+function subsAddRecurring(key){
+  var s=subsScan().filter(function(x){return x.key===key;})[0];
+  if(!s)return;
+  if(!canAdd('recurring')){premiumBlock('recurring');return;}
+  state.recurring.push({id:uid('rec'),name:s.label,type:'expense',amount:s.importo,
+    categoryId:s.categoryId||(state.categories[0]||{}).id,
+    accountId:s.accountId||firstUsableAccountId(),
+    cadence:s.cadenza,nextDate:subsNextDate(s),
+    note:tr('Trovato dal radar abbonamenti'),status:'active',
+    lastPaidDate:null,createdAt:Date.now()});
+  saveState();
+  showToast(tr('Aggiunto ai pagamenti ricorrenti'));
+}
+function subsIgnore(key){
+  state.subsIgnored=(state.subsIgnored||[]).concat([key]);
+  saveState();
+}
+function subsRestore(key){
+  state.subsIgnored=(state.subsIgnored||[]).filter(function(k){return k!==key;});
+  saveState();
+}
+function subsCadLabel(cad){
+  var m={monthly:tr('ogni mese'),weekly:tr('ogni settimana'),quarterly:tr('ogni 3 mesi'),yearly:tr('ogni anno')};
+  return m[cad]||m.monthly;
+}
+function subsRowHTML(s){
+  var flags='';
+  if(s.aumento>=5)flags+='<span class="sub-flag up">'+tr('rincarato del P%').replace('P',s.aumento.toFixed(0))+'</span>';
+  if(s.registrato)flags+='<span class="sub-flag ok">'+tr('già fra le ricorrenti')+'</span>';
+  else flags+='<span class="sub-flag">'+tr('non registrato')+'</span>';
+  var azioni=s.registrato?'':
+    '<div class="sub-actions">'+
+      '<button class="btn-primary-sm" data-sub-add="'+esc(s.key)+'">'+tr('Aggiungi alle ricorrenti')+'</button>'+
+      '<button class="btn-secondary" data-sub-skip="'+esc(s.key)+'">'+tr('Non è un abbonamento')+'</button>'+
+    '</div>';
+  return '<div class="sub-row">'+
+    '<div class="sub-top"><span class="sub-name">'+esc(s.label)+'</span>'+
+    '<span class="sub-amt">'+fmt(s.anno)+'<span style="font-size:11px;font-weight:500;color:var(--ink-faint);">'+tr('/anno')+'</span></span></div>'+
+    '<div class="sub-meta">'+fmt(s.importo)+' '+subsCadLabel(s.cadenza)+' · '+
+      tr('N pagamenti · ultimo il D').replace('N',s.volte).replace('D',esc(s.ultimo))+'</div>'+
+    '<div class="sub-flags">'+flags+'</div>'+azioni+
+  '</div>';
+}
+function subsBodyHTML(){
+  var tutti=subsScan();
+  var attivi=tutti.filter(function(s){return !s.ignorato;});
+  var scartati=tutti.filter(function(s){return s.ignorato;});
+  var totAnno=attivi.reduce(function(a,s){return a+s.anno;},0);
+  var nuovi=attivi.filter(function(s){return !s.registrato;});
+  var h='';
+  if(!attivi.length){
+    return '<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+      '<p class="hint">'+tr('Non ho ancora trovato abbonamenti. Servono almeno tre pagamenti uguali dallo stesso esercente: continua a registrare le spese (o importa l\'estratto conto) e riprova fra qualche settimana.')+'</p>'+
+      '</section>';
+  }
+  h+='<div class="sub-hero"><span>'+tr('Ti costano in tutto')+'</span><b>'+fmt(totAnno)+'</b>'+
+     '<span>'+tr('all\'anno · M al mese · N abbonamenti trovati')
+       .replace('M',fmt(totAnno/12)).replace('N',attivi.length)+'</span></div>';
+  if(nuovi.length){
+    h+='<p class="hint" style="margin:0;">'+tr('N non sono ancora fra le tue ricorrenti: aggiungili e l\'app terrà d\'occhio le scadenze.').replace('N',nuovi.length)+'</p>';
+  }
+  h+='<section class="card" style="padding:4px 14px;"><div class="sub-list">'+
+     attivi.map(subsRowHTML).join('')+'</div></section>';
+  if(scartati.length){
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+      '<h3 style="margin:0;font-size:14.5px;">'+tr('Scartati da te')+'</h3>'+
+      scartati.map(function(s){
+        return '<div class="stat-mini"><span>'+esc(s.label)+'</span>'+
+          '<button class="btn-secondary" style="padding:6px 10px;font-size:12px;border-radius:9px;" data-sub-back="'+esc(s.key)+'">'+tr('Rimetti')+'</button></div>';
+      }).join('')+'</section>';
+  }
+  h+='<p class="hint">'+tr('Il radar guarda gli ultimi 12 mesi e segnala solo i pagamenti regolari e di importo simile. Se qualcosa non torna, dimmi che non è un abbonamento e non te lo ripropongo.')+'</p>';
+  return h;
+}
+function subsLockedHTML(){
+  return '<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+    '<p class="hint">'+tr('Con Premium il radar cerca da solo, fra i tuoi movimenti, i pagamenti che si ripetono sempre uguali e ti dice:')+'</p>'+
+    '<ul style="margin:0;padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.7;">'+
+      '<li>'+tr('quanto ti costano tutti insieme, al mese e all\'anno')+'</li>'+
+      '<li>'+tr('quali paghi senza averli fra le ricorrenti')+'</li>'+
+      '<li>'+tr('quali sono aumentati di prezzo senza dirtelo')+'</li>'+
+      '<li>'+tr('e li aggiunge alle ricorrenti con un tocco')+'</li>'+
+    '</ul>'+
+    '<p class="hint">'+tr('Spesso basta un abbonamento dimenticato per ripagare il Premium.')+'</p>'+
+  '</section>';
+}
+function openSubsSheet(){
+  function sheetHTML(){
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">'+tr('Radar abbonamenti')+'</h3>'+
+      '<p class="hint" style="margin:0;">'+tr('I pagamenti che tornano ogni mese, trovati fra i tuoi movimenti.')+'</p>'+
+      (isPremium()?subsBodyHTML():subsLockedHTML())+
+      '<button class="btn-secondary full-width" id="subsClose">'+tr('Chiudi')+'</button>'+
+    '</div>';
+  }
+  function render(){
+    var w=rerenderSheetWrap(sheetHTML());
+    if(!w)return;
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    document.querySelectorAll('#modal-root [data-sub-add]').forEach(function(b){
+      b.onclick=function(){subsAddRecurring(b.dataset.subAdd);render();};});
+    document.querySelectorAll('#modal-root [data-sub-skip]').forEach(function(b){
+      b.onclick=function(){subsIgnore(b.dataset.subSkip);render();};});
+    document.querySelectorAll('#modal-root [data-sub-back]').forEach(function(b){
+      b.onclick=function(){subsRestore(b.dataset.subBack);render();};});
+    var c=document.getElementById('subsClose');if(c)c.onclick=closeModal;
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
 function advStatsBodyHTML(){
   var mk=currentMonthKey(),pk=monthKeyBack(1);
   var cur=monthTotals(mk),prev=monthTotals(pk);
@@ -5514,6 +6058,82 @@ function advStatsBodyHTML(){
       '<p class="hint">'+tr('Negli ultimi 6 mesi ci hai speso')+' '+fmt(wd.total)+' '+tr('in')+' '+wd.count+' '+tr('movimenti.')+'</p>'+
     '</section>';
   }
+  /* 6. Tasso di risparmio */
+  var sr=savingsRateSeries(6),srUlt=sr[sr.length-1],srVal=sr.filter(function(s){return s.rate!=null;});
+  if(srVal.length){
+    var srMedia=srVal.reduce(function(a,s){return a+s.rate;},0)/srVal.length;
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+      '<h3 style="margin:0;font-size:14.5px;">'+tr('Tasso di risparmio')+'</h3>'+
+      '<div class="stat-big" style="color:'+((srUlt.rate||0)>=0?'var(--accent)':'var(--red)')+';">'+
+        (srUlt.rate==null?'—':(srUlt.rate.toFixed(0)+'%'))+'</div>'+
+      '<p class="hint" style="margin:0;">'+
+        tr('Di ogni 100 € che entrano questo mese te ne restano R €. Media degli ultimi 6 mesi: M%.')
+          .replace('R',(srUlt.rate==null?'—':Math.round(srUlt.rate))).replace('M',srMedia.toFixed(0))+'</p>'+
+      statRateBarsSVG(sr)+
+      '<div class="stat-axis"><span>'+esc(sr[0].label)+'</span><span>'+esc(srUlt.label)+'</span></div>'+
+    '</section>';
+  }
+  /* 7. Patrimonio + mesi di autonomia */
+  var nw=netWorthSeries(12),nwV=nw.map(function(x){return x.v;});
+  var run=monthsOfRunway();
+  h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">'+tr('Il tuo patrimonio')+'</h3>'+
+    '<div class="stat-big">'+fmt(nwV[nwV.length-1])+'</div>'+
+    statLineSVG(nwV)+
+    '<div class="stat-axis"><span>'+esc(nw[0].label)+'</span><span>'+esc(nw[nw.length-1].label)+'</span></div>'+
+    '<div class="stat-mini"><span>'+tr('Un anno fa')+'</span><b>'+fmt(nwV[0])+'</b></div>'+
+    '<div class="stat-mini"><span>'+tr('Variazione')+'</span><b class="'+((nwV[nwV.length-1]-nwV[0])>=0?'saldo-pos':'saldo-neg')+'">'+
+      ((nwV[nwV.length-1]-nwV[0])>=0?'+':'')+fmt(nwV[nwV.length-1]-nwV[0])+'</b></div>'+
+    (run?('<div class="stat-mini"><span>'+tr('Mesi di autonomia')+'</span><b>'+run.mesi.toFixed(1).replace('.',',')+'</b></div>'+
+      '<p class="hint" style="margin:0;">'+
+      tr('Alle tue spese medie di S al mese, i soldi che hai durerebbero circa N mesi.')
+        .replace('S',fmt(run.media)).replace('N',run.mesi.toFixed(1).replace('.',','))+'</p>'):'')+
+  '</section>';
+  /* 8. Spese obbligate contro spese scelte */
+  var fv=fixedVsVariable(mk);
+  if(fv.tot>0){
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:8px;">'+
+      '<h3 style="margin:0;font-size:14.5px;">'+tr('Obbligate o scelte?')+'</h3>'+
+      '<div class="progress-track"><div class="progress-fill" style="width:'+fv.pct.toFixed(0)+'%;background:var(--transfer);"></div></div>'+
+      '<div class="stat-mini"><span>'+tr('Spese fisse (ricorrenti attive)')+'</span><b>'+fmt(fv.fisse)+'</b></div>'+
+      '<div class="stat-mini"><span>'+tr('Spese variabili')+'</span><b>'+fmt(fv.variabili)+'</b></div>'+
+      '<p class="hint" style="margin:0;">'+
+        tr('Il P% di quello che spendi è già deciso prima che il mese cominci.').replace('P',fv.pct.toFixed(0))+'</p>'+
+    '</section>';
+  }
+  /* 9. Dove spendi di più (per esercente) */
+  var tm=topMerchants(3,5);
+  if(tm.length){
+    var tmMax=tm[0].total||1;
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+      '<h3 style="margin:0;font-size:14.5px;">'+tr('Dove spendi di più')+'</h3>';
+    tm.forEach(function(m){
+      h+='<div class="stat-row" style="flex-direction:column;gap:5px;">'+
+        '<div class="stat-row-top"><span>'+esc(m.label)+'</span><span><strong>'+fmt(m.total)+'</strong></span></div>'+
+        '<div class="progress-track"><div class="progress-fill" style="width:'+Math.max(4,Math.round(m.total/tmMax*100))+'%;background:var(--accent);"></div></div>'+
+        '<span class="sub-meta">'+tr('N volte · in media M').replace('N',m.count).replace('M',fmt(m.total/m.count))+'</span>'+
+      '</div>';
+    });
+    h+='<p class="hint" style="margin:0;">'+tr('Ultimi 3 mesi, raggruppati per negozio e non per categoria.')+'</p></section>';
+  }
+  /* 10. Giorni senza spese */
+  var nsd=noSpendDays(mk);
+  h+='<section class="card" style="display:flex;flex-direction:column;gap:6px;">'+
+    '<h3 style="margin:0;font-size:14.5px;">'+tr('Giorni senza spese')+'</h3>'+
+    '<div class="stat-big">'+nsd.senza+' <span style="font-size:15px;font-weight:600;color:var(--ink-faint);">'+tr('su N').replace('N',nsd.su)+'</span></div>'+
+    '<p class="hint" style="margin:0;">'+tr('Giorni di questo mese in cui non hai speso niente. Sono quelli che spostano davvero il risparmio.')+'</p>'+
+  '</section>';
+  /* 11. Inflazione personale */
+  var yoy=yoyChange();
+  if(yoy){
+    h+='<section class="card" style="display:flex;flex-direction:column;gap:6px;">'+
+      '<h3 style="margin:0;font-size:14.5px;">'+tr('La tua inflazione')+'</h3>'+
+      '<div class="stat-big" style="color:'+(yoy.pct>0?'var(--red)':'var(--accent)')+';">'+(yoy.pct>0?'+':'')+yoy.pct.toFixed(1).replace('.',',')+'%</div>'+
+      '<p class="hint" style="margin:0;">'+
+        tr('Negli ultimi 12 mesi hai speso A, contro B dei 12 mesi precedenti.')
+          .replace('A',fmt(yoy.ora)).replace('B',fmt(yoy.prima))+'</p>'+
+    '</section>';
+  }
   var _invL=state.investments||[];
   if(_invL.length){
     var _it=invTotalsEur(_invL),_gc=_it.gain>=0?'inv-up':'inv-down',_gs=_it.gain>=0?'+':'';
@@ -5537,6 +6157,11 @@ function advStatsLockedHTML(){
       '<li>'+tr('Dove vanno i tuoi soldi, con variazione per categoria')+'</li>'+
       '<li>'+tr('Andamento degli ultimi 12 mesi')+'</li>'+
       '<li>'+tr('Il tuo giorno più costoso')+'</li>'+
+      '<li>'+tr('Tasso di risparmio, mese per mese')+'</li>'+
+      '<li>'+tr('Andamento del patrimonio e mesi di autonomia')+'</li>'+
+      '<li>'+tr('Spese obbligate contro spese scelte')+'</li>'+
+      '<li>'+tr('Dove spendi di più, negozio per negozio')+'</li>'+
+      '<li>'+tr('Giorni senza spese e la tua inflazione personale')+'</li>'+
       '<li>'+tr('Avvisi quando ti avvicini o superi un budget')+'</li>'+
     '</ul>'+
     '<p class="hint">'+tr('Le tue statistiche di base restano sempre gratuite nella schermata Home.')+'</p>'+
@@ -8739,6 +9364,32 @@ async function init(){
   });
 }
 
+/* Gancio usato SOLO dai test automatici (jsdom). In condizioni normali
+   window.__SPENDY_TEST__ non esiste e questo blocco non fa niente. */
+if(window.__SPENDY_TEST__){
+  window.__spendyTest={
+    fns:{openAdvStatsSheet:openAdvStatsSheet,openSubsSheet:openSubsSheet,closeModal:closeModal,
+         bdDonutSVG:bdDonutSVG,subsScan:subsScan,netWorthSeries:netWorthSeries,
+         monthsOfRunway:monthsOfRunway,noSpendDays:noSpendDays,topMerchants:topMerchants},
+    call:function(nome){return this.fns[nome].apply(null,[].slice.call(arguments,1));},
+    setTab:function(t){ui.activeTab=t;renderActiveTab();},
+    setPremium:function(on){setPremiumTest(on);},
+    firstCatId:function(){return state.categories[0].id;},
+    stato:function(){return state;},
+    seed:function(){
+      var cat=(state.categories.filter(function(c){return c.type!=='income';})[0]||{}).id;
+      var inc=(state.categories.filter(function(c){return c.type==='income';})[0]||{}).id;
+      var acc=state.accounts[0].id,tx=[];
+      for(var m=0;m<14;m++){
+        var k=monthKeyBack(m);
+        tx.push({id:'tn'+m,date:k+'-05',amount:12.99,type:'expense',categoryId:cat,accountId:acc,merchant:'NETFLIX',note:'PAGAMENTO CARTA NETFLIX',tags:[],createdAt:1});
+        tx.push({id:'ts'+m,date:k+'-12',amount:62.4+m,type:'expense',categoryId:cat,accountId:acc,merchant:'ESSELUNGA',note:'POS ESSELUNGA MILANO',tags:[],createdAt:1});
+        tx.push({id:'ti'+m,date:k+'-27',amount:1800,type:'income',categoryId:inc,accountId:acc,merchant:'',note:'Stipendio',tags:[],createdAt:1});
+      }
+      state.transactions=tx;
+    }
+  };
+}
 init();
 })();
 </script>
