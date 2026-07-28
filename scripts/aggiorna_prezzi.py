@@ -3,10 +3,14 @@
 #
 #   • Twelve Data   → azioni USA, ETF USA e cripto. Aggiornati OGNI GIORNO.
 #                     Piano gratuito: 8 richieste/minuto, 800/giorno.
-#   • Alpha Vantage → azioni ed ETF EUROPEI. Aggiornati A ROTAZIONE.
+#   • Alpha Vantage → azioni ed ETF EUROPEI. Aggiornati OGNI GIORNO.
 #                     Piano gratuito: 25 richieste/giorno, 5/minuto.
-#                     Ogni giorno tocca i 25 più "vecchi": con 50 asset
-#                     europei ognuno viene rinfrescato ogni ~2 giorni.
+#                     Il listino europeo e' stato ridotto a 24 asset con
+#                     simbolo Alpha Vantage GIA' FISSATO in tickers.json
+#                     (campo "avSymbol"): una richiesta a testa, nessuna
+#                     ricerca sprecata, tutti aggiornati tutti i giorni.
+#                     Gli asset con "source":"alphavantage" vanno dritti qui
+#                     senza passare da Twelve Data (che non li copre).
 #   • Frankfurter (BCE) → cambi valuta. Gratuito, senza chiave.
 #
 # Il robot scrive un unico prezzi.json che l'app legge. Alla prima esecuzione
@@ -283,6 +287,8 @@ def main():
         return (manca, e.get("asof") or "0000-00-00")
 
     td = [a for a in assets if a.get("source", "twelvedata").startswith("twelvedata")]
+    # Europei "diretti": Twelve Data non li copre, si va subito su Alpha Vantage.
+    av_diretti = [a for a in assets if a.get("source", "") == "alphavantage"]
     if SOLO_MANCANTI:
         td = [a for a in td if not isinstance(prices[a["symbol"].upper()].get("price"), (int, float))
               or prices[a["symbol"].upper()].get("asof") != today]
@@ -323,10 +329,18 @@ def main():
                 print("  + %s: %s %s" % (sym, p, a.get("currency", "")))
     print("   richieste Twelve Data usate: %d" % used)
 
-    av = av_riserva
-    print("== Alpha Vantage (riserva per l'Europa): %d asset da coprire, budget %d/giorno ==" % (len(av), AV_BUDGET))
+    visti = set()
+    av = []
+    for a in av_diretti + av_riserva:
+        s = a["symbol"].upper()
+        if s not in visti:
+            visti.add(s); av.append(a)
+    print("== Alpha Vantage (Europa): %d asset (%d diretti + %d di riserva), budget %d/giorno =="
+          % (len(av), len(av_diretti), len(av_riserva), AV_BUDGET))
+    if len(av) > AV_BUDGET:
+        print("  ATTENZIONE: piu' asset che richieste disponibili: gli ultimi slittano a domani.")
     if not av:
-        print("  (nessuno: Twelve Data li ha coperti tutti)")
+        print("  (nessuno da lavorare)")
     if not AV_KEY:
         print("  (ALPHA_VANTAGE_KEY assente: salto, mantengo i prezzi esistenti)")
     else:
@@ -337,6 +351,10 @@ def main():
                 print("  (budget Alpha Vantage esaurito: gli altri toccheranno domani)"); break
             sym = a["symbol"].upper(); e = prices[sym]
             if e.get("asof") == today: continue
+            # Simbolo fissato a mano in tickers.json: vale piu' della ricerca
+            # automatica (che a volte agganciava il titolo sbagliato) e non
+            # costa richieste.
+            if a.get("avSymbol"): e["avSymbol"] = a["avSymbol"]
             if not e.get("avSymbol"):
                 r = av_resolve(a); used += 1; time.sleep(AV_PAUSA)
                 if r == "LIMIT":
