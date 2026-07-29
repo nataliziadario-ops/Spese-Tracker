@@ -501,8 +501,16 @@ input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none;displ
 .avatar-fab:active{transform:scale(0.94);}
 .avatar-fab svg{width:19px;height:19px;}
 .profile-head{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 4px;}
-.profile-avatar{width:74px;height:74px;border-radius:50%;background:linear-gradient(150deg,var(--lime-hi),var(--lime) 55%,var(--lime-dark));color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:30px;box-shadow:0 8px 22px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,0.22);}
+.profile-avatar-wrap{position:relative;width:74px;height:74px;padding:0;border:0;background:none;border-radius:50%;flex-shrink:0;}
+.profile-avatar{width:74px;height:74px;border-radius:50%;overflow:hidden;background:linear-gradient(150deg,var(--lime-hi),var(--lime) 55%,var(--lime-dark));color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:30px;box-shadow:0 8px 22px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,0.22);}
 .profile-avatar svg{width:34px;height:34px;}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.profile-avatar .pa-emoji{font-size:38px;line-height:1;}
+.profile-avatar-edit{position:absolute;right:-1px;bottom:-1px;width:27px;height:27px;border-radius:50%;background:var(--surface);border:1px solid var(--border);color:var(--ink-soft);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);}
+.profile-avatar-edit svg{width:14px;height:14px;}
+.avatar-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px;}
+.avatar-opt{aspect-ratio:1;border-radius:12px;background:var(--inset);border:1px solid var(--hairline);font-size:21px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
+.avatar-opt.selected{border-color:var(--accent);background:var(--accent-soft);}
 .profile-name-input{border:none;background:none;font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--ink);text-align:center;width:100%;padding:4px 8px;border-radius:10px;letter-spacing:-0.015em;}
 .profile-name-input::placeholder{color:var(--ink-faint);font-weight:600;}
 .profile-name-input:focus{outline:none;background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft);}
@@ -660,7 +668,7 @@ main#content{overscroll-behavior-y:contain;position:relative;}
 .inv-chart-head{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:6px;color:var(--ink-soft);}
 /* --- Pagina Investimenti (v35) --- */
 .invp{position:fixed;inset:0;z-index:36;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px calc(96px + env(safe-area-inset-bottom));}
-.invp-head{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;gap:10px;padding:14px 0 10px;z-index:2;}
+.invp-head{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 0 10px;z-index:2;}
 .invp-back{width:36px;height:36px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:22px;line-height:1;color:var(--ink);display:flex;align-items:center;justify-content:center;}
 .invp-title{font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:-0.01em;}
 .invp-sum-val{font-size:34px;font-weight:800;font-family:var(--font-display);letter-spacing:-0.02em;margin-top:2px;}
@@ -2466,7 +2474,8 @@ function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
     categories:DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);}).concat(DEFAULT_INCOME_CATS.map(function(c){return Object.assign({},c);})),
-    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[],merchantRules:{},subsIgnored:[]
+    transactions:[],transfers:[],budgets:{},tags:[],recurring:[],goals:[],investments:[],portfolioHistory:[],merchantRules:{},subsIgnored:[],
+    profile:{name:'',avatar:''}
   };
 }
 
@@ -2486,6 +2495,19 @@ function ensureV3Fields(s){
   s.goals.forEach(function(g){g.history=g.history||[];if(g.emoji===undefined)g.emoji='🎯';if(g.color===undefined)g.color=0;});
   s.transactions.forEach(function(t){t.tags=t.tags||[];t.type=t.type||'expense';if(t.merchant===undefined)t.merchant='';});
   s.transfers.forEach(function(t){t.tags=t.tags||[];});
+  /* Profilo (nome + immagine): vive nello stato, cosi' viene salvato coi dati,
+     entra nell'export e si sincronizza sul cloud. Alla prima apertura si
+     recupera il nome dalla vecchia chiave localStorage. */
+  if(!s.profile||typeof s.profile!=='object')s.profile={name:'',avatar:''};
+  if(typeof s.profile.name!=='string')s.profile.name='';
+  if(typeof s.profile.avatar!=='string')s.profile.avatar='';
+  if(!s.profile.name||!s.profile.avatar){
+    var lp=legacyProfile();
+    if(lp){
+      if(!s.profile.name&&lp.name)s.profile.name=String(lp.name);
+      if(!s.profile.avatar&&lp.avatar)s.profile.avatar=String(lp.avatar);
+    }
+  }
   if(s.notifAutomation===undefined)s.notifAutomation=false;
   if(s.hideBalances===undefined)s.hideBalances=false;
   if(s.categories)s.categories.forEach(function(c){if(c.archived===undefined)c.archived=false;});
@@ -2512,7 +2534,7 @@ function migrateFromRaw(raw){
   var cats=(raw.categories&&raw.categories.length)?raw.categories.slice().map(function(c){return c.type?c:Object.assign({},c,{type:'expense'});}):DEFAULT_EXPENSE_CATS.map(function(c){return Object.assign({},c);});
   if(!cats.some(function(c){return c.type==='income';})) DEFAULT_INCOME_CATS.forEach(function(c){cats.push(Object.assign({},c));});
   var txns=raw.transactions||(raw.expenses?raw.expenses.map(function(e){return Object.assign({},e,{type:e.type||'expense',tags:e.tags||[]}); }):[]);
-  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],merchantRules:raw.merchantRules||{},subsIgnored:raw.subsIgnored||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,updatedAt:raw.updatedAt||0});
+  return ensureV3Fields({accounts:(raw.accounts&&raw.accounts.length)?raw.accounts:defaultState().accounts,categories:cats,transactions:txns,transfers:raw.transfers||[],budgets:raw.budgets||{},tags:raw.tags||[],recurring:raw.recurring||[],goals:raw.goals||[],investments:raw.investments||[],portfolioHistory:raw.portfolioHistory||[],merchantRules:raw.merchantRules||{},subsIgnored:raw.subsIgnored||[],inboxToken:raw.inboxToken||null,autoRegister:!!raw.autoRegister,notifAutomation:!!raw.notifAutomation,hideBalances:!!raw.hideBalances,paypalAccountId:raw.paypalAccountId||null,paypalSetupDone:!!raw.paypalSetupDone,profile:raw.profile||null,updatedAt:raw.updatedAt||0});
 }
 
 /* ================================================================
@@ -2749,7 +2771,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v47';
+var APP_VERSION='v48';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -5286,23 +5308,112 @@ function openLangSheet(){
    nessuna modifica alla struttura dei dati dell'app.
 ================================================================ */
 var PROFILE_KEY='expense-tracker-profile-v1';
-function profileName(){
-  try{var raw=window.localStorage.getItem(PROFILE_KEY);if(!raw)return'';var p=JSON.parse(raw);return(p&&p.name)?p.name:'';}
-  catch(e){return'';}
+/* Vecchia cassetta (solo localStorage): serve unicamente a recuperare il nome
+   di chi aggiorna da una versione precedente. Da qui in avanti il profilo sta
+   dentro state.profile, quindi sopravvive alla reinstallazione dell'app e
+   viaggia col cloud. */
+function legacyProfile(){
+  try{var raw=window.localStorage.getItem(PROFILE_KEY);return raw?JSON.parse(raw):null;}catch(e){return null;}
+}
+function profileObj(){
+  if(state){
+    if(!state.profile||typeof state.profile!=='object')state.profile={name:'',avatar:''};
+    return state.profile;
+  }
+  return legacyProfile()||{name:'',avatar:''};
+}
+function profileName(){var p=profileObj();return p&&p.name?String(p.name):'';}
+function profileAvatar(){var p=profileObj();return p&&p.avatar?String(p.avatar):'';}
+var profileSaveTimer=null;
+function persistProfile(){
+  /* Copia di sicurezza immediata sul dispositivo + salvataggio dello stato
+     raggruppato, cosi' scrivere il nome lettera per lettera non genera una
+     scrittura sul cloud a ogni tasto. */
+  try{window.localStorage.setItem(PROFILE_KEY,JSON.stringify({name:profileName(),avatar:profileAvatar()}));}catch(e){}
+  clearTimeout(profileSaveTimer);
+  profileSaveTimer=setTimeout(function(){if(state)saveState();},600);
 }
 function saveProfileName(name){
-  try{window.localStorage.setItem(PROFILE_KEY,JSON.stringify({name:String(name||'').trim()}));}catch(e){}
+  profileObj().name=String(name||'').trim().slice(0,24);
+  persistProfile();
+}
+function saveProfileAvatar(val){
+  profileObj().avatar=val?String(val):'';
+  persistProfile();
 }
 function avatarInitial(){var n=profileName().trim();return n?n.charAt(0).toUpperCase():'';}
 var AVATAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.5-3.4 4.2-5 7.5-5s6 1.6 7.5 5"/></svg>';
+var AVATAR_EDIT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4.5H9.5L8 7H4.5v12.5h15V7H16z"/><circle cx="12" cy="13" r="3.4"/></svg>';
+var AVATAR_EMOJIS=['🙂','😎','🦊','🐼','🐧','🌱','🚀','🎧','🍀','⭐','🐙','🍋'];
+/* Cosa mostrare nel cerchio: foto, avatar, iniziale del nome o sagoma. */
+function avatarInnerHTML(){
+  var a=profileAvatar();
+  if(a.indexOf('data:')===0)return '<img src="'+esc(a)+'" alt="">';
+  if(a)return '<span class="pa-emoji">'+esc(a)+'</span>';
+  var ini=avatarInitial();
+  return ini?esc(ini):AVATAR_SVG;
+}
+/* Ritaglia al centro, ridimensiona a 192px e comprime: la foto pesa pochi KB,
+   entra senza problemi nel salvataggio e nella sincronizzazione. */
+function avatarFromFile(file,cb){
+  if(!file){cb(null);return;}
+  var fr=new FileReader();
+  fr.onerror=function(){cb(null);};
+  fr.onload=function(){
+    var img=new Image();
+    img.onerror=function(){cb(null);};
+    img.onload=function(){
+      try{
+        var S=192,cv=document.createElement('canvas');
+        cv.width=S;cv.height=S;
+        var ctx=cv.getContext('2d');
+        var side=Math.min(img.width,img.height);
+        ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,S,S);
+        cb(cv.toDataURL('image/jpeg',0.82));
+      }catch(e){cb(null);}
+    };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+function openAvatarSheet(){
+  var cur=profileAvatar();
+  openCenteredModal('<div class="confirm-box" style="text-align:left;">'+
+    '<h3 style="margin:0 0 4px;font-size:16px;">'+tr('Immagine del profilo')+'</h3>'+
+    '<p class="hint" style="margin:0 0 10px;">'+tr('Scegli una foto dal dispositivo oppure un avatar.')+'</p>'+
+    '<button class="btn-primary full-width" id="avPick">'+tr('Scegli una foto')+'</button>'+
+    '<div class="avatar-grid">'+AVATAR_EMOJIS.map(function(e){
+      return '<button class="avatar-opt'+(cur===e?' selected':'')+'" data-av="'+esc(e)+'">'+e+'</button>';
+    }).join('')+'</div>'+
+    (cur?'<button class="btn-secondary full-width" id="avClear" style="margin-top:10px;">'+tr('Rimuovi immagine')+'</button>':'')+
+    '<button class="btn-secondary full-width" id="avCancel" style="margin-top:8px;">'+tr('Annulla')+'</button>'+
+    '<input type="file" accept="image/*" id="avFile" style="display:none;">'+
+  '</div>');
+  var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+  document.getElementById('avCancel').onclick=closeModal;
+  var clr=document.getElementById('avClear');
+  if(clr)clr.onclick=function(){saveProfileAvatar('');closeModal();renderActiveTab();};
+  document.querySelectorAll('.avatar-opt').forEach(function(b){
+    b.onclick=function(){saveProfileAvatar(b.dataset.av);closeModal();renderActiveTab();};
+  });
+  var f=document.getElementById('avFile');
+  document.getElementById('avPick').onclick=function(){f.click();};
+  f.onchange=function(){
+    var file=f.files&&f.files[0];
+    if(!file)return;
+    avatarFromFile(file,function(data){
+      if(!data){showToast(tr('Immagine non leggibile'));return;}
+      saveProfileAvatar(data);closeModal();renderActiveTab();
+    });
+  };
+}
 /* Il pulsante in alto a destra ora apre i Conti: l'iniziale del nome vive
    nella scheda Profilo. La funzione resta per compatibilita' con le chiamate
    sparse nel codice. */
 function updateAvatarFab(){
   var a=document.getElementById('profileAvatar');
   if(!a)return;
-  var ini=avatarInitial();
-  a.innerHTML=ini?esc(ini):AVATAR_SVG;
+  a.innerHTML=avatarInnerHTML();
 }
 /* ================================================================
    SCHEDA PROFILO (quarta scheda in basso)
@@ -5366,7 +5477,7 @@ function openLoginPopup(){
   };
 }
 function profileTabHTML(){
-  var pref=themePref(),ini=avatarInitial();
+  var pref=themePref();
   var ICO={
     budget:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg>',
     cats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 3.5h6l7 7-6 6-7-7z"/><circle cx="10" cy="7" r="1.3" fill="currentColor" stroke="none"/><path d="M4 19V9"/></svg>',
@@ -5380,7 +5491,11 @@ function profileTabHTML(){
   };
   var A='background:var(--accent-soft);color:var(--accent);',T='background:var(--transfer-soft);color:var(--transfer);',M='background:var(--amber-soft);color:var(--amber);';
   return '<div class="view">'+
-    '<div class="profile-head"><div class="profile-avatar" id="profileAvatar">'+(ini?esc(ini):AVATAR_SVG)+'</div>'+
+    '<div class="profile-head">'+
+    '<button class="profile-avatar-wrap" id="profileAvatarBtn" aria-label="'+tr('Cambia immagine del profilo')+'">'+
+      '<span class="profile-avatar" id="profileAvatar">'+avatarInnerHTML()+'</span>'+
+      '<span class="profile-avatar-edit">'+AVATAR_EDIT_SVG+'</span>'+
+    '</button>'+
     '<input class="profile-name-input" id="profileNameInp" maxlength="24" placeholder="'+tr('Il tuo nome')+'" value="'+esc(profileName())+'" aria-label="'+tr('Il tuo nome')+'"></div>'+
     /* 1 */ premiumBannerHTML()+
     /* 2 */ loginBannerHTML()+
@@ -5418,17 +5533,19 @@ function wireProfileTab(){
   if(inp){
     inp.oninput=function(){
       saveProfileName(inp.value);
-      var av=document.getElementById('profileAvatar');
-      var ini=avatarInitial();
-      if(av)av.innerHTML=ini?esc(ini):AVATAR_SVG;
+      updateAvatarFab();
     };
     inp.onchange=function(){saveProfileName(inp.value);};
   }
+  var avBtn=document.getElementById('profileAvatarBtn');
+  if(avBtn)avBtn.onclick=openAvatarSheet;
   document.querySelectorAll('[data-theme-pref]').forEach(function(b){
     b.onclick=function(){
+      /* setThemePref ridisegna la scheda: l'evidenza viene rimessa li' in base
+         alla preferenza salvata. Toccarla anche qui agirebbe su pulsanti ormai
+         buttati via, ed e' il motivo per cui non si vedeva piu' nulla di
+         selezionato. */
       setThemePref(b.dataset.themePref);
-      /* Il tema si applica da solo via CSS: qui basta spostare l'evidenza. */
-      document.querySelectorAll('[data-theme-pref]').forEach(function(x){x.classList.toggle('active',x===b);});
     };
   });
   var pb=document.getElementById('premiumBannerBtn');if(pb)pb.onclick=function(){openInfoSheet('premium');};
