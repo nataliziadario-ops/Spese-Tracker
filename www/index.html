@@ -839,12 +839,87 @@ html[data-theme="light"] .segmented{background:#E9EDF0;border-color:rgba(31,35,4
 html[data-theme="light"] .sheet{box-shadow:0 -14px 44px rgba(31,35,41,0.16);}
 html[data-theme="light"] .bottomnav{box-shadow:0 10px 30px -10px rgba(31,35,41,0.28),0 2px 6px rgba(31,35,41,0.05);}
 html[data-theme="light"] .hero-card{box-shadow:0 12px 30px -10px rgba(20,24,28,0.45),inset 0 1px 0 rgba(255,255,255,0.10);}
+/* ---------- Splash: anteprima dell'ultima schermata salvata ----------
+   Invece dello spinner nudo, all'avvio si ridisegna a memoria la schermata
+   di ieri (patrimonio gia' formattato, salvato in localStorage). Non e' un
+   dato vivo: e' una fotografia, e sparisce in dissolvenza appena l'app vera
+   e' pronta. Serve a togliere il salto "vuoto -> pieno". */
+#splash{transition:opacity .22s var(--ease-out);}
+#splash.fading{opacity:0;pointer-events:none;}
+#splash.preview{justify-content:flex-start;gap:0;padding:0;}
+#splash.preview .spinner,#splash.preview .splash-text{display:none;}
+.sk-wrap{width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:calc(16px + env(safe-area-inset-top)) 20px 0;box-sizing:border-box;}
+.sk-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.sk-acts{display:flex;gap:8px;}
+.sk-acts i{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--hairline);display:block;}
+.sk-row{height:58px;border-radius:var(--radius-lg);background:var(--surface);border:1px solid var(--hairline);opacity:0.7;}
+.sk-row.short{width:62%;}
+/* ---------- Benvenuto al primo avvio ---------- */
+#welcome{position:absolute;inset:0;z-index:60;background:var(--app-bg);display:flex;flex-direction:column;opacity:1;transition:opacity .22s var(--ease-out);}
+#welcome.closing{opacity:0;pointer-events:none;}
+.wc-track{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.wc-track::-webkit-scrollbar{display:none;}
+.wc-panel{flex:0 0 100%;width:100%;box-sizing:border-box;scroll-snap-align:center;scroll-snap-stop:always;display:flex;flex-direction:column;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 26px 8px;}
+.wc-illus{width:100%;height:auto;display:block;margin-bottom:26px;}
+.wc-title{font-family:var(--font-display);font-weight:700;font-size:25px;line-height:1.2;letter-spacing:-0.02em;color:var(--ink);margin:0 0 10px;}
+.wc-text{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0;}
+.wc-foot{flex-shrink:0;padding:0 26px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;}
+.wc-dots{display:flex;gap:7px;justify-content:center;padding:8px 0 6px;}
+.wc-dot{width:7px;height:7px;border-radius:4px;background:var(--handle);transition:width .22s var(--ease-out),background .22s var(--ease-out);}
+.wc-dot.on{width:22px;background:var(--accent);}
+.wc-skip{background:none;border:0;color:var(--ink-faint);font-size:13.5px;font-family:inherit;padding:8px;cursor:pointer;min-height:36px;}
+.wc-skip:disabled{opacity:0;pointer-events:none;}
+/* Schermi corti (o testo ingrandito dalle impostazioni del telefono):
+   il pannello puo' scorrere invece di tagliare la frase, e l'illustrazione
+   si fa piu' piccola. */
+.wc-panel{overflow-y:auto;}
+@media(max-height:660px){
+  .wc-panel{justify-content:flex-start;padding-top:calc(12px + env(safe-area-inset-top));}
+  .wc-illus{margin-bottom:16px;}
+  .wc-title{font-size:22px;}
+  .wc-text{font-size:14px;}
+}
 </style>
 </head>
 <body>
 <div id="app" data-amb="home">
   <div id="ambient" aria-hidden="true"><i class="amb amb-1"></i><i class="amb amb-2"></i><i class="amb amb-3"></i></div>
-  <div id="splash"><div class="spinner"></div><p style="color:var(--ink-soft);font-size:14px;margin:0;">Caricamento…</p></div>
+  <div id="splash"><div class="spinner"></div><p class="splash-text" style="color:var(--ink-soft);font-size:14px;margin:0;">Caricamento…</p></div>
+<script>
+/* Anteprima dell'avvio. Gira QUI, subito dopo il div dello splash e molto
+   prima del resto dell'app: a questo punto il browser ha letto poche righe,
+   quindi il primo fotogramma utile arriva quasi subito. Legge una fotografia
+   minuscola dell'ultima schermata (patrimonio GIA' formattato, mese, stato
+   dell'occhio) e la ridisegna con le classi vere della Home. Non calcola
+   niente e non tocca i dati: se la fotografia manca o e' rotta, resta lo
+   spinner di prima. */
+(function(){
+  var SNAP_KEY='spendy-snap-v1';
+  try{
+    var raw=window.localStorage.getItem(SNAP_KEY);
+    if(!raw)return;
+    var s=JSON.parse(raw);
+    if(!s||!s.val)return;
+    var box=document.getElementById('splash');
+    if(!box)return;
+    var esc=function(t){
+      return String(t==null?'':t).replace(/[&<>"]/g,function(c){
+        return c==='&'?'&amp;':c==='<'?'&lt;':c==='>'?'&gt;':'&quot;';
+      });
+    };
+    box.insertAdjacentHTML('afterbegin',
+      '<div class="sk-wrap" aria-hidden="true">'+
+        '<div class="sk-top"><span class="brand"><span class="brand-mark">S</span>Spendy</span>'+
+        '<span class="sk-acts"><i></i><i></i><i></i></span></div>'+
+        '<section class="hero-card"><div class="hero-label">'+esc(s.lab)+'</div>'+
+        '<div class="hero-value">'+esc(s.val)+'</div>'+
+        '<div class="hero-sub"><span>'+esc(s.sub)+'</span></div></section>'+
+        '<div class="sk-row"></div><div class="sk-row"></div><div class="sk-row short"></div>'+
+      '</div>');
+    box.classList.add('preview');
+  }catch(e){}
+})();
+</script>
   <div id="shell" class="hidden">
     <header class="topbar">
       <span class="brand"><span class="brand-mark" aria-hidden="true">S</span>Spendy</span>
@@ -3054,6 +3129,81 @@ Object.assign(TR.fr,{
 'Il caffè al bar: tocchi il widget, scrivi 1,20 e hai finito.':'Le café au comptoir : vous touchez le widget, tapez 1,20 et c\'est fini.',
 'Avvisi di budget':'Alertes de budget'
 });
+Object.assign(TR.en,{
+'Benvenuto in Spendy':'Welcome to Spendy',
+'Spesa o entrata, due tocchi':'Expense or income, two taps',
+'Il saldo si aggiorna subito. Conti, ricorrenti e obiettivi arrivano dopo, quando ti servono.':'The balance updates right away. Accounts, recurring payments and goals come later, when you need them.',
+'Il cloud \u00e8 facoltativo':'The cloud is optional',
+'Serve solo se vuoi gli stessi dati su pi\u00f9 dispositivi. Puoi attivarlo quando vuoi, dalla scheda Profilo.':'You only need it if you want the same data on more than one device. You can turn it on whenever you like, from the Profile tab.',
+'I dati restano tuoi':'Your data stays yours',
+'Nessuna pubblicit\u00e0, nessuna rivendita. Puoi esportare tutto o cancellare tutto quando vuoi.':'No ads, nothing sold on. You can export everything or delete everything whenever you want.',
+'Avanti':'Next',
+'Comincia':'Get started',
+'Salta':'Skip',
+'Backup completo':'Full backup',
+'Salva tutto in un file: movimenti, conti, ricorrenti, obiettivi, investimenti e impostazioni.':'Save everything to one file: transactions, accounts, recurring payments, goals, investments and settings.',
+'Salva il backup':'Save the backup',
+'Ripristina da backup':'Restore from backup',
+'Backup salvato':'Backup saved',
+'Backup non riuscito':'Backup failed',
+'Salvataggio annullato.':'Saving cancelled.',
+'Il file non \u00e8 un backup di Spendy.':'That file is not a Spendy backup.',
+'Ripristina':'Restore',
+'Dati ripristinati':'Data restored',
+'Il backup contiene tutti i tuoi dati in chiaro: tienilo in un posto sicuro.':'The backup holds all your data in plain text: keep it somewhere safe.',
+'Backup del {D} \u00b7 {N} movimenti':'Backup from {D} \u00b7 {N} transactions',
+'Questo backup sostituisce tutti i dati che hai adesso su questo dispositivo. Vuoi continuare?':'This backup replaces all the data you have on this device right now. Do you want to continue?'
+});
+Object.assign(TR.es,{
+'Benvenuto in Spendy':'Bienvenido a Spendy',
+'Spesa o entrata, due tocchi':'Gasto o ingreso, dos toques',
+'Il saldo si aggiorna subito. Conti, ricorrenti e obiettivi arrivano dopo, quando ti servono.':'El saldo se actualiza al instante. Las cuentas, los recurrentes y las metas llegan despu\u00e9s, cuando los necesites.',
+'Il cloud \u00e8 facoltativo':'La nube es opcional',
+'Serve solo se vuoi gli stessi dati su pi\u00f9 dispositivi. Puoi attivarlo quando vuoi, dalla scheda Profilo.':'Solo hace falta si quieres los mismos datos en varios dispositivos. Puedes activarla cuando quieras, desde la pesta\u00f1a Perfil.',
+'I dati restano tuoi':'Tus datos siguen siendo tuyos',
+'Nessuna pubblicit\u00e0, nessuna rivendita. Puoi esportare tutto o cancellare tutto quando vuoi.':'Sin publicidad, sin reventa. Puedes exportarlo todo o borrarlo todo cuando quieras.',
+'Avanti':'Siguiente',
+'Comincia':'Empezar',
+'Salta':'Saltar',
+'Backup completo':'Copia de seguridad completa',
+'Salva tutto in un file: movimenti, conti, ricorrenti, obiettivi, investimenti e impostazioni.':'Guarda todo en un archivo: movimientos, cuentas, recurrentes, metas, inversiones y ajustes.',
+'Salva il backup':'Guardar la copia',
+'Ripristina da backup':'Restaurar desde una copia',
+'Backup salvato':'Copia guardada',
+'Backup non riuscito':'No se pudo guardar la copia',
+'Salvataggio annullato.':'Guardado cancelado.',
+'Il file non \u00e8 un backup di Spendy.':'El archivo no es una copia de Spendy.',
+'Ripristina':'Restaurar',
+'Dati ripristinati':'Datos restaurados',
+'Il backup contiene tutti i tuoi dati in chiaro: tienilo in un posto sicuro.':'La copia contiene todos tus datos en claro: gu\u00e1rdala en un lugar seguro.',
+'Backup del {D} \u00b7 {N} movimenti':'Copia del {D} \u00b7 {N} movimientos',
+'Questo backup sostituisce tutti i dati che hai adesso su questo dispositivo. Vuoi continuare?':'Esta copia sustituye todos los datos que tienes ahora en este dispositivo. \u00bfQuieres continuar?'
+});
+Object.assign(TR.fr,{
+'Benvenuto in Spendy':'Bienvenue dans Spendy',
+'Spesa o entrata, due tocchi':'D\u00e9pense ou revenu, deux touches',
+'Il saldo si aggiorna subito. Conti, ricorrenti e obiettivi arrivano dopo, quando ti servono.':'Le solde se met \u00e0 jour tout de suite. Les comptes, les r\u00e9currents et les objectifs viennent apr\u00e8s, quand vous en avez besoin.',
+'Il cloud \u00e8 facoltativo':'Le cloud est facultatif',
+'Serve solo se vuoi gli stessi dati su pi\u00f9 dispositivi. Puoi attivarlo quando vuoi, dalla scheda Profilo.':'Il ne sert que si vous voulez les m\u00eames donn\u00e9es sur plusieurs appareils. Vous pouvez l\'activer quand vous voulez, depuis l\'onglet Profil.',
+'I dati restano tuoi':'Vos donn\u00e9es restent les v\u00f4tres',
+'Nessuna pubblicit\u00e0, nessuna rivendita. Puoi esportare tutto o cancellare tutto quando vuoi.':'Aucune publicit\u00e9, aucune revente. Vous pouvez tout exporter ou tout supprimer quand vous voulez.',
+'Avanti':'Suivant',
+'Comincia':'Commencer',
+'Salta':'Passer',
+'Backup completo':'Sauvegarde compl\u00e8te',
+'Salva tutto in un file: movimenti, conti, ricorrenti, obiettivi, investimenti e impostazioni.':'Enregistrez tout dans un fichier : mouvements, comptes, r\u00e9currents, objectifs, investissements et r\u00e9glages.',
+'Salva il backup':'Enregistrer la sauvegarde',
+'Ripristina da backup':'Restaurer depuis une sauvegarde',
+'Backup salvato':'Sauvegarde enregistr\u00e9e',
+'Backup non riuscito':'\u00c9chec de la sauvegarde',
+'Salvataggio annullato.':'Enregistrement annul\u00e9.',
+'Il file non \u00e8 un backup di Spendy.':'Ce fichier n\'est pas une sauvegarde Spendy.',
+'Ripristina':'Restaurer',
+'Dati ripristinati':'Donn\u00e9es restaur\u00e9es',
+'Il backup contiene tutti i tuoi dati in chiaro: tienilo in un posto sicuro.':'La sauvegarde contient toutes vos donn\u00e9es en clair : gardez-la en lieu s\u00fbr.',
+'Backup del {D} \u00b7 {N} movimenti':'Sauvegarde du {D} \u00b7 {N} mouvements',
+'Questo backup sostituisce tutti i dati che hai adesso su questo dispositivo. Vuoi continuare?':'Cette sauvegarde remplace toutes les donn\u00e9es pr\u00e9sentes sur cet appareil. Voulez-vous continuer ?'
+});
 function defaultState(){
   return {
     accounts:[{id:uid('acc'),name:'Conto principale',color:0}],
@@ -3347,6 +3497,7 @@ async function saveState(){
   await persistLocal();
   pushStateToCloud();
   pushWidgetData();
+  saveScreenSnapshot();
 }
 
 /* ================================================================
@@ -3358,7 +3509,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v55';
+var APP_VERSION='v56';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -3733,8 +3884,8 @@ async function startSync(uid,email){
     markPendingPush(false);
     sync.lastPushedJSON=null;
     await switchUserState(uid);
+    renderActiveTab();
   }
-  renderActiveTab();
   var res=await reconcileWithCloud();
   if(sync.freshUser){
     sync.freshUser=false;
@@ -3749,7 +3900,11 @@ async function startSync(uid,email){
   }catch(e){sync.providers=[];}
   sync.status='connected';
   if(sync.pendingPush&&isOnline())await rawPushStateToCloud();
-  renderActiveTab();
+  /* Se dal cloud non e' arrivato niente di nuovo, ridisegnare tutto
+     serve solo a far lampeggiare lo schermo: basta la spia. */
+  if(res==='used-remote'||res==='pushed')renderActiveTab();
+  else updateSyncBadge();
+  saveScreenSnapshot();
 }
 
 /* Uscita dall'account: i dati restano nel cloud ma spariscono dal telefono,
@@ -3767,6 +3922,7 @@ async function signOutFromCloud(){
      accesso Google/Apple ripropone la scelta dell'account (sul web non fa nulla). */
   if(window.NativeBridge&&NativeBridge.signOutNative){try{await NativeBridge.signOutNative();}catch(e){}}
   if(uid)await storageRemove(stateKeyFor(uid));
+  clearScreenSnapshot();
   clearSession();
   activeUid=null;
   sync.uid=null;sync.email=null;sync.offlineSession=false;sync.lastPushedJSON=null;
@@ -7114,6 +7270,7 @@ function openDataSheet(){
       syncStatusCardHTML()+
       '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">'+tr('Importa i tuoi dati')+'</h3><p class="hint">'+tr('Importa spese ed entrate da un file <strong>CSV</strong> o <strong>Excel (.xlsx)</strong> scaricato dalla banca. Prima di salvare vedrai l\'anteprima riga per riga.')+'</p><button class="btn-primary full-width" id="openImportBtn">📂 Importa i tuoi dati</button></section>'+
       '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">Esporta i tuoi dati</h3><p class="hint">'+tr('Salva i movimenti in un file da conservare, aprire in Excel o inviare.')+'</p><button class="btn-primary full-width" id="openExportBtn">⬇️ Esporta (PDF, CSV, Excel)</button></section>'+
+      '<section class="card" style="display:flex;flex-direction:column;gap:10px;"><h3 style="margin:0;font-size:14.5px;">'+tr('Backup completo')+'</h3><p class="hint">'+tr('Salva tutto in un file: movimenti, conti, ricorrenti, obiettivi, investimenti e impostazioni.')+'</p><button class="btn-secondary full-width" id="openBackupBtn">💾 '+tr('Backup completo')+'</button></section>'+
       notifCardHTML()+
       '<div style="text-align:center;"><button class="reset-link" id="resetBtn">'+tr('Reimposta tutti i dati')+'</button></div>'+
     '</div>';
@@ -8013,10 +8170,12 @@ function wireDataCards(rerender){
   };
   var impBtn=document.getElementById('openImportBtn');if(impBtn)impBtn.onclick=openImportModal;
   var expBtn=document.getElementById('openExportBtn');if(expBtn)expBtn.onclick=openExportModal;
+  var bkBtn=document.getElementById('openBackupBtn');if(bkBtn)bkBtn.onclick=openBackupSheet;
   var rstBtn=document.getElementById('resetBtn');
   if(rstBtn)rstBtn.onclick=function(){
     confirmDialog(tr('Eliminare definitivamente tutti i dati? Questa azione non si può annullare.'),function(){
       state=ensureV3Fields(defaultState());ui={activeTab:'accounts',viewMonth:currentMonthKey(),viewYear:new Date().getFullYear(),homeView:'monthly',accountFilter:'all',categoryFilter:'all',typeFilter:'all',tagFilter:null,breakdownType:'expense',addingAccount:false,newCatType:'expense'};
+      clearScreenSnapshot();
       saveState();showToast(tr('Dati reimpostati'));closeModal();renderActiveTab();
     },'Elimina tutto');
   };
@@ -8747,7 +8906,136 @@ async function saveOrShare(filename,blob,mime){
 }
 
 /* ================================================================
-   ESPORTAZIONE (PDF · CSV · XLSX)
+   BACKUP COMPLETO
+   L'esportazione (PDF/CSV/XLSX) serve a LEGGERE i movimenti altrove.
+   Questo serve a un'altra cosa: rimettere l'app com'era. Dentro ci va
+   tutto lo stato cosi' com'e', senza filtri, perche' al ritorno passa da
+   migrateFromRaw() esattamente come i dati che arrivano dal cloud: i campi
+   nuovi delle versioni future sopravvivono da soli.
+   E' gratis di proposito, come il PDF: i propri dati si devono poter
+   portare via sempre.
+================================================================ */
+var BACKUP_MAGIC='spendy-backup';
+
+function backupPayload(){
+  return {app:BACKUP_MAGIC,v:1,appVersion:APP_VERSION,
+          savedAt:new Date().toISOString(),state:state};
+}
+function backupFileName(){return 'spendy-backup-'+todayISO()+'.json';}
+function backupBlob(){
+  return new Blob([JSON.stringify(backupPayload())],{type:'application/json'});
+}
+async function doBackup(){
+  try{
+    var out=await saveOrShare(backupFileName(),backupBlob(),'application/json');
+    if(out==='cancelled')return 'cancelled';
+    if(out==='failed')return 'failed';
+    return 'ok';
+  }catch(e){return 'failed';}
+}
+
+/* Legge un file scelto dall'utente. Accetta il nostro formato con la
+   busta (app/savedAt/state) e anche uno stato nudo, per non buttare via
+   un file salvato a mano. Se non somiglia a niente di nostro, dice di no
+   invece di provarci: un ripristino sbagliato cancella tutto. */
+function parseBackup(text){
+  var raw=null;
+  try{raw=JSON.parse(text);}catch(e){return null;}
+  if(!raw||typeof raw!=='object')return null;
+  var st=(raw.app===BACKUP_MAGIC&&raw.state)?raw.state:raw;
+  if(!st||typeof st!=='object')return null;
+  if(!Array.isArray(st.transactions)&&!Array.isArray(st.accounts))return null;
+  return {state:st,savedAt:raw.savedAt||null,appVersion:raw.appVersion||null};
+}
+function backupSummary(b){
+  var st=(b&&b.state)||{};
+  var n=(st.transactions||[]).length+(st.transfers||[]).length;
+  var d='\u2014';
+  try{if(b&&b.savedAt)d=formatShortDate(String(b.savedAt).slice(0,10));}catch(e){}
+  return tr('Backup del {D} \u00b7 {N} movimenti').replace('{D}',d).replace('{N}',String(n));
+}
+async function restoreBackup(b){
+  state=migrateFromRaw(b.state);
+  ui.accountFilter='all';ui.categoryFilter='all';ui.typeFilter='all';ui.tagFilter=null;
+  ui.viewMonth=currentMonthKey();
+  await saveState();
+  renderActiveTab();
+  return true;
+}
+
+function openBackupSheet(){
+  var bk={msg:'',pending:null,busy:false};
+  function sheetHTML(){
+    var prev='';
+    if(bk.pending){
+      prev='<section class="card" style="display:flex;flex-direction:column;gap:10px;">'+
+        '<div style="font-size:14px;font-weight:600;">'+esc(backupSummary(bk.pending))+'</div>'+
+        '<button class="btn-danger full-width" id="bkConfirm">'+esc(tr('Ripristina'))+'</button>'+
+      '</section>';
+    }
+    return '<div class="sheet">'+
+      '<div class="sheet-handle"></div>'+
+      '<h3 style="margin:4px 0 0;">'+esc(tr('Backup completo'))+'</h3>'+
+      '<p class="hint">'+esc(tr('Salva tutto in un file: movimenti, conti, ricorrenti, obiettivi, investimenti e impostazioni.'))+'</p>'+
+      '<button class="btn-primary full-width" id="bkSave"'+(bk.busy?' disabled':'')+'>\U0001f4be '+esc(tr('Salva il backup'))+'</button>'+
+      '<p class="hint">'+esc(tr('Il backup contiene tutti i tuoi dati in chiaro: tienilo in un posto sicuro.'))+'</p>'+
+      '<div class="field-group"><label class="field-label">'+esc(tr('Ripristina da backup'))+'</label>'+
+      '<input type="file" accept=".json,application/json" id="bkFile"></div>'+
+      prev+
+      (bk.msg?'<p class="hint" style="color:var(--red);">'+esc(bk.msg)+'</p>':'')+
+    '</div>';
+  }
+  function wire(){
+    var bd=document.getElementById('modalBackdrop');if(bd)bd.onclick=closeModal;
+    var sv=document.getElementById('bkSave');
+    if(sv)sv.onclick=async function(){
+      if(bk.busy)return;
+      bk.busy=true;bk.msg='';render();
+      var out=await doBackup();
+      bk.busy=false;
+      if(out==='ok')bk.msg='';
+      else if(out==='cancelled')bk.msg=tr('Salvataggio annullato.');
+      else bk.msg=tr('Backup non riuscito');
+      render();
+      if(out==='ok')showToast(tr('Backup salvato'));
+    };
+    var f=document.getElementById('bkFile');
+    if(f)f.onchange=function(){
+      var file=f.files&&f.files[0];
+      if(!file)return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var b=parseBackup(String(rd.result||''));
+        if(!b){bk.pending=null;bk.msg=tr('Il file non \u00e8 un backup di Spendy.');}
+        else{bk.pending=b;bk.msg='';}
+        render();
+      };
+      rd.onerror=function(){bk.pending=null;bk.msg=tr('Il file non \u00e8 un backup di Spendy.');render();};
+      rd.readAsText(file);
+    };
+    var cf=document.getElementById('bkConfirm');
+    if(cf)cf.onclick=function(){
+      var b=bk.pending;
+      if(!b)return;
+      confirmDialog(tr('Questo backup sostituisce tutti i dati che hai adesso su questo dispositivo. Vuoi continuare?'),function(){
+        restoreBackup(b).then(function(){
+          closeModal();
+          showToast(tr('Dati ripristinati'));
+        });
+      },tr('Ripristina'));
+    };
+  }
+  function render(){
+    var w=rerenderSheetWrap(sheetHTML());
+    if(!w)return;
+    wire();
+  }
+  openModal('<div class="sheet"></div>');
+  render();
+}
+
+/* ================================================================
+   ESPORTAZIONE (PDF \u00b7 CSV \u00b7 XLSX)
 ================================================================ */
 function exportEntries(scope){
   var txs=state.transactions.slice();
@@ -10767,6 +11055,12 @@ function edgeBackTarget(){
   return document.getElementById('content');
 }
 function goBackOneStep(){
+  /* Benvenuto: si torna al pannello precedente. Sul primo non si esce
+     dall'app di soppiatto: si resta li'. */
+  if(welcomeLive()){
+    if(WC.i>0)welcomeGo(WC.i-1);
+    return true;
+  }
   /* 0. dialogo di conferma appoggiato sopra un foglio */
   var cl=document.getElementById('confirmLayer');
   if(cl){closeConfirmLayer();return true;}
@@ -10806,6 +11100,7 @@ var histDepth=0,skipPop=0;
 /* Quanti livelli sono aperti in questo momento. */
 function layerDepth(){
   var n=0;
+  if(welcomeLive())return 1+WC.i;   // durante il benvenuto non c'e' altro sotto
   if(document.getElementById('confirmLayer'))n++;
   if(document.getElementById('impDetailWrap'))n++;
   var m=document.getElementById('modal-root');
@@ -11138,17 +11433,262 @@ function initSheetDismiss(){
 }
 
 /* ================================================================
+   BENVENUTO AL PRIMO AVVIO
+   Tre pannelli che si scorrono col dito. Non e' un foglio modale: e' uno
+   strato sopra la shell, cosi' non litiga con i fogli veri. Tutti i colori
+   arrivano dalle variabili CSS, quindi segue da solo il tema del telefono.
+   Si vede UNA volta sola, e solo su un'installazione nuova: chi aggiorna
+   avendo gia' dei dati non se lo ritrova davanti.
+================================================================ */
+var WELCOME_KEY='spendy-welcome-v1';
+var WC={i:0};
+
+function welcomeSeen(){
+  try{return !!window.localStorage.getItem(WELCOME_KEY);}catch(e){return true;}
+}
+function markWelcomeSeen(){
+  try{window.localStorage.setItem(WELCOME_KEY,'1');}catch(e){}
+}
+/* Vuoto = nessun movimento, nessun trasferimento, nessuna ricorrente,
+   nessun obiettivo, nessun titolo. I due conti di partenza non contano:
+   ci sono anche in un'installazione appena fatta. */
+function stateIsEmpty(){
+  var s=state||{};
+  return !((s.transactions||[]).length||(s.transfers||[]).length||
+           (s.recurring||[]).length||(s.goals||[]).length||
+           (s.investments||[]).length);
+}
+function welcomeNeeded(){
+  /* Richiamo a mano: aprendo l'indirizzo con ?benvenuto in fondo il
+     carosello si rivede anche a dati gia' dentro. Serve a controllarlo
+     su un telefono vero senza dover reinstallare l'app. */
+  try{if(/[?&]benvenuto\b/.test(String(location.search||'')))return true;}catch(e){}
+  if(welcomeSeen())return false;
+  return stateIsEmpty();
+}
+
+/* Illustrazioni: pezzetti di interfaccia dell'app, non icone generiche.
+   Stesse forme che si vedono davvero (scheda patrimonio, righe dei
+   movimenti, tasto +), disegnate coi colori del tema in corso. */
+function welcomeIllus(kind){
+  var A='var(--accent)',AH='var(--accent-hi)',R='var(--red)',T='var(--transfer)',
+      F='var(--ink-faint)',S='var(--surface)',S2='var(--surface-2)',
+      B='var(--hairline)',TB='var(--ticket-b)',ON='var(--on-accent)';
+  var defs='<defs><linearGradient id="wcgr" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="'+AH+'" stop-opacity="0.24"/>'+
+    '<stop offset="1" stop-color="'+T+'" stop-opacity="0.15"/></linearGradient></defs>';
+  var s='<svg viewBox="0 0 300 168" class="wc-illus" role="img" aria-hidden="true">'+defs+
+        '<rect x="0" y="0" width="300" height="168" rx="20" fill="url(#wcgr)"/>';
+  if(kind==='home'){
+    s+='<rect x="76" y="10" width="148" height="148" rx="18" fill="'+S+'" stroke="'+B+'"/>';
+    s+='<rect x="86" y="20" width="128" height="48" rx="12" fill="'+TB+'"/>';
+    s+='<rect x="94" y="29" width="32" height="4.5" rx="2.2" fill="#FFFFFF" opacity="0.38"/>';
+    s+='<rect x="94" y="39" width="68" height="13" rx="4" fill="'+A+'"/>';
+    s+='<rect x="94" y="57" width="44" height="4" rx="2" fill="#FFFFFF" opacity="0.26"/>';
+    var ys=[76,104],cols=[A,R];
+    for(var i=0;i<2;i++){
+      var y=ys[i];
+      s+='<rect x="86" y="'+y+'" width="128" height="22" rx="8" fill="'+S2+'"/>'+
+         '<circle cx="99" cy="'+(y+11)+'" r="7" fill="'+cols[i]+'" opacity="0.85"/>'+
+         '<rect x="112" y="'+(y+8)+'" width="'+(52-i*12)+'" height="5" rx="2.5" fill="'+F+'" opacity="0.5"/>'+
+         '<rect x="'+(180+i*6)+'" y="'+(y+8)+'" width="'+(26-i*6)+'" height="5" rx="2.5" fill="'+cols[i]+'" opacity="0.8"/>';
+    }
+    s+='<circle cx="195" cy="138" r="15" fill="'+A+'"/>'+
+       '<path d="M195 130v16M187 138h16" stroke="'+ON+'" stroke-width="3" stroke-linecap="round"/>';
+  }else if(kind==='cloud'){
+    s+='<rect x="126" y="46" width="48" height="24" rx="12" fill="'+S+'" stroke="'+B+'"/>'+
+       '<circle cx="150" cy="46" r="20" fill="'+S+'" stroke="'+B+'"/>'+
+       '<circle cx="130" cy="54" r="13" fill="'+S+'"/>'+
+       '<circle cx="170" cy="54" r="13" fill="'+S+'"/>'+
+       '<rect x="128" y="52" width="44" height="18" fill="'+S+'"/>'+
+       '<path d="M141 50l6 7 12-14" stroke="'+A+'" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    s+='<rect x="34" y="84" width="52" height="68" rx="10" fill="'+S+'" stroke="'+B+'"/>'+
+       '<rect x="42" y="94" width="36" height="8" rx="4" fill="'+A+'" opacity="0.75"/>'+
+       '<rect x="42" y="108" width="28" height="5" rx="2.5" fill="'+F+'" opacity="0.45"/>'+
+       '<rect x="42" y="119" width="34" height="5" rx="2.5" fill="'+F+'" opacity="0.45"/>';
+    s+='<rect x="212" y="80" width="60" height="72" rx="10" fill="'+S+'" stroke="'+B+'"/>'+
+       '<rect x="220" y="90" width="42" height="8" rx="4" fill="'+A+'" opacity="0.75"/>'+
+       '<rect x="220" y="104" width="32" height="5" rx="2.5" fill="'+F+'" opacity="0.45"/>'+
+       '<rect x="220" y="115" width="38" height="5" rx="2.5" fill="'+F+'" opacity="0.45"/>';
+    s+='<path d="M92 96c14-14 24-20 38-22" stroke="'+A+'" stroke-width="2.6" fill="none" stroke-dasharray="5 5" stroke-linecap="round"/>'+
+       '<path d="M206 94c-12-12-22-18-36-20" stroke="'+A+'" stroke-width="2.6" fill="none" stroke-dasharray="5 5" stroke-linecap="round"/>';
+    s+='<rect x="124" y="128" width="52" height="26" rx="13" fill="'+S2+'" stroke="'+B+'"/>'+
+       '<circle cx="137" cy="141" r="9" fill="'+F+'" opacity="0.55"/>';
+  }else{
+    s+='<rect x="88" y="6" width="124" height="156" rx="24" fill="none" stroke="'+A+'" stroke-width="2" stroke-dasharray="7 6" opacity="0.55"/>';
+    s+='<rect x="102" y="18" width="96" height="132" rx="16" fill="'+S+'" stroke="'+B+'"/>';
+    s+='<path d="M150 36l26 10v20c0 17-11 29-26 34-15-5-26-17-26-34V46z" fill="'+A+'" opacity="0.18" stroke="'+A+'" stroke-width="2"/>';
+    s+='<rect x="142" y="66" width="16" height="14" rx="3.5" fill="'+A+'"/>'+
+       '<path d="M144.5 66v-5a5.5 5.5 0 0 1 11 0v5" stroke="'+A+'" stroke-width="2.6" fill="none"/>';
+    s+='<rect x="116" y="112" width="68" height="6" rx="3" fill="'+F+'" opacity="0.38"/>'+
+       '<rect x="116" y="124" width="50" height="6" rx="3" fill="'+F+'" opacity="0.3"/>'+
+       '<rect x="116" y="136" width="60" height="6" rx="3" fill="'+F+'" opacity="0.22"/>';
+    s+='<circle cx="252" cy="122" r="17" fill="none" stroke="'+R+'" stroke-width="3" opacity="0.8"/>'+
+       '<path d="M240 110l24 24" stroke="'+R+'" stroke-width="3" stroke-linecap="round" opacity="0.8"/>'+
+       '<rect x="244" y="116" width="16" height="4" rx="2" fill="'+R+'" opacity="0.55"/>'+
+       '<rect x="244" y="124" width="11" height="4" rx="2" fill="'+R+'" opacity="0.55"/>';
+  }
+  return s+'</svg>';
+}
+
+var WELCOME_PANELS=[
+  {k:'home',   t:'Spesa o entrata, due tocchi',
+               d:'Il saldo si aggiorna subito. Conti, ricorrenti e obiettivi arrivano dopo, quando ti servono.'},
+  {k:'cloud',  t:'Il cloud \u00e8 facoltativo',
+               d:'Serve solo se vuoi gli stessi dati su pi\u00f9 dispositivi. Puoi attivarlo quando vuoi, dalla scheda Profilo.'},
+  {k:'privacy',t:'I dati restano tuoi',
+               d:'Nessuna pubblicit\u00e0, nessuna rivendita. Puoi esportare tutto o cancellare tutto quando vuoi.'}
+];
+
+function welcomeOpen(){
+  return !!document.getElementById('welcome');
+}
+/* Durante la dissolvenza di chiusura lo strato c'e' ancora ma non conta
+   piu': serve al tasto indietro per non contarlo due volte. */
+function welcomeLive(){
+  var el=document.getElementById('welcome');
+  return !!(el&&!el.classList.contains('closing'));
+}
+
+function welcomePaint(){
+  var i=WC.i;
+  var dots=document.querySelectorAll('[data-wc-dot]');
+  for(var k=0;k<dots.length;k++){
+    if(Number(dots[k].getAttribute('data-wc-dot'))===i)dots[k].classList.add('on');
+    else dots[k].classList.remove('on');
+  }
+  var b=document.getElementById('wcNext');
+  if(b)b.textContent=(i>=WELCOME_PANELS.length-1)?tr('Comincia'):tr('Avanti');
+  var sk=document.getElementById('wcSkip');
+  if(sk)sk.disabled=(i>=WELCOME_PANELS.length-1);
+}
+
+function welcomeGo(i){
+  if(i<0)i=0;
+  if(i>WELCOME_PANELS.length-1)i=WELCOME_PANELS.length-1;
+  WC.i=i;
+  var t=document.getElementById('wcTrack');
+  /* jsdom (e il primo istante sul telefono) non sa ancora quanto e' largo:
+     in quel caso si aggiorna solo lo stato, senza far scorrere niente. */
+  if(t&&t.clientWidth){
+    try{t.scrollTo({left:i*t.clientWidth,behavior:'smooth'});}
+    catch(e){t.scrollLeft=i*t.clientWidth;}
+  }
+  welcomePaint();
+  syncBackHistory();
+}
+
+function closeWelcome(){
+  markWelcomeSeen();
+  var el=document.getElementById('welcome');
+  if(!el)return;
+  el.classList.add('closing');
+  syncBackHistory();
+  setTimeout(function(){
+    if(el.parentNode)el.parentNode.removeChild(el);
+  },240);
+}
+
+function openWelcome(){
+  if(welcomeOpen())return;
+  var app=document.getElementById('app');
+  if(!app)return;
+  WC.i=0;
+  var panels='',dots='';
+  for(var i=0;i<WELCOME_PANELS.length;i++){
+    var p=WELCOME_PANELS[i];
+    panels+='<section class="wc-panel" data-wc-panel="'+i+'">'+welcomeIllus(p.k)+
+            '<h2 class="wc-title">'+esc(tr(p.t))+'</h2>'+
+            '<p class="wc-text">'+esc(tr(p.d))+'</p></section>';
+    dots+='<span class="wc-dot'+(i===0?' on':'')+'" data-wc-dot="'+i+'"></span>';
+  }
+  var el=document.createElement('div');
+  el.id='welcome';
+  el.setAttribute('role','dialog');
+  el.setAttribute('aria-modal','true');
+  el.setAttribute('aria-label',tr('Benvenuto in Spendy'));
+  el.innerHTML='<div class="wc-track" id="wcTrack">'+panels+'</div>'+
+    '<div class="wc-foot">'+
+      '<div class="wc-dots">'+dots+'</div>'+
+      '<button class="btn-primary full-width" id="wcNext">'+esc(tr('Avanti'))+'</button>'+
+      '<button class="wc-skip" id="wcSkip">'+esc(tr('Salta'))+'</button>'+
+    '</div>';
+  app.appendChild(el);
+  wireWelcome();
+  welcomePaint();
+  syncBackHistory();
+}
+
+function wireWelcome(){
+  var next=document.getElementById('wcNext');
+  if(next)next.onclick=function(){
+    if(WC.i>=WELCOME_PANELS.length-1)closeWelcome();
+    else welcomeGo(WC.i+1);
+  };
+  var skip=document.getElementById('wcSkip');
+  if(skip)skip.onclick=function(){closeWelcome();};
+  var track=document.getElementById('wcTrack');
+  if(track)track.addEventListener('scroll',function(){
+    var w=track.clientWidth;
+    if(!w)return;
+    var i=Math.round(track.scrollLeft/w);
+    if(i!==WC.i&&i>=0&&i<WELCOME_PANELS.length){
+      WC.i=i;
+      welcomePaint();
+      syncBackHistory();
+    }
+  },{passive:true});
+}
+
+/* ================================================================
+   FOTOGRAFIA DELLO SCHERMO PER IL PROSSIMO AVVIO
+   Poche decine di byte in localStorage: il patrimonio GIA' scritto come
+   va mostrato, l'etichetta tradotta e il mese. Li rilegge lo script in
+   cima alla pagina e li ridisegna dentro lo splash, cosi' il primo
+   fotogramma somiglia alla schermata di ieri invece di essere vuoto.
+   Non e' una copia dei dati: se sparisce non si perde niente, e all'uscita
+   dall'account viene cancellata insieme al resto.
+================================================================ */
+var SNAP_KEY='spendy-snap-v1';
+
+function saveScreenSnapshot(){
+  try{
+    if(!state)return;
+    var bal=totalBalance();
+    var val=balHidden()?'\u2022\u2022\u2022\u2022':((bal<0?'\u2212':'')+fmt(Math.abs(bal)));
+    window.localStorage.setItem(SNAP_KEY,JSON.stringify({
+      v:1,
+      lab:tr('Patrimonio complessivo'),
+      val:val,
+      sub:formatMonthLabel(currentMonthKey())
+    }));
+  }catch(e){}
+}
+function clearScreenSnapshot(){
+  try{window.localStorage.removeItem(SNAP_KEY);}catch(e){}
+}
+/* La schermata vera e' gia' disegnata: l'anteprima si dissolve sopra di
+   essa invece di sparire di colpo. */
+function fadeOutSplash(){
+  var sp=document.getElementById('splash');
+  if(!sp)return;
+  sp.classList.add('fading');
+  setTimeout(function(){sp.classList.add('hidden');},260);
+}
+
+/* ================================================================
    INIT
 ================================================================ */
 async function init(){
   await loadState();
   ui.viewMonth=currentMonthKey();
-  document.getElementById('splash').classList.add('hidden');
   document.getElementById('shell').classList.remove('hidden');
   applyTheme(themePref());
   try{document.documentElement.lang=LANG;}catch(e){}
   applyStaticI18n();
   renderActiveTab();
+  if(welcomeNeeded())openWelcome();
+  fadeOutSplash();
   updateAvatarFab();
   loadPrices();
   document.querySelectorAll('.nav-btn').forEach(function(b){b.onclick=function(){
@@ -11183,7 +11723,11 @@ async function init(){
   setTimeout(checkWidgetAction,600);
   document.addEventListener('visibilitychange',function(){
     if(!document.hidden)checkWidgetAction();
+    /* Uscendo dall'app si aggiorna la fotografia: al rientro il primo
+       fotogramma e' quello giusto. */
+    else saveScreenSnapshot();
   });
+  saveScreenSnapshot();
 }
 
 /* Gancio usato SOLO dai test automatici (jsdom). In condizioni normali
@@ -11224,7 +11768,16 @@ if(window.__SPENDY_TEST__){
          openRecurringSheet:openRecurringSheet,openRecurringEditor:openRecurringEditor,
          recurringHTML:recurringHTML,dueRecurringToday:dueRecurringToday,fixedVsVariable:fixedVsVariable,
          bdDonutSVG:bdDonutSVG,subsScan:subsScan,netWorthSeries:netWorthSeries,
-         monthsOfRunway:monthsOfRunway,noSpendDays:noSpendDays,topMerchants:topMerchants},
+         monthsOfRunway:monthsOfRunway,noSpendDays:noSpendDays,topMerchants:topMerchants,
+         welcomeIllus:welcomeIllus,welcomeNeeded:welcomeNeeded,stateIsEmpty:stateIsEmpty,
+         openWelcome:openWelcome,closeWelcome:closeWelcome,welcomeGo:welcomeGo,
+         welcomeLive:welcomeLive,layerDepth:layerDepth,goBackOneStep:goBackOneStep,
+         saveScreenSnapshot:saveScreenSnapshot,clearScreenSnapshot:clearScreenSnapshot,
+         backupPayload:backupPayload,backupFileName:backupFileName,parseBackup:parseBackup,
+         backupSummary:backupSummary,restoreBackup:restoreBackup,openBackupSheet:openBackupSheet,
+         openDataSheet:openDataSheet,markWelcomeSeen:markWelcomeSeen,welcomeSeen:welcomeSeen},
+    dizionari:TR,
+    pannelliBenvenuto:WELCOME_PANELS,
     call:function(nome){return this.fns[nome].apply(null,[].slice.call(arguments,1));},
     setTab:function(t){ui.activeTab=t;renderActiveTab();},
     setPremium:function(on){setPremiumTest(on);},
