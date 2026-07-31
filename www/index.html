@@ -3358,7 +3358,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v54';
+var APP_VERSION='v55';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -10830,11 +10830,27 @@ function syncBackHistory(){
     try{history.go(-d);}catch(e){skipPop=0;}
   }
 }
-/* Punto d'ingresso unico: il gesto dal bordo NON chiude direttamente il
-   livello, chiede indietro alla cronologia. Cosi' il conteggio resta giusto. */
+/* Punto d'ingresso per il gesto dal bordo della PAGINA (web e iPhone):
+   li' la cronologia funziona, quindi conviene passare da quella per tenere
+   allineato anche il tasto indietro del browser. */
 function requestBack(){
   if(histDepth>0){try{history.back();return true;}catch(e){}}
   return goBackOneStep();
+}
+/* Punto d'ingresso per i percorsi NATIVI (Android).
+   Perche' esiste separato: nel WebView di Capacitor la cronologia non e'
+   navigabile — `history.back()` non consegna mai il `popstate`. Delegando a
+   quella, la pagina rispondeva ad Android "ho gestito io" (quindi l'app
+   restava aperta, giustamente) ma poi non chiudeva niente: il gesto sembrava
+   morto. Qui il livello si chiude SUBITO, e solo dopo si riallinea la
+   cronologia — se il popstate arriva comunque (WebView piu' generosi),
+   `syncBackHistory` lo fa assorbire da `skipPop`, quindi non si torna
+   indietro due volte. */
+function backNow(){
+  var ok=false;
+  try{ok=goBackOneStep()!==false;}catch(e){ok=false;}
+  try{syncBackHistory();}catch(e){}
+  return ok;
 }
 /* ---- PONTE COL TASTO/GESTO INDIETRO DI ANDROID -------------------
    Il gesto di sistema di Android non arriva mai alla pagina: lo intercetta
@@ -10883,9 +10899,8 @@ window.spendyHandleBack=function(){
     }catch(e2){aperto=false;}
   }
   if(!aperto){bumpBackBridge(false);return false;}
-  var fatto=false;
-  try{fatto=requestBack()!==false;}catch(e){
-    try{fatto=goBackOneStep();}catch(e2){fatto=false;}
+  try{backNow();}catch(e){
+    try{goBackOneStep();}catch(e2){}
   }
   bumpBackBridge(true);
   return true;   // c'era qualcosa di aperto: l'app NON deve chiudersi
@@ -10912,14 +10927,14 @@ function initSystemBack(){
         invece di toccare la cronologia. Se arriva quello, lo gestiamo noi. */
   document.addEventListener('backbutton',function(e){
     if(e&&e.preventDefault)e.preventDefault();
-    if(layerDepth()>0)requestBack();
+    if(layerDepth()>0)backNow();
   });
   /* 3) Se il contenitore nativo espone il plugin App di Capacitor, ci
         agganciamo anche li'. Se non c'e', non succede nulla. */
   try{
     if(window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App&&Capacitor.Plugins.App.addListener){
       Capacitor.Plugins.App.addListener('backButton',function(info){
-        if(layerDepth()>0){requestBack();return;}
+        if(layerDepth()>0){backNow();return;}
         if(info&&info.canGoBack===false&&Capacitor.Plugins.App.exitApp)Capacitor.Plugins.App.exitApp();
       });
       BACK_MODE='plugin';
@@ -11192,6 +11207,10 @@ if(window.__SPENDY_TEST__){
          addLoanExtra:addLoanExtra,openLoanPicker:openLoanPicker,openAddRecurringPicker:openAddRecurringPicker,
          futureEntriesHTML:futureEntriesHTML,dismissFutureBanner:dismissFutureBanner,
          openEntrySheet:openEntrySheet,wireRecurring:wireRecurring,
+         layerDepth:layerDepth,goBackOneStep:goBackOneStep,requestBack:requestBack,
+         syncBackHistory:syncBackHistory,openInvestPage:openInvestPage,backNow:backNow,
+         schedaAttiva:function(){return ui.activeTab;},
+         backStato:function(){return {histDepth:histDepth,skipPop:skipPop,layers:layerDepth()};},
          autoRunDuePacs:autoRunDuePacs,askPayRecurring:askPayRecurring,refreshAccountsList:refreshAccountsList,
          addMonthsISO:addMonthsISO,recDurMonths:recDurMonths,recHasDuration:recHasDuration,
          recEndBound:recEndBound,recTotalCount:recTotalCount,recPaidCount:recPaidCount,
