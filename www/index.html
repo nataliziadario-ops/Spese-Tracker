@@ -1142,6 +1142,12 @@ Object.assign(TR.fr,{'Interessi risparmiati (€)':'Intérêts économisés (€
 Object.assign(TR.en,{'Scadenza precedente':'Previous due','Tornato alla scadenza del {D}':'Back to the {D} due date','Non c\'\u00e8 un pagamento da annullare.':'There is no payment to undo.','Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.':'For the savings plan, undo the purchase from the asset history.','Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.':'Undo the last payment of \u00ab{N}\u00bb? The entry will be removed and the due date will move back.','Annulla pagamento':'Undo payment'});
 Object.assign(TR.es,{'Scadenza precedente':'Vencimiento anterior','Tornato alla scadenza del {D}':'Vuelto al vencimiento del {D}','Non c\'\u00e8 un pagamento da annullare.':'No hay ning\u00fan pago que anular.','Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.':'Para el plan de aportaciones, anula la compra desde el historial del activo.','Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.':'\u00bfAnular el \u00faltimo pago de \u00ab{N}\u00bb? El movimiento se eliminar\u00e1 y el vencimiento volver\u00e1 atr\u00e1s.','Annulla pagamento':'Anular pago'});
 Object.assign(TR.fr,{'Scadenza precedente':'\u00c9ch\u00e9ance pr\u00e9c\u00e9dente','Tornato alla scadenza del {D}':'Retour \u00e0 l\'\u00e9ch\u00e9ance du {D}','Non c\'\u00e8 un pagamento da annullare.':'Aucun paiement \u00e0 annuler.','Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.':'Pour le plan d\'investissement, annule l\'achat depuis l\'historique du titre.','Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.':'Annuler le dernier paiement de \u00ab {N} \u00bb ? Le mouvement sera supprim\u00e9 et l\'\u00e9ch\u00e9ance reviendra en arri\u00e8re.','Annulla pagamento':'Annuler le paiement'});
+Object.assign(TR.en,{'Eliminare questo acquisto? Il movimento verr\u00e0 rimosso e le quote tolte dalla posizione.':'Delete this purchase? The entry will be removed and the shares taken off the position.','Acquisto eliminato':'Purchase deleted','Movimento rimosso. La posizione non \u00e8 cambiata: questo acquisto non aveva il numero di quote.':'Entry removed. The position is unchanged: this purchase had no share count.'});
+Object.assign(TR.es,{'Eliminare questo acquisto? Il movimento verr\u00e0 rimosso e le quote tolte dalla posizione.':'\u00bfEliminar esta compra? El movimiento se eliminar\u00e1 y las participaciones se quitar\u00e1n de la posici\u00f3n.','Acquisto eliminato':'Compra eliminada','Movimento rimosso. La posizione non \u00e8 cambiata: questo acquisto non aveva il numero di quote.':'Movimiento eliminado. La posici\u00f3n no ha cambiado: esta compra no ten\u00eda el n\u00famero de participaciones.'});
+Object.assign(TR.fr,{'Eliminare questo acquisto? Il movimento verr\u00e0 rimosso e le quote tolte dalla posizione.':'Supprimer cet achat ? Le mouvement sera retir\u00e9 et les parts enlev\u00e9es de la position.','Acquisto eliminato':'Achat supprim\u00e9','Movimento rimosso. La posizione non \u00e8 cambiata: questo acquisto non aveva il numero di quote.':'Mouvement supprim\u00e9. La position est inchang\u00e9e : cet achat n\'avait pas le nombre de parts.'});
+Object.assign(TR.en,{'Ciao {N}!':'Hi {N}!','Iniziamo':'Let\'s start','Scegli la lingua e dimmi come ti chiami.':'Choose the language and tell me your name.'});
+Object.assign(TR.es,{'Ciao {N}!':'\u00a1Hola {N}!','Iniziamo':'Empecemos','Scegli la lingua e dimmi come ti chiami.':'Elige el idioma y dime c\u00f3mo te llamas.'});
+Object.assign(TR.fr,{'Ciao {N}!':'Salut {N} !','Iniziamo':'C\'est parti','Scegli la lingua e dimmi come ti chiami.':'Choisis la langue et dis-moi comment tu t\'appelles.'});
 Object.assign(TR.en,{
 'Accedi':'Sign in',
 'Accedi alla sincronizzazione':'Sign in to sync',
@@ -3581,7 +3587,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v60';
+var APP_VERSION='v61';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -5697,7 +5703,7 @@ function buyOnce(symbol,amount,accountId,dateISO){
   var isNew=!pacHolding(symbol);
   if(isNew&&!canAdd('investments'))return 'limit';
   var ce=catalogEntry(symbol)||{};
-  state.transactions.push({id:uid('tx'),type:'expense',amount:amount,accountId:accountId,categoryId:ensureInvestCategory(),merchant:'Acquisto '+symbol,note:ce.name||'',date:dateISO||todayISO(),tags:[],createdAt:Date.now(),source:'buy',units:u.units,symbol:symbol});
+  state.transactions.push({id:uid('tx'),type:'expense',amount:amount,accountId:accountId,categoryId:ensureInvestCategory(),merchant:'Acquisto '+symbol,note:ce.name||'',date:dateISO||todayISO(),tags:[],createdAt:Date.now(),source:'buy',units:u.units,symbol:symbol,unitPrice:u.price,unitCur:u.currency});
   var h=pacHolding(symbol);
   if(h){
     var oq=invNum(h.qty),ob=invNum(h.buyPrice),nq=oq+u.units;
@@ -5865,7 +5871,7 @@ function assetPurchases(sym){
   (state.transactions||[]).forEach(function(t){
     if(t.source!=='buy'&&t.source!=='pac')return;
     if(txAssetSymbol(t)!==sym)return;
-    out.push({date:t.date,amount:invNum(t.amount),units:(t.units!=null?invNum(t.units):null),source:t.source});
+    out.push({id:t.id,date:t.date,amount:invNum(t.amount),units:(t.units!=null?invNum(t.units):null),source:t.source});
   });
   out.sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);});
   return out;
@@ -5877,10 +5883,53 @@ function ipPurchasesHTML(sym){
   var rows=ps.slice(0,CAP).map(function(p){
     var q=(p.units!=null)?ipQty(p.units)+' '+tr('quote'):'—';
     var tag=(p.source==='pac')?'PAC':tr('Acquisto');
-    return '<div class="invp-kv"><span>'+formatShortDate(p.date)+' · '+tag+'</span><b>'+q+' · '+(hidden?'\u2022\u2022\u2022\u2022':fmt(p.amount))+'</b></div>';
+    return '<div class="invp-kv"><span>'+formatShortDate(p.date)+' · '+tag+'</span><span style="display:flex;align-items:center;gap:8px;"><b>'+q+' · '+(hidden?'\u2022\u2022\u2022\u2022':fmt(p.amount))+'</b>'+(p.id?'<button class="ex-del" data-ip-pdel="'+esc(p.id)+'" aria-label="'+tr('Elimina')+'">\u00d7</button>':'')+'</span></div>';
   }).join('');
   var more=ps.length>CAP?'<div class="invp-kv"><span>'+tr('\u2026 e altri {N} pi\u00f9 vecchi').replace('{N}',String(ps.length-CAP))+'</span><b></b></div>':'';
   return '<div class="invp-sec"><h4>'+tr('Storico acquisti')+'</h4><div class="invp-chart-card" style="margin-top:0;">'+rows+more+'</div></div>';
+}
+/* Elimina un singolo acquisto (Compra o PAC): rimuove il movimento e toglie
+   le quote dalla posizione, ricalcolando il prezzo medio in valuta del titolo.
+   Ritorna {units, adjusted}. Se l'acquisto e' vecchio e non ha il numero di
+   quote, rimuove solo il movimento e lascia la posizione com'e'. */
+function deletePurchase(txId){
+  var t=(state.transactions||[]).find(function(x){return x.id===txId;});
+  if(!t)return false;
+  var sym=txAssetSymbol(t);
+  var h=sym?pacHolding(sym):null;
+  var units=(t.units!=null)?invNum(t.units):null;
+  state.transactions=(state.transactions||[]).filter(function(x){return x.id!==txId;});
+  var adjusted=false;
+  if(h&&units!=null&&units>0){
+    var oq=invNum(h.qty),nq=oq-units;
+    if(nq<=0.0000001){
+      state.investments=(state.investments||[]).filter(function(x){return x!==h;});
+    }else{
+      var up;
+      if(t.unitPrice!=null)up=invNum(t.unitPrice);
+      else{var cur=t.unitCur||h.currency||'EUR';up=(cur==='EUR'&&units>0)?(invNum(t.amount)/units):invNum(h.buyPrice);}
+      var newCost=oq*invNum(h.buyPrice)-units*up;
+      h.buyPrice=Math.max(0,newCost/nq);
+      h.qty=nq;h.updatedAt=Date.now();
+    }
+    adjusted=true;
+  }
+  saveState();
+  return {units:units,adjusted:adjusted};
+}
+function askDeletePurchase(txId){
+  var t=(state.transactions||[]).find(function(x){return x.id===txId;});
+  if(!t)return;
+  var senzaQuote=(t.units==null);
+  confirmDialog(tr('Eliminare questo acquisto? Il movimento verr\u00e0 rimosso e le quote tolte dalla posizione.'),function(){
+    var r=deletePurchase(txId);
+    try{updatePortfolioHistory();}catch(e){}
+    var sym=IPAGE&&IPAGE.sym;
+    if(sym&&!pacHolding(sym)){IPAGE.view='home';IPAGE.sym=null;}
+    if(document.getElementById('invPage'))renderInvestPage();
+    renderActiveTab();
+    showToast((r&&r.adjusted===false)?tr('Movimento rimosso. La posizione non \u00e8 cambiata: questo acquisto non aveva il numero di quote.'):tr('Acquisto eliminato'));
+  },tr('Elimina'));
 }
 function ipDetailHTML(sym){
   var ce=catalogEntry(sym)||{},pe=priceEntry(sym)||{};
@@ -5934,6 +5983,7 @@ function renderInvestPage(){
     var y=el.scrollTop;IPAGE.range=b.dataset.ipRange;renderInvestPage();el.scrollTop=y;
   };});
   ipWireRows(el);
+  el.querySelectorAll('[data-ip-pdel]').forEach(function(b){b.onclick=function(e){e.stopPropagation();askDeletePurchase(b.dataset.ipPdel);};});
   var mk0=document.getElementById('ipMarket');if(mk0)ipWireMarket(mk0);
   var s=document.getElementById('ipSearch');
   if(s)s.oninput=function(){IPAGE.q=s.value;var mk=document.getElementById('ipMarket');if(mk){mk.innerHTML=ipMarketHTML();ipWireMarket(mk);}};
@@ -10632,7 +10682,7 @@ function executePac(item,due){
     merchant:item.name||('PAC '+item.assetSymbol),
     note:item.note||('Piano di accumulo · '+item.assetSymbol),
     date:due,tags:[],createdAt:Date.now(),
-    source:'pac',recurringId:item.id,recurrenceDate:due,units:u.units,symbol:String(item.assetSymbol).toUpperCase()
+    source:'pac',recurringId:item.id,recurrenceDate:due,units:u.units,symbol:String(item.assetSymbol).toUpperCase(),unitPrice:u.price,unitCur:u.currency
   });
   state.investments=state.investments||[];
   ensureInvestAccount();
@@ -11801,6 +11851,8 @@ function welcomeIllus(kind){
 }
 
 var WELCOME_PANELS=[
+  {k:'intro',   t:'Benvenuto in Spendy',
+                d:'Scegli la lingua e dimmi come ti chiami.'},
   {k:'home',    t:'Le tue finanze, finalmente chiare',
                 d:'Registri una spesa in due tocchi e vedi subito quanto ti resta davvero. Niente fogli di calcolo, niente conti a mente.'},
   {k:'sezioni', t:'Tutto a portata di un tocco',
@@ -11813,6 +11865,55 @@ var WELCOME_PANELS=[
                 d:'Nessuna pubblicit\u00e0, nessuna rivendita. Puoi esportare tutto o cancellare tutto quando vuoi.'}
 ];
 
+/* Contenuto della prima schermata: scelta lingua + nome. */
+function welcomeIntroHTML(){
+  var langs=['it','en','es','fr'].map(function(c){
+    var on=(LANG===c);
+    return '<button class="wc-lang" data-wc-lang="'+c+'" style="padding:8px 13px;border-radius:99px;border:1px solid '+(on?'var(--accent)':'var(--hairline)')+';background:'+(on?'var(--accent)':'var(--surface)')+';color:'+(on?'var(--on-accent)':'var(--ink)')+';font-size:13px;font-weight:600;">'+LANG_FLAG[c]+' '+esc(LANG_NAMES[c])+'</button>';
+  }).join('');
+  return '<div style="text-align:center;font-size:56px;line-height:1;margin:6px 0 4px;">\ud83d\udc4b</div>'+
+    '<h2 class="wc-title">'+esc(tr('Benvenuto in Spendy'))+'</h2>'+
+    '<p class="wc-text">'+esc(tr('Scegli la lingua e dimmi come ti chiami.'))+'</p>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 14px;">'+langs+'</div>'+
+    '<input class="text-input" id="wcName" maxlength="24" style="text-align:center;max-width:260px;margin:0 auto;" placeholder="'+tr('Il tuo nome')+'" value="'+esc(profileName())+'" autocomplete="off">';
+}
+function welcomePanelInner(p){
+  if(p.k==='intro')return welcomeIntroHTML();
+  return welcomeIllus(p.k)+'<h2 class="wc-title">'+esc(tr(p.t))+'</h2>'+'<p class="wc-text">'+esc(tr(p.d))+'</p>';
+}
+/* Ridisegna i pannelli (dopo il cambio lingua), mantenendo nome e posizione. */
+function welcomeRerender(){
+  var track=document.getElementById('wcTrack');if(!track)return;
+  var ni=document.getElementById('wcName');var nameVal=ni?ni.value:'';
+  var panels='';
+  for(var i=0;i<WELCOME_PANELS.length;i++){panels+='<section class="wc-panel" data-wc-panel="'+i+'">'+welcomePanelInner(WELCOME_PANELS[i])+'</section>';}
+  track.innerHTML=panels;
+  var ni2=document.getElementById('wcName');if(ni2&&nameVal)ni2.value=nameVal;
+  var sk=document.getElementById('wcSkip');if(sk)sk.textContent=tr('Salta');
+  welcomeWireIntro();
+  welcomePaint();
+}
+function welcomeWireIntro(){
+  document.querySelectorAll('[data-wc-lang]').forEach(function(b){b.onclick=function(){setLang(b.dataset.wcLang);welcomeRerender();};});
+  var nm=document.getElementById('wcName');if(nm)nm.oninput=function(){saveProfileName(nm.value);};
+}
+/* Pop-up 'Ciao {nome}', poi si prosegue col carosello. */
+function welcomeHello(name,cb){
+  var el=document.getElementById('welcome');if(!el){if(cb)cb();return;}
+  var h=document.createElement('div');h.className='wc-hello';
+  h.setAttribute('style','position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--app-bg);text-align:center;padding:24px;animation:fadein .2s var(--ease-out);');
+  h.innerHTML='<div style="font-size:64px;line-height:1;">\ud83d\udc4b</div><h2 class="wc-title">'+esc(tr('Ciao {N}!').replace('{N}',esc(name)))+'</h2><button class="btn-primary" id="wcHelloGo" style="min-width:190px;">'+esc(tr('Iniziamo'))+'</button>';
+  el.appendChild(h);
+  var g=document.getElementById('wcHelloGo');if(g)g.onclick=function(){if(h.parentNode)h.parentNode.removeChild(h);if(cb)cb();};
+}
+/* Uscita dalla prima schermata: salva il nome e mostra il saluto. */
+function welcomeLeaveIntro(){
+  var inp=document.getElementById('wcName');
+  var nm=(inp?inp.value:'').trim().slice(0,24);
+  saveProfileName(nm);
+  if(nm)welcomeHello(nm,function(){welcomeGo(1);});
+  else welcomeGo(1);
+}
 function welcomeOpen(){
   return !!document.getElementById('welcome');
 }
@@ -11870,9 +11971,7 @@ function openWelcome(){
   var panels='',dots='';
   for(var i=0;i<WELCOME_PANELS.length;i++){
     var p=WELCOME_PANELS[i];
-    panels+='<section class="wc-panel" data-wc-panel="'+i+'">'+welcomeIllus(p.k)+
-            '<h2 class="wc-title">'+esc(tr(p.t))+'</h2>'+
-            '<p class="wc-text">'+esc(tr(p.d))+'</p></section>';
+    panels+='<section class="wc-panel" data-wc-panel="'+i+'">'+welcomePanelInner(p)+'</section>';
     dots+='<span class="wc-dot'+(i===0?' on':'')+'" data-wc-dot="'+i+'"></span>';
   }
   var el=document.createElement('div');
@@ -11895,9 +11994,11 @@ function openWelcome(){
 function wireWelcome(){
   var next=document.getElementById('wcNext');
   if(next)next.onclick=function(){
+    if(WC.i===0){welcomeLeaveIntro();return;}
     if(WC.i>=WELCOME_PANELS.length-1)closeWelcome();
     else welcomeGo(WC.i+1);
   };
+  welcomeWireIntro();
   var skip=document.getElementById('wcSkip');
   if(skip)skip.onclick=function(){closeWelcome();};
   var track=document.getElementById('wcTrack');
@@ -12028,7 +12129,7 @@ if(window.__SPENDY_TEST__){
          syncBackHistory:syncBackHistory,openInvestPage:openInvestPage,backNow:backNow,
          schedaAttiva:function(){return ui.activeTab;},
          backStato:function(){return {histDepth:histDepth,skipPop:skipPop,layers:layerDepth()};},
-         autoRunDuePacs:autoRunDuePacs,askPayRecurring:askPayRecurring,refreshAccountsList:refreshAccountsList,openAccountsSheet:openAccountsSheet,recStepBack:recStepBack,recLastPayment:recLastPayment,addLoanExtra:addLoanExtra,loanRemaining:loanRemaining,loanSummary:loanSummary,recPaidCount:recPaidCount,ipCompositionHTML:ipCompositionHTML,
+         autoRunDuePacs:autoRunDuePacs,askPayRecurring:askPayRecurring,refreshAccountsList:refreshAccountsList,openAccountsSheet:openAccountsSheet,recStepBack:recStepBack,recLastPayment:recLastPayment,addLoanExtra:addLoanExtra,deletePurchase:deletePurchase,assetPurchases:assetPurchases,buyOnce:buyOnce,welcomeIntroHTML:welcomeIntroHTML,welcomeLeaveIntro:welcomeLeaveIntro,profileName:profileName,openWelcome:openWelcome,loanRemaining:loanRemaining,loanSummary:loanSummary,recPaidCount:recPaidCount,ipCompositionHTML:ipCompositionHTML,
          addMonthsISO:addMonthsISO,recDurMonths:recDurMonths,recHasDuration:recHasDuration,
          recEndBound:recEndBound,recTotalCount:recTotalCount,recPaidCount:recPaidCount,
          recRemainingCount:recRemainingCount,recFinished:recFinished,recLastDueDate:recLastDueDate,
