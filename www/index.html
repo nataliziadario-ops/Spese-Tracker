@@ -1130,6 +1130,18 @@ Object.assign(TR.fr,{
 'Vuoi spesare adesso «{N}» ({I}) e passare alla scadenza successiva? Il movimento sarà datato oggi e nelle note risulterà come pagamento anticipato della scadenza del {D}.':'Enregistrer « {N} » ({I}) maintenant et passer à l\'échéance suivante ? Le mouvement sera daté d\'aujourd\'hui et la note indiquera qu\'il s\'agit du paiement anticipé de l\'échéance du {D}.',
 'Registrato oggi in anticipo (scadenza del {D}).':'Enregistré aujourd\'hui, en avance (échéance du {D}).'
 });
+Object.assign(TR.en,{'Composizione':'Breakdown'});
+Object.assign(TR.es,{'Composizione':'Composici\u00f3n'});
+Object.assign(TR.fr,{'Composizione':'R\u00e9partition'});
+Object.assign(TR.en,{'Investito {A}: {Q} quote di {S}':'Invested {A}: {Q} shares of {S}'});
+Object.assign(TR.es,{'Investito {A}: {Q} quote di {S}':'Invertido {A}: {Q} participaciones de {S}'});
+Object.assign(TR.fr,{'Investito {A}: {Q} quote di {S}':'Investi {A} : {Q} parts de {S}'});
+Object.assign(TR.en,{'Interessi risparmiati (€)':'Interest saved (€)','interessi':'interest','Facoltativo: interessi che non pagherai più. Abbassano il residuo ma non escono da nessun conto.':'Optional: interest you will no longer pay. It lowers the balance but does not leave any account.'});
+Object.assign(TR.es,{'Interessi risparmiati (€)':'Intereses ahorrados (€)','interessi':'intereses','Facoltativo: interessi che non pagherai più. Abbassano il residuo ma non escono da nessun conto.':'Opcional: intereses que ya no pagarás. Bajan el saldo pero no salen de ninguna cuenta.'});
+Object.assign(TR.fr,{'Interessi risparmiati (€)':'Intérêts économisés (€)','interessi':'intérêts','Facoltativo: interessi che non pagherai più. Abbassano il residuo ma non escono da nessun conto.':'Facultatif : intérêts que tu ne paieras plus. Ils baissent le reste mais ne sortent d\'aucun compte.'});
+Object.assign(TR.en,{'Scadenza precedente':'Previous due','Tornato alla scadenza del {D}':'Back to the {D} due date','Non c\'\u00e8 un pagamento da annullare.':'There is no payment to undo.','Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.':'For the savings plan, undo the purchase from the asset history.','Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.':'Undo the last payment of \u00ab{N}\u00bb? The entry will be removed and the due date will move back.','Annulla pagamento':'Undo payment'});
+Object.assign(TR.es,{'Scadenza precedente':'Vencimiento anterior','Tornato alla scadenza del {D}':'Vuelto al vencimiento del {D}','Non c\'\u00e8 un pagamento da annullare.':'No hay ning\u00fan pago que anular.','Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.':'Para el plan de aportaciones, anula la compra desde el historial del activo.','Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.':'\u00bfAnular el \u00faltimo pago de \u00ab{N}\u00bb? El movimiento se eliminar\u00e1 y el vencimiento volver\u00e1 atr\u00e1s.','Annulla pagamento':'Anular pago'});
+Object.assign(TR.fr,{'Scadenza precedente':'\u00c9ch\u00e9ance pr\u00e9c\u00e9dente','Tornato alla scadenza del {D}':'Retour \u00e0 l\'\u00e9ch\u00e9ance du {D}','Non c\'\u00e8 un pagamento da annullare.':'Aucun paiement \u00e0 annuler.','Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.':'Pour le plan d\'investissement, annule l\'achat depuis l\'historique du titre.','Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.':'Annuler le dernier paiement de \u00ab {N} \u00bb ? Le mouvement sera supprim\u00e9 et l\'\u00e9ch\u00e9ance reviendra en arri\u00e8re.','Annulla pagamento':'Annuler le paiement'});
 Object.assign(TR.en,{
 'Accedi':'Sign in',
 'Accedi alla sincronizzazione':'Sign in to sync',
@@ -3569,7 +3581,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v59';
+var APP_VERSION='v60';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -4457,6 +4469,7 @@ function shiftMonth(key,delta){var p=key.split('-');var y=+p[0],m=+p[1]+delta;wh
 function formatMonthLabel(key){var p=key.split('-');var d=new Date(+p[0],+p[1]-1,1);var l=new Intl.DateTimeFormat(currentLocale(),{month:'long',year:'numeric'}).format(d);return l.charAt(0).toUpperCase()+l.slice(1);}
 function formatDayHeader(iso){var d=new Date(iso+'T00:00:00');var l=new Intl.DateTimeFormat(currentLocale(),{weekday:'short',day:'numeric',month:'long'}).format(d);return l.charAt(0).toUpperCase()+l.slice(1);}
 function formatShortDate(iso){var d=new Date(iso+'T00:00:00');return new Intl.DateTimeFormat(currentLocale(),{day:'2-digit',month:'short'}).format(d);}
+function formatShortDateY(iso){var d=new Date(iso+'T00:00:00');return new Intl.DateTimeFormat(currentLocale(),{day:'2-digit',month:'short',year:'numeric'}).format(d);}
 function formatMonthShort(idx){return monthAbbrev(idx);}
 
 function parseAmount(raw){
@@ -5753,6 +5766,27 @@ function openInvestPage(){
 }
 function closeInvestPage(){var el=document.getElementById('invPage');if(el)el.remove();IPAGE=null;syncBackHistory();}
 function invPageRerender(){if(document.getElementById('invPage')&&IPAGE)renderInvestPage();}
+/* Composizione del portafoglio per tipo di strumento (ETF/Azioni/Cripto/Altro),
+   in base al valore attuale di ogni posizione. */
+function ipCompositionHTML(){
+  var list=state.investments||[];if(!list.length)return '';
+  var hidden=balHidden(),groups={},total=0;
+  list.forEach(function(h){var k=h.kind||'other';var v=invValueEur(h);if(!(v>0))return;groups[k]=(groups[k]||0)+v;total+=v;});
+  if(!(total>0))return '';
+  var order=['etf','stock','crypto','other'];
+  var labels={etf:'ETF',stock:tr('Azioni'),crypto:tr('Cripto'),other:tr('Altro')};
+  var cols={etf:'#4f8cff',stock:'#22c55e',crypto:'#f59e0b',other:'#a78bfa'};
+  var keys=Object.keys(groups).sort(function(a,b){var ia=order.indexOf(a),ib=order.indexOf(b);return (ia<0?9:ia)-(ib<0?9:ib);});
+  var seg=keys.map(function(k){var pct=groups[k]/total*100;return '<span style="width:'+pct.toFixed(2)+'%;background:'+(cols[k]||'#888')+';display:block;height:100%;"></span>';}).join('');
+  var leg=keys.map(function(k){var pct=groups[k]/total*100;var ptxt=(pct<10?pct.toFixed(1):Math.round(pct).toString()).replace('.',',')+'%';
+    return '<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0;"><span style="width:10px;height:10px;border-radius:50%;background:'+(cols[k]||'#888')+';flex:none;"></span>'+
+      '<span style="flex:1;">'+esc(labels[k]||k)+'</span>'+
+      '<span style="font-variant-numeric:tabular-nums;color:var(--ink-soft);"><b style="color:var(--ink);">'+ptxt+'</b>'+(hidden?'':' \u00b7 '+fmt(groups[k]))+'</span></div>';
+  }).join('');
+  return '<div class="invp-sec"><h4>'+tr('Composizione')+'</h4>'+
+    '<div style="display:flex;height:14px;border-radius:99px;overflow:hidden;margin:2px 0 8px;background:var(--track);">'+seg+'</div>'+
+    leg+'</div>';
+}
 function ipHomeHTML(){
   var list=state.investments||[],t=invTotalsEur(list),hidden=balHidden();
   var ph=state.portfolioHistory||[];
@@ -5787,7 +5821,7 @@ function ipHomeHTML(){
   var avviso=(_cat.length&&_senza>_cat.length/2)?'<div class="invp-warn">⏳ '+tr('I prezzi non sono ancora stati scaricati. Il robot li aggiorna una volta al giorno.')+'</div>':'';
   var upd='<div class="invp-asof">'+(PRICES.updatedAt?tr('Prezzi aggiornati il')+' '+esc(String(PRICES.updatedAt)):tr('Prezzi non ancora disponibili'))+'</div>';
   return '<div class="invp-head"><button class="invp-back" id="ipBack">‹</button><span class="invp-title">'+tr('Investimenti')+'</span></div>'+
-    avviso+sum+chart+mine+srch+upd+
+    avviso+sum+chart+ipCompositionHTML()+mine+srch+upd+
     '<p class="inv-disc">'+tr('Solo monitoraggio · non è consulenza finanziaria.')+'</p>';
 }
 function ipMarketRow(a){
@@ -7334,7 +7368,7 @@ function loanStatsHTML(){
       '<div class="loan-mini"><span>'+tr('{P} rate su {T}').replace('{P}','<b>'+L.ratePagate+'</b>').replace('{T}',String(L.rate))+'</span>'+
         '<span>'+(L.finito?tr('Concluso'):tr('mancano {Q}').replace('{Q}','<b>'+esc(quanto)+'</b>'))+'</span></div>'+
       '<div class="loan-mini"><span>'+tr('Rata attuale')+' <b>'+fmt(L.rataOra)+'</b></span>'+
-        '<span>'+(L.ultima?tr('ultima il {D}').replace('{D}',esc(formatShortDate(L.ultima))):'')+'</span></div>'+
+        '<span>'+(L.ultima?tr('ultima il {D}').replace('{D}',esc(formatShortDateY(L.ultima))):'')+'</span></div>'+
       (loanExtraTotal(r)>0?'<div class="loan-mini"><span>⬆️ '+tr('Versamenti extra')+' <b>'+fmt(loanExtraTotal(r))+'</b></span><span>'+(loanExtraInRate(r)>0?tr('circa {N} rate in meno').replace('{N}',String(loanExtraInRate(r))):'')+'</span></div>':'')+
       (cambio?'<p class="dur-note" style="margin:0;">'+cambio+'</p>':'')+
     '</div>';
@@ -10026,7 +10060,7 @@ function loanExtraInRate(item){
   if(!(r>0))return 0;
   return Math.floor(loanExtraTotal(item)/r);
 }
-function addLoanExtra(item,importo,dataISO,accountId){
+function addLoanExtra(item,importo,dataISO,accountId,interessi){
   if(!item||!(importo>0))return null;
   var t={
     id:uid('tx'),type:'expense',amount:importo,
@@ -10035,6 +10069,7 @@ function addLoanExtra(item,importo,dataISO,accountId){
     date:dataISO||todayISO(),tags:[],createdAt:Date.now(),
     source:'loan',recurringId:item.id,extraPayment:true
   };
+  if(interessi>0)t.interestSaved=interessi;
   state.transactions.push(t);
   saveState();
   return t;
@@ -10110,7 +10145,7 @@ function loanPaidAmount(item){
   var prima=0,n=Math.max(0,item.paidBefore||0);
   for(var i=0;i<n;i++)prima+=loanAmountForIndex(item,i);
   var qui=(state.transactions||[]).filter(function(t){return t.recurringId===item.id;})
-          .reduce(function(sm,t){return sm+(t.amount||0);},0);
+          .reduce(function(sm,t){return sm+(t.amount||0)+(t.interestSaved||0);},0);
   return prima+qui;
 }
 function loanRemaining(item){return Math.max(0,(item.loanTotal||0)-loanPaidAmount(item));}
@@ -10210,7 +10245,7 @@ function payRecurring(id){
   var item=state.recurring.find(function(r){return r.id===id;});
   if(!item)return;
   if(item.kind==='pac'&&!isPremium()){premiumBlock('investments');return;}
-  if(item.kind==='pac'){var d0=item.nextDate||todayISO();var pr=executePac(item,d0);if(!pr){showToast(tr('Prezzo non disponibile: riprova più tardi'));return;}saveState();showToast(tr('Investito')+' '+fmt(pr.amount)+' → '+pr.symbol);renderActiveTab();return;}
+  if(item.kind==='pac'){var d0=item.nextDate||todayISO();var pr=executePac(item,d0);if(!pr){showToast(tr('Prezzo non disponibile: riprova più tardi'));return;}saveState();showToast(tr('Investito {A}: {Q} quote di {S}').replace('{A}',fmt(pr.amount)).replace('{Q}',ipQty(pr.units)).replace('{S}',pr.symbol));renderActiveTab();return;}
   if(recFinished(item)){showToast(tr('Questo ricorrente è già concluso: non ci sono altre scadenze.'));return;}
   var due=item.nextDate||todayISO();
   var oggi=todayISO();
@@ -10242,6 +10277,37 @@ function payRecurring(id){
   else showToast((item.type==='income'?'Entrata':'Pagamento')+' registrato: '+fmt(rata));
   renderActiveTab();
 }
+/* L'ultimo pagamento registrato (non i versamenti extra) di un ricorrente. */
+function recLastPayment(item){
+  if(!item)return null;
+  return (state.transactions||[]).filter(function(t){return t.recurringId===item.id&&!t.extraPayment;})
+    .sort(function(a,b){var ka=a.recurrenceDate||a.date||'',kb=b.recurrenceDate||b.date||'';if(ka!==kb)return ka<kb?1:-1;return (a.createdAt||0)<(b.createdAt||0)?1:-1;})[0]||null;
+}
+/* Torna alla scadenza precedente: annulla l'ultimo pagamento. */
+function recStepBack(id){
+  var item=(state.recurring||[]).find(function(r){return r.id===id;});
+  if(!item)return false;
+  if(item.kind==='pac'){showToast(tr('Per il piano di accumulo annulla l\'acquisto dallo storico del titolo.'));return false;}
+  var last=recLastPayment(item);
+  if(!last){showToast(tr('Non c\'\u00e8 un pagamento da annullare.'));return false;}
+  var prevDue=last.recurrenceDate||last.date;
+  state.transactions=(state.transactions||[]).filter(function(t){return t.id!==last.id;});
+  item.nextDate=prevDue;
+  var prev2=recLastPayment(item);
+  item.lastPaidDate=prev2?(prev2.recurrenceDate||prev2.date):null;
+  item.lastPaidAt=prev2?(prev2.paidAt||null):null;
+  if(isLoan(item))item.amount=recCurrentAmount(item);
+  saveState();renderActiveTab();
+  showToast(tr('Tornato alla scadenza del {D}').replace('{D}',formatShortDate(prevDue)));
+  return true;
+}
+function askStepBack(id){
+  var it=(state.recurring||[]).find(function(r){return r.id===id;});
+  if(!it)return;
+  if(it.kind==='pac'){recStepBack(id);return;}
+  if(!recLastPayment(it)){showToast(tr('Non c\'\u00e8 un pagamento da annullare.'));return;}
+  confirmDialog(tr('Annullare l\'ultimo pagamento di \u00ab{N}\u00bb? Il movimento verr\u00e0 rimosso e la scadenza torner\u00e0 indietro.').replace('{N}',esc(it.name||'')),function(){recStepBack(id);},tr('Annulla pagamento'));
+}
 /* Chiede conferma prima di registrare una ricorrente. Se la scadenza non e'
    ancora arrivata lo dice chiaro e tondo, con la data che avra' il movimento:
    e' la differenza fra "ho pagato oggi" e "il movimento risulta al 3 agosto". */
@@ -10251,7 +10317,8 @@ function askPayRecurring(id){
   if(isLoan(it)&&!isPremium()){premiumBlock('loans');return;}
   if(it.kind==='pac'){
     if(!isPremium()){premiumBlock('investments');return;}
-    confirmDialog(tr('Eseguire ora l\'acquisto')+' '+fmt(it.amount)+' → '+esc(it.assetSymbol)+'?',function(){payRecurring(id);},tr('Investi'));
+    var _pu=pacUnits(it.amount,it.assetSymbol);
+    confirmDialog(tr('Eseguire ora l\'acquisto')+' '+fmt(it.amount)+' → '+esc(it.assetSymbol)+(_pu?' ('+ipQty(_pu.units)+' '+tr('quote')+')':'')+'?',function(){payRecurring(id);},tr('Investi'));
     return;
   }
   var due=it.nextDate||todayISO(),oggi=todayISO(),rata=recCurrentAmount(it);
@@ -10474,6 +10541,8 @@ function recurringHTML(){
     var c=catById(r.categoryId),acc=accById(r.accountId),st=recStatus(r),cad=cadenceById(r.cadence);
     var badge=st==='done'?'<span class="rec-badge paused">✓ '+tr('Conclusa')+'</span>':(st==='overdue'?'<span class="rec-badge overdue">Scaduta</span>':(st==='paused'?'<span class="rec-badge paused">In pausa</span>':(recPaidAhead(r)?'<span class="rec-badge soon">✓ '+tr('già pagata')+'</span>':'')));
     var payBtn=(st!=='paused'&&st!=='done'&&!(isLoan(r)&&!isPremium()))?'<button class="btn-primary-sm rec-pay" data-rec-pay="'+r.id+'">'+(st==='overdue'?'Registra':'Segna pagato')+'</button>':'';
+    var canBack=(st!=='paused'&&r.kind!=='pac'&&!!recLastPayment(r));
+    var backBtn=canBack?'<button class="btn-primary-sm" data-rec-back="'+r.id+'" style="background:transparent;border:1px solid var(--hairline);color:var(--ink-soft);box-shadow:none;margin-right:8px;">\u21a9 '+tr('Scadenza precedente')+'</button>':'';
     var rata=recCurrentAmount(r);
     /* Sotto il nome: per una rata conta a che punto sei, per tutto il
        resto conta ogni quanto torna. */
@@ -10496,7 +10565,7 @@ function recurringHTML(){
       '<div class="rec-info"><div class="rec-name">'+esc(r.name)+badge+'</div><div class="rec-sub '+(st==='overdue'?'is-overdue':'')+'">'+sotto+'</div>'+(recPaidAhead(r)?'<div class="rec-sub">✓ '+tr('già registrata per il {D}').replace('{D}',formatShortDate(r.lastPaidDate))+'</div>':'')+'</div>'+
       '<div class="rec-amt-wrap"><div class="rec-amt'+(r.type==='income'?' amt-income':'')+'">'+(r.type==='income'?'+':'')+fmt(rata)+'</div><div class="rec-per">/'+esc(cad.per)+'</div></div></div>'+
       extra+
-      (payBtn?'<div class="rec-actions">'+payBtn+'</div>':'')+
+      ((payBtn||backBtn)?'<div class="rec-actions">'+backBtn+payBtn+'</div>':'')+
     '</div>';
   }).join('');
   return '<div class="view">'+head+
@@ -10509,6 +10578,7 @@ function wireRecurring(){
   var add=document.getElementById('recAddBtn');if(add)add.onclick=function(){openAddRecurringPicker();};
   var ltc=document.getElementById('loanTopCard');if(ltc)ltc.onclick=function(){openLoanPicker();};
   document.querySelectorAll('[data-rec-pay]').forEach(function(b){b.onclick=function(e){e.stopPropagation();askPayRecurring(b.dataset.recPay);};});
+  document.querySelectorAll('[data-rec-back]').forEach(function(b){b.onclick=function(e){e.stopPropagation();askStepBack(b.dataset.recBack);};});
   document.querySelectorAll('[data-rec-open]').forEach(function(b){b.onclick=function(){openRecurringEditor(b.dataset.recOpen);};});
 }
 
@@ -10605,8 +10675,8 @@ function autoRunDuePacs(){
   });
   if(done.length){
     saveState();
-    var tot={};done.forEach(function(r){tot[r.symbol]=(tot[r.symbol]||0)+r.amount;});
-    var parts=Object.keys(tot).map(function(s){return fmt(tot[s])+' → '+s;});
+    var tot={};done.forEach(function(r){var e=tot[r.symbol]||{a:0,u:0};e.a+=r.amount;e.u+=r.units;tot[r.symbol]=e;});
+    var parts=Object.keys(tot).map(function(s){return fmt(tot[s].a)+' → '+ipQty(tot[s].u)+' '+s;});
     showToast(tr('Piano di accumulo eseguito')+': '+parts.join(', '));
     firePacNotification(done);
     if(ui.activeTab==='home'||ui.activeTab==='recurring')renderActiveTab();
@@ -10790,7 +10860,7 @@ function openLoanSheet(opts){
     paidBefore:edit?(edit.paidBefore||0):0,
     phases:edit?loanPhases(edit).map(function(p){return {amountStr:String(p.amount).replace('.',','),y:p.y||0,m:p.m||0};})
                :[{amountStr:'',y:0,m:0}],
-    exStr:'',exDate:todayISO(),exAcc:null
+    exStr:'',exIntStr:'',exDate:todayISO(),exAcc:null
   };
   if(edit&&!m.exAcc)m.exAcc=edit.accountId;
 
@@ -10858,7 +10928,7 @@ function openLoanSheet(opts){
     return '<div class="loan-recap" style="margin-top:10px;">'+
       '<div class="loan-recap-row"><span>'+tr('Numero di rate')+'</span><strong>'+rate+'</strong></div>'+
       '<div class="loan-recap-row"><span>'+tr('Durata')+'</span><strong>'+esc(durata||'—')+'</strong></div>'+
-      '<div class="loan-recap-row"><span>'+tr('Ultima rata')+'</span><strong>'+(ultima?esc(formatShortDate(ultima)):'—')+'</strong></div>'+
+      '<div class="loan-recap-row"><span>'+tr('Ultima rata')+'</span><strong>'+(ultima?esc(formatShortDateY(ultima)):'—')+'</strong></div>'+
       '<div class="loan-recap-row"><span>'+tr('Totale che pagherai')+'</span><strong>'+fmt(previsto)+'</strong></div>'+
       avviso+
     '</div>';
@@ -10872,7 +10942,7 @@ function openLoanSheet(opts){
     var lista=loanExtras(it);
     var righe=lista.map(function(t){
       return '<div class="ex-row"><span>'+esc(formatShortDate(t.date))+'</span>'+
-        '<span><b>'+fmt(t.amount)+'</b> <button class="ex-del" data-ln-exdel="'+esc(t.id)+'" aria-label="'+tr('Elimina')+'">×</button></span></div>';
+        '<span><b>'+fmt(t.amount)+'</b>'+(t.interestSaved>0?' <span style="color:var(--ink-soft);font-size:11px;">+'+fmt(t.interestSaved)+' '+tr('interessi')+'</span>':'')+' <button class="ex-del" data-ln-exdel="'+esc(t.id)+'" aria-label="'+tr('Elimina')+'">×</button></span></div>';
     }).join('');
     var tot=loanExtraTotal(it),inRate=loanExtraInRate(it);
     var riepilogo=lista.length
@@ -10891,6 +10961,8 @@ function openLoanSheet(opts){
           '<div class="dur-cell wide"><label>'+tr('Importo (€)')+'</label><input type="text" inputmode="decimal" class="text-input" id="lnExAmt" value="'+esc(m.exStr)+'" placeholder="0,00"></div>'+
           '<div class="dur-cell wide"><label>'+tr('Data')+'</label><input type="date" class="text-input" id="lnExDate" value="'+esc(m.exDate)+'"></div>'+
         '</div>'+
+        '<div class="dur-cell wide" style="margin-top:2px;"><label>'+tr('Interessi risparmiati (€)')+'</label><input type="text" inputmode="decimal" class="text-input" id="lnExInt" value="'+esc(m.exIntStr||'')+'" placeholder="0,00"></div>'+
+        '<p class="hint" style="margin:4px 0 2px;">'+tr('Facoltativo: interessi che non pagherai più. Abbassano il residuo ma non escono da nessun conto.')+'</p>'+
         '<div class="chip-row" style="margin-top:2px;">'+conti+'</div>'+
         '<button class="btn-secondary" style="padding:10px 14px;font-size:13px;" id="lnExAdd">+ '+tr('Registra versamento')+'</button>'+
       '</div>'+
@@ -10946,6 +11018,7 @@ function openLoanSheet(opts){
   function rerenderExtra(){var el=document.getElementById('lnExtra');if(el){el.outerHTML=extraBlock();wireExtra();}}
   function wireExtra(){
     var am=document.getElementById('lnExAmt');if(am)am.oninput=function(){m.exStr=am.value;};
+    var it0=document.getElementById('lnExInt');if(it0)it0.oninput=function(){m.exIntStr=it0.value;};
     var dt=document.getElementById('lnExDate');if(dt)dt.onchange=function(){m.exDate=dt.value||todayISO();};
     document.querySelectorAll('[data-ln-exacc]').forEach(function(b){b.onclick=function(){m.exAcc=b.dataset.lnExacc;document.querySelectorAll('[data-ln-exacc]').forEach(function(q){q.classList.toggle('selected',q===b);});};});
     document.querySelectorAll('[data-ln-exdel]').forEach(function(b){b.onclick=function(){
@@ -10961,8 +11034,9 @@ function openLoanSheet(opts){
       if(!it)return;
       var v=parseAmount(String(m.exStr).replace(',','.'));
       if(!(v>0)){showToast(tr('Inserisci l\'importo del versamento'));return;}
-      addLoanExtra(it,v,m.exDate,m.exAcc);
-      m.exStr='';
+      var vi=parseAmount(String(m.exIntStr||'').replace(',','.'))||0;
+      addLoanExtra(it,v,m.exDate,m.exAcc,vi>0?vi:0);
+      m.exStr='';m.exIntStr='';
       rerenderExtra();
       renderActiveTab();
       showToast(tr('Versamento registrato: residuo {R}').replace('{R}',fmt(loanRemaining(it))));
@@ -11954,7 +12028,7 @@ if(window.__SPENDY_TEST__){
          syncBackHistory:syncBackHistory,openInvestPage:openInvestPage,backNow:backNow,
          schedaAttiva:function(){return ui.activeTab;},
          backStato:function(){return {histDepth:histDepth,skipPop:skipPop,layers:layerDepth()};},
-         autoRunDuePacs:autoRunDuePacs,askPayRecurring:askPayRecurring,refreshAccountsList:refreshAccountsList,openAccountsSheet:openAccountsSheet,
+         autoRunDuePacs:autoRunDuePacs,askPayRecurring:askPayRecurring,refreshAccountsList:refreshAccountsList,openAccountsSheet:openAccountsSheet,recStepBack:recStepBack,recLastPayment:recLastPayment,addLoanExtra:addLoanExtra,loanRemaining:loanRemaining,loanSummary:loanSummary,recPaidCount:recPaidCount,ipCompositionHTML:ipCompositionHTML,
          addMonthsISO:addMonthsISO,recDurMonths:recDurMonths,recHasDuration:recHasDuration,
          recEndBound:recEndBound,recTotalCount:recTotalCount,recPaidCount:recPaidCount,
          recRemainingCount:recRemainingCount,recFinished:recFinished,recLastDueDate:recLastDueDate,
