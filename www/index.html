@@ -1148,6 +1148,9 @@ Object.assign(TR.fr,{'Eliminare questo acquisto? Il movimento verr\u00e0 rimosso
 Object.assign(TR.en,{'Ciao {N}!':'Hi {N}!','Iniziamo':'Let\'s start','Scegli la lingua e dimmi come ti chiami.':'Choose the language and tell me your name.'});
 Object.assign(TR.es,{'Ciao {N}!':'\u00a1Hola {N}!','Iniziamo':'Empecemos','Scegli la lingua e dimmi come ti chiami.':'Elige el idioma y dime c\u00f3mo te llamas.'});
 Object.assign(TR.fr,{'Ciao {N}!':'Salut {N} !','Iniziamo':'C\'est parti','Scegli la lingua e dimmi come ti chiami.':'Choisis la langue et dis-moi comment tu t\'appelles.'});
+Object.assign(TR.en,{'Acquisto eliminato · quote stimate dall\'importo speso.':'Purchase deleted · shares estimated from the amount spent.'});
+Object.assign(TR.es,{'Acquisto eliminato · quote stimate dall\'importo speso.':'Compra eliminada · participaciones estimadas por el importe gastado.'});
+Object.assign(TR.fr,{'Acquisto eliminato · quote stimate dall\'importo speso.':'Achat supprimé · parts estimées d\'après le montant dépensé.'});
 Object.assign(TR.en,{
 'Accedi':'Sign in',
 'Accedi alla sincronizzazione':'Sign in to sync',
@@ -3587,7 +3590,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v61';
+var APP_VERSION='v62';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -5899,23 +5902,34 @@ function deletePurchase(txId){
   var h=sym?pacHolding(sym):null;
   var units=(t.units!=null)?invNum(t.units):null;
   state.transactions=(state.transactions||[]).filter(function(x){return x.id!==txId;});
-  var adjusted=false;
-  if(h&&units!=null&&units>0){
-    var oq=invNum(h.qty),nq=oq-units;
-    if(nq<=0.0000001){
-      state.investments=(state.investments||[]).filter(function(x){return x!==h;});
-    }else{
-      var up;
+  var adjusted=false,estimated=false;
+  if(h){
+    var oq=invNum(h.qty),rem=0,up=invNum(h.buyPrice);
+    if(units!=null&&units>0){
+      rem=units;
       if(t.unitPrice!=null)up=invNum(t.unitPrice);
-      else{var cur=t.unitCur||h.currency||'EUR';up=(cur==='EUR'&&units>0)?(invNum(t.amount)/units):invNum(h.buyPrice);}
-      var newCost=oq*invNum(h.buyPrice)-units*up;
-      h.buyPrice=Math.max(0,newCost/nq);
-      h.qty=nq;h.updatedAt=Date.now();
+      else{var cur=t.unitCur||h.currency||'EUR';up=(cur==='EUR')?(invNum(t.amount)/units):invNum(h.buyPrice);}
+    }else{
+      /* Acquisto vecchio senza il numero di quote: stimo quante quote valeva
+         dall'importo speso e dal prezzo medio (in EUR), cosi' la posizione cala
+         lo stesso e i totali restano coerenti. La media resta invariata. */
+      var be=invBuyEur(h);
+      if(be>0){rem=invNum(t.amount)/be;up=invNum(h.buyPrice);estimated=true;}
     }
-    adjusted=true;
+    if(rem>0){
+      var nq=oq-rem;
+      if(nq<=0.0000001){
+        state.investments=(state.investments||[]).filter(function(x){return x!==h;});
+      }else{
+        var newCost=oq*invNum(h.buyPrice)-rem*up;
+        h.buyPrice=Math.max(0,newCost/nq);
+        h.qty=nq;h.updatedAt=Date.now();
+      }
+      adjusted=true;
+    }
   }
   saveState();
-  return {units:units,adjusted:adjusted};
+  return {units:units,adjusted:adjusted,estimated:estimated};
 }
 function askDeletePurchase(txId){
   var t=(state.transactions||[]).find(function(x){return x.id===txId;});
@@ -5928,7 +5942,7 @@ function askDeletePurchase(txId){
     if(sym&&!pacHolding(sym)){IPAGE.view='home';IPAGE.sym=null;}
     if(document.getElementById('invPage'))renderInvestPage();
     renderActiveTab();
-    showToast((r&&r.adjusted===false)?tr('Movimento rimosso. La posizione non \u00e8 cambiata: questo acquisto non aveva il numero di quote.'):tr('Acquisto eliminato'));
+    showToast((r&&r.estimated)?tr('Acquisto eliminato · quote stimate dall\'importo speso.'):tr('Acquisto eliminato'));
   },tr('Elimina'));
 }
 function ipDetailHTML(sym){
