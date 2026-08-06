@@ -940,14 +940,21 @@ html[data-theme="light"] .sheet,html[data-theme="light"] .imp-detail-box{box-sha
    header con vetro smerigliato, tocco reattivo.
    ================================================================ */
 :root{
-  --page-bg:radial-gradient(120% 62% at 50% 0%, rgba(78,122,0,0.045), transparent 55%), linear-gradient(180deg,#FFFFFF 0%, var(--bg) 42%);
-  --invp-head-bg:rgba(246,248,249,0.86);
+  /* Un unico gradiente verticale su tutta la schermata: piu' chiaro in cima,
+     scende morbido fino al colore base in fondo. Niente alone radiale, niente
+     stop intermedi: cosi' non si formano "fasce" o livelli separati. */
+  --page-bg:linear-gradient(180deg,#FFFFFF 0%, var(--bg) 100%);
+  /* Header senza colore proprio: si fonde col gradiente. */
+  --invp-head-bg:transparent;
 }
 html[data-theme="dark"]{
-  --page-bg:radial-gradient(120% 62% at 50% 0%, rgba(182,255,46,0.055), transparent 55%), linear-gradient(180deg,#1C222A 0%, var(--bg) 42%);
-  --invp-head-bg:rgba(18,21,24,0.82);
+  --page-bg:linear-gradient(180deg,#1C222A 0%, var(--bg) 100%);
+  --invp-head-bg:transparent;
 }
 .invp{background:var(--page-bg);}
+/* Header trasparente: da fermo mostra solo il gradiente (nessuna fascia); il
+   velo smerigliato entra in gioco solo quando il contenuto scorre sotto, per
+   tenere leggibili freccia e titolo. */
 .invp-head{background:var(--invp-head-bg);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);}
 .invp-chart-card,.invp-row,.inv-row,.inv-chart,.inv-summary{background-image:var(--box-sheen);box-shadow:var(--shadow),var(--box-edge);}
 .invp-back{background-image:var(--box-sheen);box-shadow:var(--shadow-xs),var(--box-edge);}
@@ -3664,7 +3671,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v64';
+var APP_VERSION='v65';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
