@@ -1,14 +1,19 @@
 # Pubblica il SITO (GitHub Pages) prendendo i file dalla cartella www/.
-# Cosi' la cartella www/ e' l'UNICA sorgente: da lei nascono sito, APK e IPA.
 #
-# QUANDO PARTE: quando aggiorni la cartella www/ SUL RAMO PREDEFINITO del repo
-# (quello marcato come "default" su GitHub = il ramo su cui lavori). Un ramo di
-# prova NON tocca il sito pubblico. Se cambi ramo principale, imposta il nuovo
-# ramo come "default" su GitHub: il sito lo seguira' da solo, senza modificare
-# questo file.
+# COME FUNZIONA ORA (cambiato apposta):
+# Prima usavamo l'azione "deploy-pages", che pubblica passando dall'ambiente
+# "github-pages". Quell'ambiente accetta una sola pubblicazione alla volta e,
+# se resta incastrato, tutti i deploy successivi restano appesi su
+# "deployment_in_progress" fino al timeout.
 #
-# IMPORTANTE: perche' funzioni, in GitHub -> Settings -> Pages -> "Source" deve
-# essere impostato su "GitHub Actions" (una volta sola).
+# Adesso il workflow copia semplicemente la cartella www/ dentro un ramo
+# chiamato "gh-pages" e lo aggiorna. Alla pubblicazione vera ci pensa GitHub
+# da sola, leggendo quel ramo. Non usiamo piu' l'ambiente che si inceppa e non
+# restiamo in attesa di nessuno stato: il workflow finisce in pochi secondi.
+#
+# IMPOSTAZIONE DA FARE UNA VOLTA SOLA:
+#   GitHub -> Settings -> Pages -> "Source" = "Deploy from a branch"
+#   Branch = "gh-pages", cartella = "/ (root)" -> Save
 name: Pubblica il sito (GitHub Pages) da www
 
 on:
@@ -18,41 +23,51 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: "pages"
-  # NON annullare un deploy gia' in corso: l'ambiente github-pages ammette
-  # una sola pubblicazione alla volta, e annullarla a meta' lascia il deploy
-  # "incastrato" (i run successivi restano su "deployment_in_progress" e vanno
-  # in timeout). Con "false" i deploy si mettono in coda e si completano puliti.
+  group: "pubblica-sito"
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  pubblica:
     # Pubblica solo se il push (o l'avvio manuale) e' sul ramo PREDEFINITO.
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
-    # Rete di sicurezza: se Pages restasse impantanato, il job fallisce entro
-    # 15 minuti invece di restare appeso a lungo.
-    timeout-minutes: 15
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    timeout-minutes: 10
     steps:
       - name: Scarica il codice
         uses: actions/checkout@v5
 
-      - name: Prepara GitHub Pages
-        uses: actions/configure-pages@v5
+      - name: Prepara i file del sito
+        run: |
+          set -e
+          rm -rf /tmp/site
+          mkdir -p /tmp/site
+          cp -r www/. /tmp/site/
+          # Evita che GitHub provi a "interpretare" i file: li pubblica come sono.
+          touch /tmp/site/.nojekyll
+          echo "File pronti:"
+          ls -a /tmp/site | head -20
 
-      - name: Impacchetta la cartella www come sito
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: www
+      - name: Aggiorna il ramo gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          cd /tmp/site
+          git init -q
+          git checkout -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Pubblica il sito da www (${GITHUB_SHA})"
+          git push -q --force \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages
+          echo "Ramo gh-pages aggiornato."
 
-      - name: Pubblica su GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Fatto
+        run: |
+          echo "Sito aggiornato dal commit ${GITHUB_SHA}."
+          echo "GitHub pubblica il ramo gh-pages entro un minuto circa."
