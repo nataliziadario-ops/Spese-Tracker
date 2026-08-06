@@ -934,6 +934,25 @@ html[data-theme="light"] .sheet,html[data-theme="light"] .imp-detail-box{box-sha
 .key:active{filter:brightness(1.06);}
 .tap-ripple{position:absolute;border-radius:50%;transform:translate(-50%,-50%) scale(0);background:var(--ripple);pointer-events:none;opacity:0.5;animation:tapRipple .5s var(--ease-out) forwards;z-index:0;}
 @keyframes tapRipple{to{transform:translate(-50%,-50%) scale(1);opacity:0;}}
+/* ================================================================
+   PAGINA INVESTIMENTI PREMIUM (v64) — stesso linguaggio delle pop-up.
+   Sfondo morbido invece del nero piatto, card e righe "sollevate",
+   header con vetro smerigliato, tocco reattivo.
+   ================================================================ */
+:root{
+  --page-bg:radial-gradient(120% 62% at 50% 0%, rgba(78,122,0,0.045), transparent 55%), linear-gradient(180deg,#FFFFFF 0%, var(--bg) 42%);
+  --invp-head-bg:rgba(246,248,249,0.86);
+}
+html[data-theme="dark"]{
+  --page-bg:radial-gradient(120% 62% at 50% 0%, rgba(182,255,46,0.055), transparent 55%), linear-gradient(180deg,#1C222A 0%, var(--bg) 42%);
+  --invp-head-bg:rgba(18,21,24,0.82);
+}
+.invp{background:var(--page-bg);}
+.invp-head{background:var(--invp-head-bg);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);}
+.invp-chart-card,.invp-row,.inv-row,.inv-chart,.inv-summary{background-image:var(--box-sheen);box-shadow:var(--shadow),var(--box-edge);}
+.invp-back{background-image:var(--box-sheen);box-shadow:var(--shadow-xs),var(--box-edge);}
+.invp-row,.inv-row,.invp-back{position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .14s var(--ease-spring);}
+.invp-back:active,.invp-row:active,.inv-row:active{transform:scale(0.98);}
 </style>
 </head>
 <body>
@@ -3645,7 +3664,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v63';
+var APP_VERSION='v64';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -11501,7 +11520,7 @@ function bumpBackBridge(handled){
 (function initTapRipple(){
   try{
     if(!document||!document.addEventListener)return;
-    var SEL='.btn-primary,.btn-secondary,.btn-danger,.btn-primary-sm,.key,.chip,.pick-row,.menu-row,.segmented button,.bd-row';
+    var SEL='.btn-primary,.btn-secondary,.btn-danger,.btn-primary-sm,.key,.chip,.pick-row,.menu-row,.segmented button,.bd-row,.invp-row,.inv-row,.invp-back';
     document.addEventListener('pointerdown',function(e){
       if(e.button&&e.button!==0)return;
       var el=e.target&&e.target.closest?e.target.closest(SEL):null;
