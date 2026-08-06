@@ -137,17 +137,32 @@ jobs:
       # NOSTRO file keystore, indicando percorso, password, alias e keypass
       # espliciti. Cosi' l'impronta e' deterministica a ogni compilazione.
       - name: Imponi la firma con la chiave fissa (signingConfig esplicito)
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           set -e
-          if [ ! -f android-config/debug.keystore ]; then
-            echo "ERRORE: manca android-config/debug.keystore — impossibile firmare in modo stabile."
+          # SICUREZZA: se e' configurato il Secret ANDROID_KEYSTORE_B64 uso quello
+          # (il keystore NON deve stare nel repository pubblico). Se il Secret non
+          # c'e' ancora, ripiego sul file nel repo: cosi' la build non si rompe
+          # prima che tu abbia completato la migrazione.
+          mkdir -p android/app
+          if [ -n "${ANDROID_KEYSTORE_B64:-}" ]; then
+            echo "$ANDROID_KEYSTORE_B64" | base64 -d > android/app/debug.keystore
+            echo "Keystore preso dal Secret ANDROID_KEYSTORE_B64 (non dal repository)."
+          elif [ -f android-config/debug.keystore ]; then
+            cp android-config/debug.keystore android/app/debug.keystore
+            echo "ATTENZIONE: keystore preso dal repository pubblico."
+            echo "            Configura il Secret ANDROID_KEYSTORE_B64 e togli il file dal repo."
+          else
+            echo "ERRORE: nessun keystore disponibile (ne' Secret ne' file) — impossibile firmare."
             exit 1
           fi
-          # Copio il keystore DENTRO il progetto app e uso un percorso assoluto,
-          # cosi' non dipende da ~/.android ne' dalla cartella di lavoro.
-          cp android-config/debug.keystore android/app/debug.keystore
           KS="$GITHUB_WORKSPACE/android/app/debug.keystore"
           GRADLE=android/app/build.gradle
+          KS_PASS="${ANDROID_KEYSTORE_PASSWORD:-android}"
+          KS_ALIAS="${ANDROID_KEY_ALIAS:-androiddebugkey}"
 
           # Se non l'ho gia' fatto in questa build, appendo un blocco android {}
           # che riconfigura la signingConfig 'debug' con la nostra chiave.
@@ -161,9 +176,9 @@ jobs:
               printf '    signingConfigs {\n'
               printf '        debug {\n'
               printf "            storeFile file('%s')\n" "$KS"
-              printf "            storePassword 'android'\n"
-              printf "            keyAlias 'androiddebugkey'\n"
-              printf "            keyPassword 'android'\n"
+              printf "            storePassword '%s'\n" "$KS_PASS"
+              printf "            keyAlias '%s'\n" "$KS_ALIAS"
+              printf "            keyPassword '%s'\n" "$KS_PASS"
               printf '        }\n'
               printf '    }\n'
               printf '}\n'
@@ -182,29 +197,41 @@ jobs:
       # sull'INGREDIENTE; il controllo definitivo sul PRODOTTO (l'APK finito)
       # e' piu' avanti, nello step "VERIFICA FORENSE".
       - name: Mostra l'impronta del keystore imposto (controllo)
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           echo "===================================================="
           echo "IMPRONTA DEL KEYSTORE CHE FIRMERA' L'APK (confrontala con Firebase):"
-          keytool -list -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey 2>/dev/null | grep -E "SHA1:|SHA256:"
+          keytool -list -v -keystore android/app/debug.keystore \
+            -storepass "${ANDROID_KEYSTORE_PASSWORD:-android}" \
+            -alias "${ANDROID_KEY_ALIAS:-androiddebugkey}" 2>/dev/null | grep -E "SHA1:|SHA256:"
           echo "===================================================="
-          echo "Attesa (registrata in Firebase):"
-          echo "  SHA1:   75:AB:38:DD:7C:86:E1:4C:8A:76:6F:66:E4:D2:F7:D6:20:4D:C5:C3"
-          echo "  SHA256: D8:89:09:2F:89:61:BD:6D:74:90:2B:0F:51:2E:AD:68:53:2E:4C:38:AD:5D:C3:82:20:50:0C:9D:DB:6D:3B:E0"
+          echo "Questa impronta deve essere registrata in Firebase"
+          echo "(Impostazioni progetto > le tue app > Android > Aggiungi impronta)."
           echo "===================================================="
 
       # --- Login Google nativo: collega Firebase ---
       # Basta questo file: il modello Android di Capacitor applica da solo il
       # plugin Google Services quando trova google-services.json nell'app.
       - name: Collega Firebase (google-services.json)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
+          mkdir -p android/app
+          if [ -n "${GOOGLE_SERVICES_JSON:-}" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "Firebase collegato dal Secret GOOGLE_SERVICES_JSON (non dal repository)."
+            exit 0
+          fi
           if [ ! -f android-config/google-services.json ]; then
             echo "############################################################"
-            echo "# MANCA il file android-config/google-services.json         #"
+            echo "# MANCA google-services.json (ne' Secret ne' file nel repo) #"
             echo "# Registra l'app Android in Firebase (nome pacchetto        #"
             echo "# io.github.nataliziadario.spendy), scarica                 #"
-            echo "# google-services.json e mettilo nel repository dentro       #"
-            echo "# la cartella android-config/. Senza, il login Google        #"
-            echo "# nell'app non puo' funzionare.                              #"
+            echo "# google-services.json e incolla il suo contenuto nel        #"
+            echo "# Secret GOOGLE_SERVICES_JSON (Settings > Secrets and        #"
+            echo "# variables > Actions). Senza, il login Google non parte.    #"
             echo "############################################################"
             exit 1
           fi
