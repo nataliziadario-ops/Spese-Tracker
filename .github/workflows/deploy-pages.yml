@@ -24,13 +24,20 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  # NON annullare un deploy gia' in corso: l'ambiente github-pages ammette
+  # una sola pubblicazione alla volta, e annullarla a meta' lascia il deploy
+  # "incastrato" (i run successivi restano su "deployment_in_progress" e vanno
+  # in timeout). Con "false" i deploy si mettono in coda e si completano puliti.
+  cancel-in-progress: false
 
 jobs:
   deploy:
     # Pubblica solo se il push (o l'avvio manuale) e' sul ramo PREDEFINITO.
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
+    # Rete di sicurezza: se Pages restasse impantanato, il job fallisce entro
+    # 15 minuti invece di restare appeso a lungo.
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
