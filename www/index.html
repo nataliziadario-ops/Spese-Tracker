@@ -879,6 +879,61 @@ html[data-theme="light"] .hero-card{box-shadow:0 12px 30px -10px rgba(20,24,28,0
   .wc-title{font-size:22px;}
   .wc-text{font-size:14px;}
 }
+/* ================================================================
+   RESTYLING PREMIUM DELLE POP-UP (solo estetica, nessuna logica)
+   - sfondo morbido invece del nero piatto
+   - riquadri con un filo di luce in alto e bordo interno
+   - icone con lume/anello sottile
+   - feedback tattile al tocco + ripple
+   Tutto coi colori del tema: funziona in chiaro e in scuro.
+   ================================================================ */
+:root{
+  --sheet-bg:radial-gradient(135% 92% at 50% -12%, rgba(78,122,0,0.05), transparent 60%), linear-gradient(180deg,#FFFFFF 0%, var(--app-bg) 46%);
+  --sheet-edge:inset 0 1px 0 rgba(255,255,255,0.75);
+  --box-sheen:linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 44%);
+  --box-edge:inset 0 1px 0 rgba(255,255,255,0.6);
+  --ico-sheen:linear-gradient(180deg, rgba(255,255,255,0.32), rgba(255,255,255,0) 58%);
+  --ico-edge:inset 0 1px 0 rgba(255,255,255,0.35), inset 0 0 0 1px rgba(255,255,255,0.05), 0 3px 8px rgba(31,35,41,0.14);
+  --ripple:rgba(31,35,41,0.14);
+}
+html[data-theme="dark"]{
+  --sheet-bg:radial-gradient(135% 92% at 50% -12%, rgba(182,255,46,0.06), transparent 58%), linear-gradient(180deg,#20262E 0%, var(--app-bg) 44%);
+  --sheet-edge:inset 0 1px 0 rgba(255,255,255,0.06);
+  --box-sheen:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0) 46%);
+  --box-edge:inset 0 1px 0 rgba(255,255,255,0.055);
+  --ico-sheen:linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0) 58%);
+  --ico-edge:inset 0 1px 0 rgba(255,255,255,0.2), inset 0 0 0 1px rgba(255,255,255,0.05), 0 3px 8px rgba(6,9,11,0.22);
+  --ripple:rgba(255,255,255,0.16);
+}
+/* sfondo premium delle pop-up (foglio + dettaglio importazione) */
+.sheet,.imp-detail-box{background:var(--sheet-bg);box-shadow:0 -12px 40px rgba(6,9,11,0.5),var(--sheet-edge);}
+html[data-theme="light"] .sheet,html[data-theme="light"] .imp-detail-box{box-shadow:0 -14px 44px rgba(31,35,41,0.16),var(--sheet-edge);}
+.confirm-box{box-shadow:var(--shadow-lg),var(--box-edge);}
+/* riquadri premium: filo di luce in alto + bordo interno + ombra tintata */
+.card,.ph-card,.trend-stat,.dash-tile,.pick-row,.acc-slide,.new-tag-card,.chart-wrap,.menu-list,.info-card{
+  background-image:var(--box-sheen);
+  box-shadow:var(--shadow),var(--box-edge);
+}
+/* i riquadri metrica (Spese/Entrate/Risparmio) non piu' piatti */
+.stat-box{
+  background:linear-gradient(180deg,var(--surface),var(--surface-2));
+  border:1px solid var(--hairline);
+  box-shadow:var(--shadow-xs),var(--box-edge);
+}
+/* tastierino premium */
+.key{background-image:var(--box-sheen);box-shadow:var(--shadow-xs),var(--box-edge);}
+/* icone premium: lume interno + micro-anello, senza toccarne il colore */
+.cat-bubble,.menu-row .menu-ico{background-image:var(--ico-sheen);box-shadow:var(--ico-edge);}
+/* --- feedback al tocco: pressione + ripple --- */
+.btn-primary,.btn-secondary,.btn-danger,.btn-primary-sm,.key,.chip,.pick-row,.menu-row,.segmented button,.bd-row,.nav-btn{
+  position:relative;overflow:hidden;
+  transition:transform .14s var(--ease-spring),filter .14s ease,box-shadow .14s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-primary:active,.btn-secondary:active,.btn-danger:active,.btn-primary-sm:active,.key:active,.chip:active,.pick-row:active,.segmented button:active{transform:scale(0.97);}
+.key:active{filter:brightness(1.06);}
+.tap-ripple{position:absolute;border-radius:50%;transform:translate(-50%,-50%) scale(0);background:var(--ripple);pointer-events:none;opacity:0.5;animation:tapRipple .5s var(--ease-out) forwards;z-index:0;}
+@keyframes tapRipple{to{transform:translate(-50%,-50%) scale(1);opacity:0;}}
 </style>
 </head>
 <body>
@@ -3590,7 +3645,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v62';
+var APP_VERSION='v63';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -11441,6 +11496,28 @@ function bumpBackBridge(handled){
    Android si preme indietro. Deve essere impossibile da rompere: qualunque
    errore imprevisto non deve tradursi in "chiudi l'app" se c'era qualcosa da
    chiudere. */
+/* Effetto ripple al tocco su bottoni, chip, tasti e righe. Solo estetica:
+   aggiunge uno <span> dietro al contenuto e lo rimuove da solo. */
+(function initTapRipple(){
+  try{
+    if(!document||!document.addEventListener)return;
+    var SEL='.btn-primary,.btn-secondary,.btn-danger,.btn-primary-sm,.key,.chip,.pick-row,.menu-row,.segmented button,.bd-row';
+    document.addEventListener('pointerdown',function(e){
+      if(e.button&&e.button!==0)return;
+      var el=e.target&&e.target.closest?e.target.closest(SEL):null;
+      if(!el||el.disabled)return;
+      var r=el.getBoundingClientRect();if(!r.width)return;
+      var size=Math.max(r.width,r.height)*1.15;
+      var sp=document.createElement('span');
+      sp.className='tap-ripple';
+      sp.style.width=sp.style.height=size+'px';
+      sp.style.left=(e.clientX-r.left)+'px';
+      sp.style.top=(e.clientY-r.top)+'px';
+      el.insertBefore(sp,el.firstChild);
+      setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},520);
+    },{passive:true});
+  }catch(_){}
+})();
 window.spendyHandleBack=function(){
   var aperto=false;
   try{aperto=layerDepth()>0;}catch(e){
