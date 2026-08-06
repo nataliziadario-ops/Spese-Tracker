@@ -1,6 +1,6 @@
 # Spese — Tracker (versione GitHub Pages / PWA)
 
-Questa cartella contiene tutto il necessario per pubblicare l'app su GitHub Pages e installarla come app vera sia da telefono che da PC. Nessuna conoscenza di programmazione richiesta.
+Questa cartella contiene tutto il necessario per pubblicare l'app su GitHub Pages e installarla come app vera sia da telefono che da PC. Nessuna conoscenza di programmazione richiesta..
 
 ## Cosa contiene la cartella
 
