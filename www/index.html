@@ -3754,7 +3754,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v67';
+var APP_VERSION='v68';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -6351,6 +6351,27 @@ function renderInvestPage(){
   };
 }
 
+/* Catalogo asset diviso per tipologia (Azioni/ETF/Cripto/Altro) per i fogli di
+   inserimento — sia il movimento singolo sia il piano di accumulo. Sotto il
+   campo di ricerca mostra blocchi apribili con dentro TUTTI gli asset del
+   catalogo; con 300 titoli i blocchi partono chiusi (solo intestazione+conteggio)
+   e si aprono al tocco, la ricerca resta la via rapida. `pickAttr` = nome del
+   data-attribute con cui ogni riga comunica il simbolo scelto; `open` = mappa
+   dello stato aperto/chiuso per ciascuna tipologia. */
+function ipCatBlocksHTML(open,pickAttr){
+  open=open||{};
+  var order=['stock','etf','crypto','other'],out='';
+  order.forEach(function(k){
+    var items=(PRICES.catalog||[]).filter(function(a){return (a.kind||'other')===k;});
+    if(!items.length)return;
+    var isOpen=!!open[k];
+    var body=isOpen?items.map(function(a){
+      return '<button type="button" class="invp-arow" '+pickAttr+'="'+esc(a.symbol)+'"><span class="invp-tk">'+ipTickBadge(a.symbol)+'</span><span class="invp-arow-m"><span class="t">'+esc(a.symbol)+'</span><span class="s">'+esc(a.name||'')+(a.currency?(' · '+esc(a.currency)):'')+'</span></span></button>';
+    }).join(''):'';
+    out+='<div class="invp-cat'+(isOpen?' open':'')+'"><button type="button" class="invp-cat-head" data-cat-toggle="'+k+'"><span>'+ipKindName(k)+'<span class="invp-cat-n">'+items.length+'</span></span><span class="invp-cat-chev">'+(isOpen?'▾':'▸')+'</span></button>'+(isOpen?'<div class="invp-cat-body">'+body+'</div>':'')+'</div>';
+  });
+  return out||'<p class="hint" style="margin:6px 2px;">'+tr('Catalogo non ancora caricato.')+'</p>';
+}
 /* ================================================================
    FOGLIO "AGGIUNGI MOVIMENTO" (v66) — acquisto/vendita come sull'estratto.
    Scegli l'asset (catalogo o simbolo a mano), tipo, data, quote e prezzo
@@ -6369,7 +6390,7 @@ function openMovementSheet(opts){
     name:(ce0&&ce0.name)||'',kind:(ce0&&ce0.kind)||'etf',
     cur:(ce0&&ce0.currency)||((pacHolding(opts.symbol||'')||{}).currency)||'EUR',
     date:todayISO(),qtyStr:'',priceStr:'',feesStr:'',hintAmount:invNum(opts.hintAmount),
-    accountId:_initAcc,picking:!opts.symbol,q:'',err:''};
+    accountId:_initAcc,picking:!opts.symbol,q:'',openCat:{},err:''};
   function readInputs(){
     var g=function(id){var e=document.getElementById(id);return e?e.value:undefined;},v;
     v=g('mvQty');if(v!==undefined)m.qtyStr=v;
@@ -6388,6 +6409,10 @@ function openMovementSheet(opts){
     return (isSell?'− ':'+ ')+fmt(fee)+' '+tr('di commissioni')+' · '+(isSell?tr('entra'):tr('esce'))+' '+(m.cur!=='EUR'?'≈ ':'')+fmt(total);
   }
   function resultsHTML(){
+    /* Ricerca vuota: si sfoglia tutto il catalogo diviso per tipologia
+       (blocchi apribili). Con testo: risultati filtrati + eventuale simbolo
+       libero da usare a mano. */
+    if(!String(m.q||'').trim()) return ipCatBlocksHTML(m.openCat,'data-mv-pick');
     var res=searchCatalog(m.q).slice(0,8);
     var rows=res.map(function(a){
       return '<button type="button" class="invp-arow" data-mv-pick="'+esc(a.symbol)+'"><span class="invp-tk">'+ipTickBadge(a.symbol)+'</span><span class="invp-arow-m"><span class="t">'+esc(a.symbol)+'</span><span class="s">'+esc(a.name||'')+(a.currency?(' · '+esc(a.currency)):'')+'</span></span></button>';
@@ -6395,7 +6420,7 @@ function openMovementSheet(opts){
     var qsym=String(m.q||'').trim().toUpperCase(),free='';
     if(qsym&&!res.some(function(a){return String(a.symbol).toUpperCase()===qsym;})&&/^[A-Z0-9.\-]{1,12}$/.test(qsym))
       free='<button type="button" class="invp-arow" data-mv-free="'+esc(qsym)+'"><span class="invp-tk">'+ipTickBadge(qsym)+'</span><span class="invp-arow-m"><span class="t">'+esc(qsym)+'</span><span class="s">'+tr('Usa questo simbolo · prezzo a mano')+'</span></span></button>';
-    return (rows+free)||'<p class="hint" style="margin:6px 2px;">'+tr('Scrivi il nome o il simbolo dell\'asset.')+'</p>';
+    return (rows+free)||'<p class="hint" style="margin:6px 2px;">'+tr('Nessun risultato. Prova col simbolo (es. VWCE, AAPL).')+'</p>';
   }
   function pickerHTML(){
     return '<div class="field-group"><label class="field-label">'+tr('Scegli l\'asset')+'</label>'+
@@ -6438,6 +6463,7 @@ function openMovementSheet(opts){
   function wirePicks(scope){
     scope.querySelectorAll('[data-mv-pick]').forEach(function(b){b.onclick=function(){choose(b.dataset.mvPick);};});
     scope.querySelectorAll('[data-mv-free]').forEach(function(b){b.onclick=function(){choose(b.dataset.mvFree);};});
+    scope.querySelectorAll('[data-cat-toggle]').forEach(function(b){b.onclick=function(){var k=b.dataset.catToggle;m.openCat[k]=!m.openCat[k];var box=document.getElementById('mvResults');if(box){box.innerHTML=resultsHTML();wirePicks(box);}};});
   }
   function render(){
     var w=rerenderSheetWrap(sheetHTML());if(!w)return;
@@ -11228,7 +11254,7 @@ function openPacSheet(opts){
     nextDate:edit?edit.nextDate:todayISO(),
     auto:edit?(edit.auto!==false):true,
     status:edit?(edit.status||'active'):'active',
-    err:''
+    openCat:{},err:''
   };
   function liveHint(){
     var amt=parseAmount(String(m.amountStr).replace(',','.'))||0;
@@ -11248,8 +11274,9 @@ function openPacSheet(opts){
     var delBtn=m.isEdit?'<button class="btn-danger full-width" id="pacDel">'+tr('Elimina piano')+'</button>':'';
     return (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
       '<p class="hint">'+tr('Ogni periodo l\'app sposta l\'importo dal conto scelto e compra quote dell\'asset al prezzo del giorno.')+'</p>'+
-      '<div class="field-group"><label class="field-label">'+tr('Asset')+'</label><input id="pacSym" class="text-input" list="pacCatalog" type="text" autocapitalize="characters" value="'+esc(m.symbol)+'" placeholder="VWCE, SWDA, BTC"><datalist id="pacCatalog">'+dl()+'</datalist></div>'+
+      '<div class="field-group"><label class="field-label">'+tr('Asset')+'</label><input id="pacSym" class="text-input" list="pacCatalog" type="text" autocapitalize="characters" value="'+esc(m.symbol)+'" placeholder="'+tr('Cerca o scegli dai blocchi qui sotto')+'"><datalist id="pacCatalog">'+dl()+'</datalist></div>'+
       '<div id="pacLive" class="inv-live">'+liveHint()+'</div>'+
+      '<div id="pacCat" class="invp-assets" style="margin-top:2px;">'+ipCatBlocksHTML(m.openCat,'data-pac-pick')+'</div>'+
       '<div class="field-group"><label class="field-label">'+tr('Importo per periodo')+'</label><div class="amount-field"><span class="amount-cur">€</span><input type="text" inputmode="decimal" id="pacAmount" class="text-input amount-input" value="'+esc(m.amountStr)+'" placeholder="100,00"></div></div>'+
       accChips()+cadChips()+
       '<div class="field-group"><label class="field-label">'+tr('Primo acquisto')+'</label><input type="date" id="pacDate" class="text-input" value="'+esc(m.nextDate)+'"></div>'+
@@ -11260,8 +11287,13 @@ function openPacSheet(opts){
   }
   function sheetHTML(){return '<div class="sheet"><div class="sheet-handle"></div><h3 style="margin:4px 0 0;font-family:var(--font-display);font-size:18px;letter-spacing:-0.01em;">'+(m.isEdit?tr('Modifica piano di accumulo'):tr('Nuovo piano di accumulo'))+'</h3><div id="pacBody" style="display:flex;flex-direction:column;gap:16px;">'+bodyHTML()+'</div></div>';}
   function rerender(){var b=document.getElementById('pacBody');if(b){b.innerHTML=bodyHTML();wire();}}
+  function wirePacCat(){
+    document.querySelectorAll('[data-cat-toggle]').forEach(function(b){b.onclick=function(){var k=b.dataset.catToggle;m.openCat[k]=!m.openCat[k];var box=document.getElementById('pacCat');if(box){box.innerHTML=ipCatBlocksHTML(m.openCat,'data-pac-pick');wirePacCat();}};});
+    document.querySelectorAll('[data-pac-pick]').forEach(function(b){b.onclick=function(){m.symbol=b.dataset.pacPick;var sy=document.getElementById('pacSym');if(sy)sy.value=m.symbol;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};});
+  }
   function wire(){
     var sy=document.getElementById('pacSym');if(sy)sy.oninput=function(){m.symbol=sy.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};
+    wirePacCat();
     var am=document.getElementById('pacAmount');if(am)am.oninput=function(){m.amountStr=am.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};
     var dt=document.getElementById('pacDate');if(dt)dt.onchange=function(){m.nextDate=dt.value||todayISO();};
     var au=document.getElementById('pacAuto');if(au)au.onchange=function(){m.auto=au.checked;};
