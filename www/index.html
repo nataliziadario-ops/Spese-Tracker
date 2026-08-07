@@ -3754,7 +3754,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v68';
+var APP_VERSION='v69';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -11267,6 +11267,16 @@ function openPacSheet(opts){
     if(m.symbol&&m.symbol.trim())return '<span class="inv-live-manual">'+tr('Simbolo non in elenco: scegline uno dal catalogo.')+'</span>';
     return '<span class="inv-live-manual">'+tr('Scegli un asset dall\'elenco.')+'</span>';
   }
+  /* Chip di conferma dell'asset scelto, con lo stesso badge dell'acquisto
+     singolo (invp-assetpick + invp-tk): mostra a colpo d'occhio COSA stai
+     comprando, non solo l'importo. Vuoto finche' non c'e' un simbolo. */
+  function pacSelectedHTML(){
+    var sym=(m.symbol||'').trim().toUpperCase();
+    if(!sym)return '';
+    var ce=catalogEntry(sym)||{},cur=ce.currency||(priceEntry(sym)||{}).currency||'';
+    var sub=(ce.name||invKindLabel(ce.kind||'other'))+(cur?(' · '+esc(cur)):'');
+    return '<div class="invp-assetpick" style="margin-top:2px;"><span class="invp-tk">'+ipTickBadge(sym)+'</span><span style="min-width:0;"><span class="nm">'+esc(sym)+'</span><br><span class="s">'+sub+'</span></span></div>';
+  }
   function dl(){return cat.map(function(a){return '<option value="'+esc(a.symbol)+'">'+esc(a.name||'')+'</option>';}).join('');}
   function accChips(){return '<div class="field-group"><label class="field-label">'+tr('Conto di partenza')+'</label><div class="chip-row">'+pickableAccounts().map(function(a){var lk=isLocked('accounts',a.id);return'<button class="chip'+(a.id===m.accountId?' selected':'')+(lk?' chip-locked':'')+'" data-pac-acc="'+a.id+'"'+(lk?' data-locked="accounts"':'')+'><span class="dot" style="background:'+colorHex(a.color)+'"></span>'+esc(a.name)+(lk?' 🔒':'')+'</button>';}).join('')+'</div></div>';}
   function cadChips(){return '<div class="field-group"><label class="field-label">'+tr('Frequenza')+'</label><div class="segmented small">'+CADENCES.map(function(c){return'<button class="'+(m.cadence===c.id?'active':'')+'" data-pac-cad="'+c.id+'">'+tr(c.label)+'</button>';}).join('')+'</div></div>';}
@@ -11275,6 +11285,7 @@ function openPacSheet(opts){
     return (m.err?'<p class="hint" style="color:var(--red);">⚠️ '+esc(m.err)+'</p>':'')+
       '<p class="hint">'+tr('Ogni periodo l\'app sposta l\'importo dal conto scelto e compra quote dell\'asset al prezzo del giorno.')+'</p>'+
       '<div class="field-group"><label class="field-label">'+tr('Asset')+'</label><input id="pacSym" class="text-input" list="pacCatalog" type="text" autocapitalize="characters" value="'+esc(m.symbol)+'" placeholder="'+tr('Cerca o scegli dai blocchi qui sotto')+'"><datalist id="pacCatalog">'+dl()+'</datalist></div>'+
+      '<div id="pacSel">'+pacSelectedHTML()+'</div>'+
       '<div id="pacLive" class="inv-live">'+liveHint()+'</div>'+
       '<div id="pacCat" class="invp-assets" style="margin-top:2px;">'+ipCatBlocksHTML(m.openCat,'data-pac-pick')+'</div>'+
       '<div class="field-group"><label class="field-label">'+tr('Importo per periodo')+'</label><div class="amount-field"><span class="amount-cur">€</span><input type="text" inputmode="decimal" id="pacAmount" class="text-input amount-input" value="'+esc(m.amountStr)+'" placeholder="100,00"></div></div>'+
@@ -11289,10 +11300,10 @@ function openPacSheet(opts){
   function rerender(){var b=document.getElementById('pacBody');if(b){b.innerHTML=bodyHTML();wire();}}
   function wirePacCat(){
     document.querySelectorAll('[data-cat-toggle]').forEach(function(b){b.onclick=function(){var k=b.dataset.catToggle;m.openCat[k]=!m.openCat[k];var box=document.getElementById('pacCat');if(box){box.innerHTML=ipCatBlocksHTML(m.openCat,'data-pac-pick');wirePacCat();}};});
-    document.querySelectorAll('[data-pac-pick]').forEach(function(b){b.onclick=function(){m.symbol=b.dataset.pacPick;var sy=document.getElementById('pacSym');if(sy)sy.value=m.symbol;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};});
+    document.querySelectorAll('[data-pac-pick]').forEach(function(b){b.onclick=function(){m.symbol=b.dataset.pacPick;var sy=document.getElementById('pacSym');if(sy)sy.value=m.symbol;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();var se=document.getElementById('pacSel');if(se)se.innerHTML=pacSelectedHTML();};});
   }
   function wire(){
-    var sy=document.getElementById('pacSym');if(sy)sy.oninput=function(){m.symbol=sy.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};
+    var sy=document.getElementById('pacSym');if(sy)sy.oninput=function(){m.symbol=sy.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();var se=document.getElementById('pacSel');if(se)se.innerHTML=pacSelectedHTML();};
     wirePacCat();
     var am=document.getElementById('pacAmount');if(am)am.oninput=function(){m.amountStr=am.value;var el=document.getElementById('pacLive');if(el)el.innerHTML=liveHint();};
     var dt=document.getElementById('pacDate');if(dt)dt.onchange=function(){m.nextDate=dt.value||todayISO();};
