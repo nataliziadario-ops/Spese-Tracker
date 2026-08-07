@@ -1002,6 +1002,13 @@ html[data-theme="dark"]{
 .invp-arow-r .g{font-size:12px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums;}
 .invp-arow-r .g.up{color:var(--accent);}.invp-arow-r .g.down{color:var(--red);}
 .invp-spark{width:52px;height:26px;flex:none;}
+.invp-when{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:2px;}
+.invp-when.due{color:var(--accent);}
+.invp-when.late{color:var(--red);}
+.invp-feehint{font-size:12px;color:var(--ink-soft);margin:7px 2px 0;font-variant-numeric:tabular-nums;}
+.invp-feehint:empty{display:none;}
+.invp-pachint{background:var(--accent-soft);border-radius:12px;padding:10px 13px;font-size:12.5px;line-height:1.5;color:var(--ink-soft);margin:0 0 14px;}
+.invp-pachint b{color:var(--ink);font-variant-numeric:tabular-nums;}
 .invp-mv{display:flex;align-items:center;gap:11px;width:100%;padding:13px 2px;border:0;border-top:1px solid var(--hairline);background:none;text-align:left;color:var(--ink);}
 .invp-mv:first-child{border-top:0;}
 .invp-mvi{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none;}
@@ -3747,7 +3754,7 @@ async function saveState(){
    (solo storage locale).
 ================================================================ */
 var SYNC_CONFIG_KEY='expense-tracker-sync-config-v1';
-var APP_VERSION='v66';
+var APP_VERSION='v67';
 /* ============================================================
    PIANO GRATUITO / PREMIUM (freemium)
    Limiti del piano gratuito + "grandfathering": gli elementi gia'
@@ -5815,6 +5822,22 @@ function ipPct(x){if(x==null)return '<span class="invp-chg" style="color:var(--i
 function ipQty(u){u=Number(u)||0;return (u>=1?u.toFixed(4):u.toFixed(6)).replace('.',',');}
 function ipNumS(v){v=Number(v)||0;return v>=1000?String(Math.round(v)):(v>=100?v.toFixed(1):(v>=1?v.toFixed(2):v.toFixed(4)));}
 function ipKindName(k){return k==='stock'?tr('Azioni'):(k==='etf'?'ETF':(k==='crypto'?tr('Cripto'):tr('Altro')));}
+/* Sparkline compatta per la lista asset. Contenitore a larghezza fissa
+   (.invp-spark 52x26) cosi' non spinge ne' si sovrappone al testo: se manca
+   lo storico resta uno spazio vuoto, senza dati finti. */
+function ipSparkSVG(sym){
+  var pts=(assetHist(sym)||[]).filter(function(p){return p&&typeof p[1]==='number';}).slice(-30);
+  if(pts.length<2)return '';
+  var W=52,H=26,PT=4,PB=4,n=pts.length;
+  var vals=pts.map(function(p){return p[1];});
+  var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),rng=(max-min)||1;
+  function X(i){return (i/(n-1))*W;}
+  function Y(v){return PT+(1-((v-min)/rng))*(H-PT-PB);}
+  var d=pts.map(function(p,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(p[1]).toFixed(1);}).join(' ');
+  var up=vals[n-1]>=vals[0],col=up?'var(--accent)':'var(--red)';
+  return '<svg class="invp-spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+
+    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+}
 function invBigChartSVG(hist,cost){
   var pairs=[];
   (hist||[]).forEach(function(p,i){if(p&&typeof p[1]==='number')pairs.push({v:p[1],c:(cost&&typeof cost[i]==='number')?cost[i]:null});});
@@ -5986,6 +6009,33 @@ function ipCompositionHTML(){
     '<div class="invp-albar">'+seg+'</div>'+
     '<div class="invp-leg">'+leg+'</div></div>';
 }
+/* Fascia "Prossimi accumuli": i piani di accumulo (PAC) attivi con importo e
+   scadenza. Fedele al principio "Spendy e' un registro, non un broker": il
+   promemoria informa; al tocco apre il foglio movimento gia' con l'asset
+   scelto, cosi' registri le quote/prezzo reali dell'estratto. Nascosta se non
+   c'e' nessun PAC attivo. */
+function ipPacReminderHTML(){
+  var pacs=(state.recurring||[]).filter(function(r){return r.kind==='pac'&&r.status!=='paused';});
+  if(!pacs.length)return '';
+  pacs.sort(function(a,b){return (a.nextDate||'')<(b.nextDate||'')?-1:1;});
+  var hidden=balHidden(),CAP=4;
+  var rows=pacs.slice(0,CAP).map(function(r){
+    var sym=String(r.assetSymbol||'').toUpperCase(),ce=catalogEntry(sym)||{};
+    var du=daysUntil(r.nextDate),when,wcls='';
+    if(du<0){when=tr('In ritardo');wcls=' late';}
+    else if(du===0){when=tr('Oggi');wcls=' due';}
+    else if(du===1){when=tr('Domani');}
+    else if(du<=7){when=tr('tra {N} giorni').replace('{N}',String(du));}
+    else when=formatShortDate(r.nextDate);
+    var cad=r.cadence==='weekly'?tr('settimanale'):(r.cadence==='quarterly'?tr('trimestrale'):(r.cadence==='yearly'?tr('annuale'):tr('mensile')));
+    return '<button class="invp-arow" data-ip-pac="'+esc(sym)+'" data-ip-pac-amt="'+esc(String(invNum(r.amount)))+'">'+
+      '<span class="invp-tk">'+ipTickBadge(sym)+'</span>'+
+      '<span class="invp-arow-m"><span class="t">'+esc(sym)+'</span><span class="s">'+esc(ce.name||r.name||invKindLabel(ce.kind))+' · '+cad+'</span></span>'+
+      '<span class="invp-arow-r"><span class="v">'+(hidden?'••••':fmt(invNum(r.amount)))+'</span><span class="invp-when'+wcls+'">'+esc(when)+'</span></span>'+
+    '</button>';
+  }).join('');
+  return '<div class="invp-sec"><h4>'+tr('Prossimi accumuli')+'</h4><div class="invp-assets">'+rows+'</div></div>';
+}
 function ipHomeHTML(){
   var all=state.investments||[];
   var list=all.filter(function(h){return invNum(h.qty)>0.0000001;});
@@ -6014,6 +6064,7 @@ function ipHomeHTML(){
       return '<button class="invp-arow" data-ip-open="'+esc(h.ticker)+'">'+
         '<span class="invp-tk">'+ipTickBadge(h.ticker)+'</span>'+
         '<span class="invp-arow-m"><span class="t">'+esc(h.ticker)+'</span><span class="s">'+esc(h.name||invKindLabel(h.kind))+' · '+ipQty(h.qty)+' '+tr('quote')+'</span></span>'+
+        ipSparkSVG(h.ticker)+
         '<span class="invp-arow-r"><span class="v">'+(hidden?'••••':fmt(invValueEur(h)))+'</span><span class="g '+cls+'">'+s2+g.toFixed(1).replace('.',',')+'%</span></span>'+
       '</button>';
     }).join('');
@@ -6021,7 +6072,7 @@ function ipHomeHTML(){
   }else{
     assets=ipEmptyHTML();
   }
-  return head+hero+chart+ipCompositionHTML()+assets+
+  return head+hero+chart+ipPacReminderHTML()+ipCompositionHTML()+assets+
     '<p class="inv-disc">'+tr('Solo monitoraggio · gli scambi li fai in banca · non è consulenza finanziaria.')+'</p>'+
     ipCtaHTML();
 }
@@ -6086,7 +6137,7 @@ function assetMovements(sym){
     out.push({id:t.id,date:t.date||'',type:(t.source==='sell'?'sell':'buy'),
       units:(t.units!=null?invNum(t.units):null),
       unitPrice:(t.unitPrice!=null?invNum(t.unitPrice):null),
-      unitCur:t.unitCur||null,amount:invNum(t.amount),fees:invNum(t.fees),source:t.source});
+      unitCur:t.unitCur||null,amount:invNum(t.amount),fees:invNum(t.fees),accountId:t.accountId||null,source:t.source});
   });
   out.sort(function(a,b){return a.date<b.date?-1:(a.date>b.date?1:0);}); /* cronologico per il replay */
   return out;
@@ -6175,10 +6226,12 @@ function ipMovementsHTML(sym){
     var isSell=m.type==='sell';
     var priceTxt=(m.unitPrice!=null&&m.unitPrice>0)?invFmt(m.unitPrice,m.unitCur||'EUR'):'—';
     var qTxt=(m.units!=null)?ipQty(m.units)+' '+tr('quote'):'—';
+    var acc=m.accountId?(state.accounts||[]).filter(function(a){return a.id===m.accountId;})[0]:null;
+    var accTxt=acc?' · '+esc(acc.name):'';
     return '<div class="invp-mv">'+
       '<span class="invp-mvi '+(isSell?'sell':'buy')+'">'+(isSell?IPS.minus:IPS.plus)+'</span>'+
       '<span class="invp-mv-m"><span class="t">'+(isSell?tr('Vendita'):tr('Acquisto'))+'</span>'+
-        '<span class="s">'+esc(formatShortDate(m.date))+' · '+qTxt+' · '+priceTxt+'</span></span>'+
+        '<span class="s">'+esc(formatShortDate(m.date))+' · '+qTxt+' · '+priceTxt+accTxt+'</span></span>'+
       '<span class="invp-mv-r">'+(hidden?'••••':fmt(m.amount))+'</span>'+
       (m.id?'<button class="invp-mv-del" data-ip-pdel="'+esc(m.id)+'" aria-label="'+tr('Elimina')+'">×</button>':'')+
     '</div>';
@@ -6284,6 +6337,7 @@ function renderInvestPage(){
   };});
   ipWireRows(el);
   el.querySelectorAll('[data-ip-pdel]').forEach(function(b){b.onclick=function(e){e.stopPropagation();askDeletePurchase(b.dataset.ipPdel);};});
+  el.querySelectorAll('[data-ip-pac]').forEach(function(b){b.onclick=function(){openMovementSheet({symbol:b.dataset.ipPac,hintAmount:invNum(b.dataset.ipPacAmt)});};});
   var add=document.getElementById('ipAddMov');if(add)add.onclick=function(){openMovementSheet({symbol:(IPAGE&&IPAGE.view==='detail')?IPAGE.sym:''});};
   var idel=document.getElementById('ipDel');if(idel)idel.onclick=function(){
     var sym=IPAGE.sym,SU=String(sym).toUpperCase();
@@ -6305,11 +6359,17 @@ function renderInvestPage(){
 function openMovementSheet(opts){
   opts=opts||{};
   var ce0=opts.symbol?catalogEntry(opts.symbol):null;
+  /* Ripropone l'ultimo conto usato per un movimento (comodo per chi investe
+     sempre dallo stesso conto). Preferenza locale sul dispositivo: non passa
+     dal cloud, quindi niente da aggiungere a migrateFromRaw. */
+  var _accs0=pickableAccounts(),_lastAcc=null;
+  try{_lastAcc=window.localStorage.getItem('spendy-last-inv-acc');}catch(e){}
+  var _initAcc=(_lastAcc&&_accs0.some(function(a){return a.id===_lastAcc;}))?_lastAcc:(_accs0[0]||{}).id;
   var m={type:'buy',symbol:String(opts.symbol||'').toUpperCase(),
     name:(ce0&&ce0.name)||'',kind:(ce0&&ce0.kind)||'etf',
     cur:(ce0&&ce0.currency)||((pacHolding(opts.symbol||'')||{}).currency)||'EUR',
-    date:todayISO(),qtyStr:'',priceStr:'',feesStr:'',
-    accountId:(pickableAccounts()[0]||{}).id,picking:!opts.symbol,q:'',err:''};
+    date:todayISO(),qtyStr:'',priceStr:'',feesStr:'',hintAmount:invNum(opts.hintAmount),
+    accountId:_initAcc,picking:!opts.symbol,q:'',err:''};
   function readInputs(){
     var g=function(id){var e=document.getElementById(id);return e?e.value:undefined;},v;
     v=g('mvQty');if(v!==undefined)m.qtyStr=v;
@@ -6318,6 +6378,15 @@ function openMovementSheet(opts){
     v=g('mvDate');if(v!==undefined)m.date=v||todayISO();
   }
   function calcEur(){var q=invNum(m.qtyStr),p=invNum(m.priceStr);if(!(q>0)||!(p>0))return null;return q*p*fxToEur(m.cur);}
+  /* Riga sotto l'Importo: mostra quanto esce/entra davvero dal conto una volta
+     aggiunte (acquisto) o tolte (vendita) le commissioni. Vuota se non ci sono
+     commissioni o se l'importo non e' ancora calcolabile. */
+  function feeHintTxt(){
+    var eur=calcEur(),fee=invNum(m.feesStr);
+    if(eur==null||!(fee>0))return '';
+    var isSell=m.type==='sell',total=isSell?Math.max(0,eur-fee):(eur+fee);
+    return (isSell?'− ':'+ ')+fmt(fee)+' '+tr('di commissioni')+' · '+(isSell?tr('entra'):tr('esce'))+' '+(m.cur!=='EUR'?'≈ ':'')+fmt(total);
+  }
   function resultsHTML(){
     var res=searchCatalog(m.q).slice(0,8);
     var rows=res.map(function(a){
@@ -6338,12 +6407,13 @@ function openMovementSheet(opts){
     var accChips=accs.map(function(a){return '<button type="button" class="chip'+(a.id===m.accountId?' selected':'')+'" data-mv-acc="'+a.id+'"><span class="dot" style="background:'+colorHex(a.color)+'"></span>'+esc(a.name)+'</button>';}).join('');
     return '<div class="invp-mvseg"><button type="button" class="'+(m.type==='buy'?'on':'')+'" data-mv-type="buy">'+tr('Acquisto')+'</button><button type="button" class="'+(m.type==='sell'?'on':'')+'" data-mv-type="sell">'+tr('Vendita')+'</button></div>'+
       (m.err?'<p class="hint" style="color:var(--red);margin:0 0 12px;">'+esc(m.err)+'</p>':'')+
+      ((m.hintAmount>0&&m.type==='buy')?'<div class="invp-pachint">'+tr('Piano di accumulo · di solito investi')+' <b>'+fmt(m.hintAmount)+'</b>. '+tr('Inserisci le quote e il prezzo dell\'estratto.')+'</div>':'')+
       '<div class="field-group"><label class="field-label">'+tr('Asset')+'</label><button type="button" class="invp-assetpick" id="mvChange"><span class="invp-tk">'+ipTickBadge(m.symbol)+'</span><span style="min-width:0;"><span class="nm">'+esc(m.symbol)+'</span><br><span class="s">'+esc(m.name||invKindLabel(m.kind))+' · '+esc(m.cur)+'</span></span><span class="chev">'+IPS.chevron+'</span></button></div>'+
       '<div class="field-group"><label class="field-label">'+tr('Data')+'</label><input id="mvDate" class="text-input" type="date" value="'+esc(m.date)+'"></div>'+
       '<div class="invp-two"><div class="field-group"><label class="field-label">'+tr('Quote')+'</label><input id="mvQty" class="text-input" type="text" inputmode="decimal" value="'+esc(m.qtyStr)+'" placeholder="0"></div>'+
       '<div class="field-group"><label class="field-label">'+tr('Prezzo per quota')+' ('+esc(m.cur)+')</label><input id="mvPrice" class="text-input" type="text" inputmode="decimal" value="'+esc(m.priceStr)+'" placeholder="0"></div></div>'+
       '<div class="invp-calc"><span>'+tr('Importo')+'</span><b id="mvCalc">'+(eur==null?'—':((m.cur!=='EUR'?'≈ ':'')+fmt(eur)))+'</b></div>'+
-      '<div class="field-group"><label class="field-label">'+tr('Commissioni (facoltativo)')+'</label><input id="mvFees" class="text-input" type="text" inputmode="decimal" value="'+esc(m.feesStr)+'" placeholder="0,00"></div>'+
+      '<div class="field-group"><label class="field-label">'+tr('Commissioni (facoltativo)')+'</label><input id="mvFees" class="text-input" type="text" inputmode="decimal" value="'+esc(m.feesStr)+'" placeholder="0,00"><p class="invp-feehint" id="mvFeeHint">'+feeHintTxt()+'</p></div>'+
       (accs.length?'<div class="field-group"><label class="field-label">'+tr('Conto di partenza')+'</label><div class="chip-row">'+accChips+'</div></div>':'')+
       '<button type="button" class="btn-primary full-width" id="mvSave">'+(m.type==='sell'?tr('Salva vendita'):tr('Salva acquisto'))+'</button>'+
       '<p class="inv-disc">'+tr('Solo monitoraggio · gli scambi li fai in banca · non è consulenza finanziaria.')+'</p>';
@@ -6359,6 +6429,7 @@ function openMovementSheet(opts){
     if(r==='limit'){premiumBlock('investments');return;}
     if(r==='noqty'){m.type='buy';m.err=tr('Non hai quote da vendere per questo asset.');return render();}
     if(typeof r==='string'){m.err=tr('Controlla i dati inseriti.');return render();}
+    try{if(m.accountId)window.localStorage.setItem('spendy-last-inv-acc',m.accountId);}catch(e){}
     closeModal();
     showToast(m.type==='sell'?tr('Vendita registrata'):tr('Acquisto registrato'));
     if(IPAGE){IPAGE.view='detail';IPAGE.sym=m.symbol;IPAGE.range=IPAGE.range||'1M';invPageRerender();}
@@ -6378,8 +6449,10 @@ function openMovementSheet(opts){
     }else{
       w.querySelectorAll('[data-mv-type]').forEach(function(b){b.onclick=function(){readInputs();m.type=b.dataset.mvType;m.err='';render();};});
       var ch=document.getElementById('mvChange');if(ch)ch.onclick=function(){readInputs();m.picking=true;m.q='';render();};
-      var upd=function(){readInputs();var c=document.getElementById('mvCalc');if(c){var eur=calcEur();c.textContent=(eur==null?'—':((m.cur!=='EUR'?'≈ ':'')+fmt(eur)));}};
-      var q=document.getElementById('mvQty'),p=document.getElementById('mvPrice');if(q)q.oninput=upd;if(p)p.oninput=upd;
+      var upd=function(){readInputs();
+        var c=document.getElementById('mvCalc');if(c){var eur=calcEur();c.textContent=(eur==null?'—':((m.cur!=='EUR'?'≈ ':'')+fmt(eur)));}
+        var fh=document.getElementById('mvFeeHint');if(fh)fh.textContent=feeHintTxt();};
+      var q=document.getElementById('mvQty'),p=document.getElementById('mvPrice'),f=document.getElementById('mvFees');if(q)q.oninput=upd;if(p)p.oninput=upd;if(f)f.oninput=upd;
       w.querySelectorAll('[data-mv-acc]').forEach(function(b){b.onclick=function(){m.accountId=b.dataset.mvAcc;w.querySelectorAll('[data-mv-acc]').forEach(function(x){x.classList.toggle('selected',x===b);});};});
       var sv=document.getElementById('mvSave');if(sv)sv.onclick=onSave;
     }
